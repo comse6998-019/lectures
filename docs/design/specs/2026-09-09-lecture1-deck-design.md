@@ -591,8 +591,10 @@ Available tooling, verified on this machine: Python 3.14.0, `python-pptx` 1.0.2,
    Legibility is checked against rendered PNGs, not in the editor.
 3. **Token figures are easy to get wrong**, as the first extraction pass here
    did. Four counters, always, and an assert-based check pinning them.
-4. **Hand-placed diagrams cost time** because no picture or table layout exists
-   and tables must be drawn. Diagram-heavy slides are built first, not last.
+4. **Hand-placed diagrams cost time** because no picture layout exists and every
+   figure is positioned explicitly. Tables are cheap — `python-pptx` provides a
+   native table shape — but box-and-arrow diagrams are not. Diagram-heavy slides
+   are built first, not last.
 5. **The concurrency comparison is not a speedup and must not be drawn as one.**
    c48 is faster because it failed, and the three runs have three different
    configuration digests, so they are not comparable at all. Drawing this as a
