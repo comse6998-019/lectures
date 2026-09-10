@@ -14,7 +14,7 @@
 
 - All work happens in `lectures/week1/`. Paths in this plan are relative to `lectures/` unless absolute.
 - Delivery is Friday 2026-09-11, 2:10–4:00pm. The deck is 110 minutes, no more.
-- Template is `lectures/template.pptx`, 7.5 × 5.625 in (4:3), Arial. It is never modified; the build opens it and saves elsewhere.
+- Template is `lectures/template.pptx`, 7.5 × 5.625 in (4:3), Fira Sans. The build never modifies it; it opens the template and saves elsewhere.
 - Palette, exact values: `#000000` ink, `#FFFFFF` paper, `#595959` muted, `#EEEEEE` wash, `#4285F4` accent-primary, `#212121` accent-dark, `#78909C` accent-grey, `#FFAB40` accent-warm, `#0097A7` accent-teal, `#EEFF41` accent-lime.
 - Usable canvas below a `TITLE_ONLY` heading: x 0.26–7.24 in, y 0.65–5.10 in. Nothing is placed at x > 7.0 and y > 5.15 — the slide-number placeholder lives there.
 - Every slide carries speaker notes beginning `[<seconds>s]`. A slide without notes is a build failure.
@@ -87,7 +87,7 @@ Nothing else can be built first, because every later task consumes `data/figures
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: `data/figures.json` with top-level keys `source`, `runs`, `tally`, `alert`, `event_kinds`. `extract.py` exposes `scan_run(run_dir) -> dict` and `main() -> None`.
+- Produces: `data/figures.json` with top-level keys `source`, `extracted`, `runs`, `tally`, `alert`, `event_kinds`. `extract.py` exposes `scan_run(run_dir) -> dict` and `main() -> None`.
 
 - [ ] **Step 1: Create the requirements and ignore files**
 
@@ -526,7 +526,7 @@ SLIDE_H = 5.625
 # placeholder, which sits at 7.05, 5.19, 0.45 x 0.43.
 CANVAS = (0.26, 0.65, 6.98, 4.45)
 
-BODY_FONT = "Arial"
+BODY_FONT = "Fira Sans"
 MONO_FONT = "Menlo"
 
 # (layout, placeholder idx) -> point size.
@@ -567,9 +567,11 @@ PLACEHOLDER_BOX = {
     ("BIG_NUMBER", 1): (0.26, 3.45, 6.99, 1.42),
 }
 
-# Average glyph advance as a fraction of point size. Arial mixed case measures
-# nearer 0.52; 0.55 is deliberately pessimistic so the check errs toward
-# flagging. Menlo is a fixed 0.60 advance.
+# Average glyph advance as a fraction of point size. Fira Sans mixed case
+# measures 0.484 em (fontTools, FiraSans-Regular.otf, English letter-frequency
+# sample); 0.55 is deliberately pessimistic so the check errs toward flagging.
+# Fira Sans caps run narrower than Arial's (W 0.826 against 0.944), so headings
+# have more slack than this constant assumes, not less. Menlo is a fixed 0.60.
 PROPORTIONAL_ADVANCE = 0.55
 MONO_ADVANCE = 0.60
 LINE_SPACING = 1.2
