@@ -442,7 +442,9 @@ workflows and agents; Reflexion §3. Due: teams and repositories.
 `lectures/template.pptx` inspected 2026-09-09.
 
 - Slide size 6,858,000 × 5,143,500 EMU — 7.5 × 5.625 inches, 4:3.
-- Major and minor fonts both Arial.
+- Major and minor fonts both Fira Sans, set in `ppt/theme/theme1.xml` and
+  `theme2.xml`. Fira Sans Regular measures 0.484 em average advance against
+  Arial's 0.485, so the fit budgets carry over unchanged.
 - Palette: `dk1 #000000`, `lt1 #FFFFFF`, `dk2 #595959`, `lt2 #EEEEEE`,
   `accent1 #4285F4`, `accent2 #212121`, `accent3 #78909C`, `accent4 #FFAB40`,
   `accent5 #0097A7`, `accent6 #EEFF41`, hyperlinks `#0097A7`.
@@ -586,7 +588,7 @@ Available tooling, verified on this machine: Python 3.14.0, `python-pptx` 1.0.2,
 
 1. **The 36-minute map is the easiest section to overrun.** Mitigated by a hard
    slide cap per unit and per-slide seconds in the speaker notes.
-2. **4:3 at 7.5 inches wide, in Arial, is a small canvas for tables.** The 22-run
+2. **4:3 at 7.5 inches wide, in Fira Sans, is a small canvas for tables.** The 22-run
    table is filtered to eight rows for the room and kept whole in the appendix.
    Legibility is checked against rendered PNGs, not in the editor.
 3. **Token figures are easy to get wrong**, as the first extraction pass here
