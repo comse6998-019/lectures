@@ -107,6 +107,8 @@ def test_boxes_rendered_shapes_stay_inside_canvas(tmp_path):
     for s in drawn:
         assert s.left.inches >= left - 1e-6
         assert s.left.inches + s.width.inches <= left + width + 1e-6
+        assert s.top.inches >= top - 1e-6
+        assert s.top.inches + s.height.inches <= top + height + 1e-6
 
 
 def test_key_values_rendered_boxes_stay_inside_canvas(tmp_path):
