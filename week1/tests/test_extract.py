@@ -1,5 +1,11 @@
 import json
 import pathlib
+import sys
+
+import pytest
+
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
+import extract  # noqa: E402
 
 FIGURES = pathlib.Path(__file__).parent.parent / "data" / "figures.json"
 
@@ -135,3 +141,29 @@ def test_no_redacted_strings_in_figures():
         "/Users/rkrsn",
     ):
         assert banned not in raw, f"{banned} leaked into figures.json"
+
+
+def test_malformed_line_raises_with_run_name_and_line_number(tmp_path):
+    run_dir = tmp_path / "run-broken"
+    (run_dir / "trajectory").mkdir(parents=True)
+    (run_dir / "trajectory" / "events.jsonl").write_text(
+        '{"kind": "run_start", "config_digest": "abc123"}\n'
+        "not valid json\n"
+    )
+    with pytest.raises(ValueError) as exc_info:
+        extract.scan_run(run_dir)
+    msg = str(exc_info.value)
+    assert "run-broken" in msg
+    assert "line 2" in msg
+
+
+def test_missing_of_interest_run_raises_with_run_name(monkeypatch, tmp_path):
+    run_dir = tmp_path / "run-a2-1000"
+    (run_dir / "trajectory").mkdir(parents=True)
+    (run_dir / "trajectory" / "events.jsonl").write_text(
+        '{"kind": "run_start", "config_digest": "x"}\n'
+    )
+    monkeypatch.setattr(extract, "EXPERIMENTS", tmp_path)
+    with pytest.raises(KeyError) as exc_info:
+        extract.main()
+    assert "run-juice-10155d5b" in str(exc_info.value)
