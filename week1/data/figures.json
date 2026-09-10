@@ -22,6 +22,9 @@
   "runs": {
     "run-a2-1000": {
       "config_digest": "f147362daf0d",
+      "config_digests": [
+        "f147362daf0d"
+      ],
       "elapsed_ms": null,
       "events": 12689,
       "status": null,
@@ -45,6 +48,9 @@
     },
     "run-a2-1000-c16": {
       "config_digest": "d66d9da8cefc",
+      "config_digests": [
+        "d66d9da8cefc"
+      ],
       "elapsed_ms": null,
       "events": 667,
       "status": null,
@@ -67,6 +73,9 @@
     },
     "run-a2-1000-c48": {
       "config_digest": "178ce944d7e8",
+      "config_digests": [
+        "178ce944d7e8"
+      ],
       "elapsed_ms": 6127032,
       "events": 23639,
       "status": "ok",
@@ -94,6 +103,9 @@
     },
     "run-juice-10155d5b": {
       "config_digest": "a8afe9b20e44",
+      "config_digests": [
+        "a8afe9b20e44"
+      ],
       "elapsed_ms": 460005,
       "events": 954,
       "status": "error",
@@ -116,6 +128,9 @@
     },
     "run-juice-10155d5b-c4-aborted": {
       "config_digest": "21d2d7c1c3ac",
+      "config_digests": [
+        "21d2d7c1c3ac"
+      ],
       "elapsed_ms": null,
       "events": 585,
       "status": null,
@@ -140,6 +155,9 @@
     },
     "run-juice-10155d5b-crash1": {
       "config_digest": "a8afe9b20e44",
+      "config_digests": [
+        "a8afe9b20e44"
+      ],
       "elapsed_ms": 285048,
       "events": 134,
       "status": "error",
@@ -163,6 +181,9 @@
     },
     "run-odoo-c32": {
       "config_digest": "5832dd922cc6",
+      "config_digests": [
+        "5832dd922cc6"
+      ],
       "elapsed_ms": 22429918,
       "events": 124288,
       "status": "ok",
@@ -191,6 +212,9 @@
     },
     "run-odoo-fixed-c16": {
       "config_digest": "018c2a113c5e",
+      "config_digests": [
+        "018c2a113c5e"
+      ],
       "elapsed_ms": 32738633,
       "events": 127312,
       "status": "ok",
@@ -218,6 +242,9 @@
     },
     "run-odoo-fixed-c16-killed": {
       "config_digest": "1e611f6e6a34",
+      "config_digests": [
+        "1e611f6e6a34"
+      ],
       "elapsed_ms": null,
       "events": 77199,
       "status": null,
@@ -245,6 +272,10 @@
     },
     "run-odoo-fixed-c48": {
       "config_digest": "b31602234173",
+      "config_digests": [
+        "b31602234173",
+        "94ecfea3ae46"
+      ],
       "elapsed_ms": 1369160,
       "events": 15425,
       "status": "error",
@@ -270,6 +301,9 @@
     },
     "run-odoo-local": {
       "config_digest": "e0f8d17420fe",
+      "config_digests": [
+        "e0f8d17420fe"
+      ],
       "elapsed_ms": 34153413,
       "events": 4582,
       "status": "ok",
@@ -294,6 +328,9 @@
     },
     "run-smoke-10155d5b": {
       "config_digest": "21d2d7c1c3ac",
+      "config_digests": [
+        "21d2d7c1c3ac"
+      ],
       "elapsed_ms": 526,
       "events": 2,
       "status": "ok",
