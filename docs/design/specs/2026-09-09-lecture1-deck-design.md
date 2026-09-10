@@ -448,26 +448,43 @@ workflows and agents; Reflexion §3. Due: teams and repositories.
   `accent5 #0097A7`, `accent6 #EEFF41`, hyperlinks `#0097A7`.
 - Master text sizes present: 7.5, 10.5, 11.93, 16.2, 24 pt.
 
-Ten layouts, with placeholders:
+Ten layouts. Placeholder geometry is in inches, measured from the template, and
+determines what each layout can actually hold:
 
-| Layout | Placeholders | Use here |
+| Layout | Placeholders (idx, pt, w × h in) | Use here |
 | --- | --- | --- |
-| `TITLE` | ctrTitle, subTitle, sldNum | Opening slide |
-| `SECTION_HEADER` | title, sldNum | Section breaks |
-| `SECTION_HEADER_1` | title | Unit openers |
-| `TITLE_ONLY` | title, sldNum | Diagram and table slides needing a heading |
-| `ONE_COLUMN_TEXT` | title, body, sldNum | The only text layout available |
-| `MAIN_POINT` | title, sldNum | Thesis, ownership rule, measurement rule |
-| `SECTION_TITLE_AND_DESCRIPTION` | title, subTitle, body, sldNum | Unit openers with the driving question |
-| `CAPTION_ONLY` | body, sldNum | Captions under drawn figures |
-| `BIG_NUMBER` | title, body, sldNum | Measured figures. Heavily used |
-| `BLANK` | sldNum | Tables, diagrams, code |
+| `TITLE` | 0 title 31.5pt 6.99 × 2.24 · 1 subtitle 18pt 6.99 × 0.87 | Opening slide |
+| `SECTION_HEADER` | 0 title 27pt 6.99 × 0.92 | Section breaks |
+| `SECTION_HEADER_1` | 0 title 27pt 6.99 × 0.92 | Break slide |
+| `TITLE_ONLY` | 0 title inherited 6.99 × 0.63 at top | Workhorse: heading plus 4.5 × 7.0 in of free canvas for drawn content |
+| `ONE_COLUMN_TEXT` | 0 title 18pt 2.3 × 0.83 · 1 body 9pt 2.3 × 3.48 | Narrow left column only. Rarely useful |
+| `MAIN_POINT` | 0 title 36pt 5.22 × 4.47 | Thesis, ownership rule, measurement rule |
+| `SECTION_TITLE_AND_DESCRIPTION` | 0 title 31.5pt 3.32 × 1.62 · 1 subtitle 15.75pt 3.32 × 1.35 · 2 body 3.15 × 4.04 | Genuine two-column. Unit openers: name and driving question left, concepts right |
+| `CAPTION_ONLY` | 1 body 4.92 × 0.66 at bottom | Captions under drawn figures |
+| `BIG_NUMBER` | 0 title 90pt 6.99 × 2.15 · 1 body 6.99 × 1.42 | Measured figures, number above label. Heavily used |
+| `BLANK` | — | Tables, diagrams, code |
 
-Two consequences. `BIG_NUMBER` is the right layout for the measured-figure slides
-and is used often, matching CS336's practice of putting one number on screen at a
-time. And there is no two-column, picture, or table layout, so every table,
-diagram, and code block is hand-placed on `BLANK` — that placement is real work
-and is budgeted for.
+Four consequences for the build:
+
+- `BIG_NUMBER` is the right layout for measured figures and is used often, matching
+  CS336's practice of one number on screen at a time. At 90pt in a 6.99-inch box
+  it holds roughly ten characters, so `883,599,352` needs a size override or an
+  abbreviated form. The fit check catches this rather than the projector.
+- `SECTION_TITLE_AND_DESCRIPTION` is a real two-column layout and is the unit
+  opener. There is still no picture or table layout, so every table, diagram, and
+  code block is hand-placed on `TITLE_ONLY` or `BLANK`. That placement is real
+  work and is budgeted for.
+- `TITLE_ONLY`, `CAPTION_ONLY`, `BIG_NUMBER`'s label, and
+  `SECTION_TITLE_AND_DESCRIPTION`'s body carry no explicit size and inherit
+  10.5pt from the master, which is too small for a heading. The renderer sets
+  sizes for these explicitly.
+- The slide-number placeholder sits at 7.05, 5.19, so drawn content stays clear of
+  the bottom-right corner. Usable canvas below a `TITLE_ONLY` heading is
+  x 0.26–7.24, y 0.65–5.10.
+
+The template is not empty: it ships with two seeded slides, a `TITLE` slide
+reading "Designing Production Agentic Systems / Fall 2026" and an empty
+`SECTION_HEADER_1`. The build removes both before adding its own.
 
 Slide budget, approximately 97 delivered plus 16 appendix:
 
@@ -546,7 +563,13 @@ runnable check behind:
   since unit 2's slide makes a claim about that fact.
 - The build asserts every slide's text fits its placeholder's character budget,
   and that no redacted string appears anywhere in the output XML.
-- `render/` is produced with LibreOffice and inspected once before delivery.
+- `render/` is produced by exporting the deck to PDF through Microsoft PowerPoint
+  via AppleScript, then rasterising with `pdftoppm`, and is inspected once before
+  delivery. PowerPoint is the delivery target, so its own layout engine is the
+  right one to proof against; LibreOffice is not installed and is not needed.
+
+Available tooling, verified on this machine: Python 3.14.0, `python-pptx` 1.0.2,
+`pytest` 9.1.1, Microsoft PowerPoint, `pdftoppm`.
 
 ## 8. Out of scope
 
@@ -568,8 +591,8 @@ runnable check behind:
    Legibility is checked against rendered PNGs, not in the editor.
 3. **Token figures are easy to get wrong**, as the first extraction pass here
    did. Four counters, always, and an assert-based check pinning them.
-4. **Hand-placed diagrams cost time** because no two-column or picture layout
-   exists. Diagram-heavy slides are built first, not last.
+4. **Hand-placed diagrams cost time** because no picture or table layout exists
+   and tables must be drawn. Diagram-heavy slides are built first, not last.
 5. **The concurrency comparison is not a speedup and must not be drawn as one.**
    c48 is faster because it failed, and the three runs have three different
    configuration digests, so they are not comparable at all. Drawing this as a
@@ -593,6 +616,7 @@ runnable check behind:
 - Section minute marks sum to 110, and the notes' per-slide seconds sum to each
   section's budget.
 - All five trace-walkthrough candidates are present and selectable at delivery.
-- A full PNG render has been reviewed once end to end.
+- A full PDF export from PowerPoint has been rasterised and reviewed once end to
+  end, with no clipped text and no content under the slide-number placeholder.
 - The four-units-against-three-homeworks mismatch and the HW1 release timing are
   stated on slides, not left implicit.
