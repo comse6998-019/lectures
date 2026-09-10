@@ -71,6 +71,16 @@ def test_concurrency_runs_are_not_comparable():
     assert runs["run-odoo-c32"]["steps"] == 2993
 
 
+def test_c48_changed_its_own_config_mid_run():
+    runs = load()["runs"]
+    assert runs["run-odoo-fixed-c48"]["config_digests"] == [
+        "b31602234173",
+        "94ecfea3ae46",
+    ]
+    assert runs["run-odoo-fixed-c16"]["config_digests"] == ["018c2a113c5e"]
+    assert runs["run-odoo-c32"]["config_digests"] == ["5832dd922cc6"]
+
+
 def test_terminal_status_tally():
     t = load()["tally"]
     assert t["total"] == 22

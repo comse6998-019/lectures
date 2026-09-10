@@ -71,6 +71,7 @@ def scan_run(run_dir):
         "status": None,
         "elapsed_ms": None,
         "config_digest": None,
+        "config_digests": [],
         "tools": {},
     }
     tools = collections.Counter()
@@ -80,10 +81,10 @@ def scan_run(run_dir):
             kind = d.get("kind")
             st["events"] += 1
             if kind == "run_start":
-                # A resumed run appends a second run_start; keep the digest
-                # from the run's original start, not the resume.
-                if st["config_digest"] is None:
-                    st["config_digest"] = d.get("config_digest")
+                # A resumed run appends a second run_start with its own
+                # digest — that's a run changing its own config mid-run, not
+                # noise. Keep every digest in file order.
+                st["config_digests"].append(d.get("config_digest"))
             elif kind == "step_start":
                 st["steps"] += 1
             elif kind == "turn_start":
@@ -106,6 +107,10 @@ def scan_run(run_dir):
                 st["status"] = d.get("status")
                 st["elapsed_ms"] = d.get("elapsed_ms")
     st["tools"] = dict(tools.most_common())
+    # config_digest is the run's pinned identity: the first run_start seen,
+    # derived from config_digests rather than tracked separately.
+    if st["config_digests"]:
+        st["config_digest"] = st["config_digests"][0]
     return st
 
 
