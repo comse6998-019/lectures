@@ -49,6 +49,18 @@ def _text_area(width_in, height_in):
     )
 
 
+def _placeholder_text_area(layout, idx, width_in, height_in):
+    """A placeholder's declared box, shrunk by the template's own bodyPr
+    inset for that placeholder (theme.PLACEHOLDER_INSET), the same shape of
+    adjustment _text_area makes for composed shapes. Floored so a small box
+    still yields a positive area rather than a zero or negative one."""
+    left, top, right, bottom = theme.PLACEHOLDER_INSET[(layout, idx)]
+    return (
+        max(0.01, width_in - left - right),
+        max(0.01, height_in - top - bottom),
+    )
+
+
 def _fit_violations(index, slide_spec):
     out = []
     for (layout, idx), field_name in slides.PLACEHOLDER_FIELD.items():
@@ -58,8 +70,9 @@ def _fit_violations(index, slide_spec):
         if not text:
             continue
         _, _, width, height = theme.PLACEHOLDER_BOX[(layout, idx)]
+        eff_w, eff_h = _placeholder_text_area(layout, idx, width, height)
         pt = slides.point_size(layout, idx, slide_spec.pt_override)
-        chars_per_line, max_lines, _ = theme.budget(width, height, pt)
+        chars_per_line, max_lines, _ = theme.budget(eff_w, eff_h, pt)
         used = theme.wrapped_lines(text, chars_per_line)
         if used > max_lines:
             out.append(

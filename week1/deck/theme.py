@@ -61,6 +61,33 @@ PLACEHOLDER_BOX = {
     ("BIG_NUMBER", 1): (0.26, 3.45, 6.99, 1.42),
 }
 
+# Placeholder text-frame insets (left, top, right, bottom), in inches, measured
+# from each placeholder's own <a:bodyPr> in template.pptx's slide layouts
+# (read via python-pptx text_frame.margin_left/top/right/bottom on the
+# layout's placeholder shape). Every one of these fourteen placeholders
+# declares its own bodyPr insets directly on the layout -- none fall back to
+# the master or the OOXML default -- and every declared value is
+# lIns=tIns=rIns=bIns="97500" EMU = 0.1066in. (A lone 68569 EMU inset does
+# exist in slideLayout7.xml, but it belongs to a non-placeholder background
+# rectangle, not to any placeholder in PLACEHOLDER_BOX, so it does not apply
+# here.)
+PLACEHOLDER_INSET = {
+    ("TITLE", 0): (0.1066, 0.1066, 0.1066, 0.1066),
+    ("TITLE", 1): (0.1066, 0.1066, 0.1066, 0.1066),
+    ("SECTION_HEADER", 0): (0.1066, 0.1066, 0.1066, 0.1066),
+    ("SECTION_HEADER_1", 0): (0.1066, 0.1066, 0.1066, 0.1066),
+    ("TITLE_ONLY", 0): (0.1066, 0.1066, 0.1066, 0.1066),
+    ("ONE_COLUMN_TEXT", 0): (0.1066, 0.1066, 0.1066, 0.1066),
+    ("ONE_COLUMN_TEXT", 1): (0.1066, 0.1066, 0.1066, 0.1066),
+    ("MAIN_POINT", 0): (0.1066, 0.1066, 0.1066, 0.1066),
+    ("SECTION_TITLE_AND_DESCRIPTION", 0): (0.1066, 0.1066, 0.1066, 0.1066),
+    ("SECTION_TITLE_AND_DESCRIPTION", 1): (0.1066, 0.1066, 0.1066, 0.1066),
+    ("SECTION_TITLE_AND_DESCRIPTION", 2): (0.1066, 0.1066, 0.1066, 0.1066),
+    ("CAPTION_ONLY", 1): (0.1066, 0.1066, 0.1066, 0.1066),
+    ("BIG_NUMBER", 0): (0.1066, 0.1066, 0.1066, 0.1066),
+    ("BIG_NUMBER", 1): (0.1066, 0.1066, 0.1066, 0.1066),
+}
+
 # Average glyph advance as a fraction of point size. Fira Sans mixed case
 # measures 0.484 em (fontTools, FiraSans-Regular.otf, English letter-frequency
 # sample); 0.55 is deliberately pessimistic so the check errs toward flagging.
