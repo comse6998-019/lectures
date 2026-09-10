@@ -76,8 +76,13 @@ def scan_run(run_dir):
     }
     tools = collections.Counter()
     with events.open() as fh:
-        for line in fh:
-            d = json.loads(line)
+        for lineno, line in enumerate(fh, start=1):
+            try:
+                d = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(
+                    f"malformed JSONL in {run_dir.name} at line {lineno}: {exc}"
+                ) from exc
             kind = d.get("kind")
             st["events"] += 1
             if kind == "run_start":
@@ -136,6 +141,12 @@ def main():
         for p in EXPERIMENTS.glob("*/trajectory/events.jsonl")
     )
     scanned = {name: scan_run(EXPERIMENTS / name) for name in all_runs}
+
+    missing = [n for n in OF_INTEREST if n not in scanned]
+    if missing:
+        raise KeyError(
+            f"OF_INTEREST run(s) {missing} not found under {EXPERIMENTS}"
+        )
 
     ok = [n for n, s in scanned.items() if s["status"] == "ok"]
     err = [n for n, s in scanned.items() if s["status"] == "error"]
