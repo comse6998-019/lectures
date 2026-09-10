@@ -18,7 +18,7 @@ SLIDE_H = 5.625
 
 # Free canvas below a TITLE_ONLY heading. Clear of the slide-number
 # placeholder, which sits at 7.05, 5.19, 0.45 x 0.43.
-CANVAS = (0.26, 0.65, 6.98, 4.44)
+CANVAS = (0.26, 0.65, 6.98, 4.45)
 
 BODY_FONT = "Fira Sans"
 MONO_FONT = "Fira Code"
