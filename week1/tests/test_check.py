@@ -113,3 +113,27 @@ def test_check_output_finds_banned_string_in_saved_xml(tmp_path):
     result = check.check_output(out)
     assert [v.kind for v in result] == ["redaction"]
     assert "NEO4J_PASSWORD" in result[0].detail
+
+
+def test_check_output_finds_placeholder_in_saved_xml(tmp_path):
+    import pathlib
+
+    template = pathlib.Path(__file__).parent.parent.parent / "template.pptx"
+    prs = slides.build(
+        template,
+        [
+            slides.Slide(
+                layout="TITLE_ONLY",
+                title="Lorem",
+                notes="[10s] x",
+                seconds=10,
+            )
+        ],
+    )
+    out = tmp_path / "placeholder.pptx"
+    prs.save(out)
+    result = check.check_output(out)
+    assert any(v.kind == "placeholder" for v in result)
+    placeholder_violations = [v for v in result if v.kind == "placeholder"]
+    assert len(placeholder_violations) == 1
+    assert "Lorem" in placeholder_violations[0].detail
