@@ -1,6 +1,6 @@
 """Drawn figure primitives. Positions are inches; nothing here knows content."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN
