@@ -1,0 +1,356 @@
+{
+  "alert": {
+    "description": "Untrusted user input in findOne() function can result in NoSQL Injection.",
+    "kind": "CODE_FINDING",
+    "location": "routes/delivery.ts:34",
+    "scan_type": "static_code_scan",
+    "severity": "Medium",
+    "staged_total": 155,
+    "tool": "Semgrep OSS"
+  },
+  "event_kinds": [
+    "run_start",
+    "step_start",
+    "turn_start",
+    "tool_call",
+    "tool_result",
+    "turn_end",
+    "step_end",
+    "run_end"
+  ],
+  "extracted": "2026-09-09",
+  "runs": {
+    "run-a2-1000": {
+      "config_digest": "f147362daf0d",
+      "elapsed_ms": null,
+      "events": 12689,
+      "status": null,
+      "steps": 1002,
+      "tokens": {
+        "cache_create": 4433048,
+        "cache_read": 49568564,
+        "input": 4876,
+        "output": 1686750
+      },
+      "tool_calls": 2522,
+      "tool_errors": 0,
+      "tools": {
+        "bash": 2235,
+        "delete": 2,
+        "read_file": 114,
+        "write_jsonl": 171
+      },
+      "truncations": 0,
+      "turns": 3284
+    },
+    "run-a2-1000-c16": {
+      "config_digest": "d66d9da8cefc",
+      "elapsed_ms": null,
+      "events": 667,
+      "status": null,
+      "steps": 18,
+      "tokens": {
+        "cache_create": 472591,
+        "cache_read": 3771864,
+        "input": 318,
+        "output": 93615
+      },
+      "tool_calls": 164,
+      "tool_errors": 0,
+      "tools": {
+        "bash": 159,
+        "read_file": 3,
+        "write_jsonl": 2
+      },
+      "truncations": 0,
+      "turns": 163
+    },
+    "run-a2-1000-c48": {
+      "config_digest": "178ce944d7e8",
+      "elapsed_ms": 6127032,
+      "events": 23639,
+      "status": "ok",
+      "steps": 511,
+      "tokens": {
+        "cache_create": 13255697,
+        "cache_read": 180499652,
+        "input": 11200,
+        "output": 4135603
+      },
+      "tool_calls": 5706,
+      "tool_errors": 0,
+      "tools": {
+        "bash": 4358,
+        "edit_file": 1,
+        "glob": 2,
+        "grep": 1,
+        "ls": 35,
+        "read_file": 1207,
+        "write_file": 1,
+        "write_jsonl": 101
+      },
+      "truncations": 11,
+      "turns": 5603
+    },
+    "run-juice-10155d5b": {
+      "config_digest": "a8afe9b20e44",
+      "elapsed_ms": 460005,
+      "events": 954,
+      "status": "error",
+      "steps": 50,
+      "tokens": {
+        "cache_create": 0,
+        "cache_read": 2619205,
+        "input": 1544377,
+        "output": 69397
+      },
+      "tool_calls": 192,
+      "tool_errors": 0,
+      "tools": {
+        "bash": 143,
+        "read_file": 6,
+        "write_jsonl": 43
+      },
+      "truncations": 1,
+      "turns": 236
+    },
+    "run-juice-10155d5b-c4-aborted": {
+      "config_digest": "21d2d7c1c3ac",
+      "elapsed_ms": null,
+      "events": 585,
+      "status": null,
+      "steps": 8,
+      "tokens": {
+        "cache_create": 0,
+        "cache_read": 1801459,
+        "input": 3051733,
+        "output": 85945
+      },
+      "tool_calls": 142,
+      "tool_errors": 0,
+      "tools": {
+        "bash": 117,
+        "glob": 1,
+        "ls": 3,
+        "read_file": 14,
+        "write_jsonl": 7
+      },
+      "truncations": 0,
+      "turns": 143
+    },
+    "run-juice-10155d5b-crash1": {
+      "config_digest": "a8afe9b20e44",
+      "elapsed_ms": 285048,
+      "events": 134,
+      "status": "error",
+      "steps": 2,
+      "tokens": {
+        "cache_create": 0,
+        "cache_read": 386543,
+        "input": 667558,
+        "output": 21571
+      },
+      "tool_calls": 33,
+      "tool_errors": 1,
+      "tools": {
+        "bash": 23,
+        "ls": 2,
+        "read_file": 6,
+        "write_jsonl": 2
+      },
+      "truncations": 0,
+      "turns": 31
+    },
+    "run-odoo-c32": {
+      "config_digest": "5832dd922cc6",
+      "elapsed_ms": 22429918,
+      "events": 124288,
+      "status": "ok",
+      "steps": 2993,
+      "tokens": {
+        "cache_create": 63397605,
+        "cache_read": 826667473,
+        "input": 57922,
+        "output": 28810720
+      },
+      "tool_calls": 30189,
+      "tool_errors": 0,
+      "tools": {
+        "bash": 19717,
+        "delete": 2,
+        "edit_file": 20,
+        "glob": 179,
+        "grep": 325,
+        "ls": 957,
+        "read_file": 8354,
+        "write_file": 4,
+        "write_jsonl": 631
+      },
+      "truncations": 115,
+      "turns": 28961
+    },
+    "run-odoo-fixed-c16": {
+      "config_digest": "018c2a113c5e",
+      "elapsed_ms": 32738633,
+      "events": 127312,
+      "status": "ok",
+      "steps": 2673,
+      "tokens": {
+        "cache_create": 69559000,
+        "cache_read": 883599352,
+        "input": 57944,
+        "output": 29516316
+      },
+      "tool_calls": 32010,
+      "tool_errors": 3,
+      "tools": {
+        "bash": 21297,
+        "edit_file": 18,
+        "glob": 58,
+        "grep": 210,
+        "ls": 703,
+        "read_file": 9309,
+        "write_file": 3,
+        "write_jsonl": 412
+      },
+      "truncations": 266,
+      "turns": 28972
+    },
+    "run-odoo-fixed-c16-killed": {
+      "config_digest": "1e611f6e6a34",
+      "elapsed_ms": null,
+      "events": 77199,
+      "status": null,
+      "steps": 2378,
+      "tokens": {
+        "cache_create": 0,
+        "cache_read": 335807024,
+        "input": 137612118,
+        "output": 11731858
+      },
+      "tool_calls": 18260,
+      "tool_errors": 1,
+      "tools": {
+        "bash": 11140,
+        "edit_file": 9,
+        "glob": 27,
+        "grep": 101,
+        "ls": 1041,
+        "read_file": 5640,
+        "write_file": 2,
+        "write_jsonl": 300
+      },
+      "truncations": 23,
+      "turns": 17977
+    },
+    "run-odoo-fixed-c48": {
+      "config_digest": "b31602234173",
+      "elapsed_ms": 1369160,
+      "events": 15425,
+      "status": "error",
+      "steps": 547,
+      "tokens": {
+        "cache_create": 0,
+        "cache_read": 61307827,
+        "input": 24056720,
+        "output": 2540239
+      },
+      "tool_calls": 3553,
+      "tool_errors": 0,
+      "tools": {
+        "bash": 2508,
+        "edit_file": 8,
+        "glob": 3,
+        "ls": 20,
+        "read_file": 962,
+        "write_jsonl": 52
+      },
+      "truncations": 5,
+      "turns": 3636
+    },
+    "run-odoo-local": {
+      "config_digest": "e0f8d17420fe",
+      "elapsed_ms": 34153413,
+      "events": 4582,
+      "status": "ok",
+      "steps": 83,
+      "tokens": {
+        "cache_create": 0,
+        "cache_read": 37422471,
+        "input": 4383671,
+        "output": 1025970
+      },
+      "tool_calls": 1122,
+      "tool_errors": 9,
+      "tools": {
+        "bash": 849,
+        "edit_file": 2,
+        "ls": 27,
+        "read_file": 240,
+        "write_jsonl": 4
+      },
+      "truncations": 0,
+      "turns": 1089
+    },
+    "run-smoke-10155d5b": {
+      "config_digest": "21d2d7c1c3ac",
+      "elapsed_ms": 526,
+      "events": 2,
+      "status": "ok",
+      "steps": 0,
+      "tokens": {
+        "cache_create": 0,
+        "cache_read": 0,
+        "input": 0,
+        "output": 0
+      },
+      "tool_calls": 0,
+      "tool_errors": 0,
+      "tools": {},
+      "truncations": 0,
+      "turns": 0
+    }
+  },
+  "source": "osprey experiments, trajectory/events.jsonl, schema version 1",
+  "tally": {
+    "all_runs": [
+      "run-a2-1000",
+      "run-a2-1000-c16",
+      "run-a2-1000-c48",
+      "run-a2-subset-p0",
+      "run-daytrader-2",
+      "run-daytrader-3",
+      "run-daytrader-probe",
+      "run-juice-10155d5b",
+      "run-juice-10155d5b-c4-aborted",
+      "run-juice-10155d5b-crash1",
+      "run-juice-nonnull",
+      "run-odoo-accept",
+      "run-odoo-c32",
+      "run-odoo-c48",
+      "run-odoo-fix1",
+      "run-odoo-fixed-c16",
+      "run-odoo-fixed-c16-killed",
+      "run-odoo-fixed-c48",
+      "run-odoo-local",
+      "run-odoo-traj",
+      "run-sinkfirst-1000-c16",
+      "run-smoke-10155d5b"
+    ],
+    "error": 3,
+    "error_runs": [
+      "run-juice-10155d5b",
+      "run-juice-10155d5b-crash1",
+      "run-odoo-fixed-c48"
+    ],
+    "no_terminal_event": 4,
+    "no_terminal_event_runs": [
+      "run-a2-1000",
+      "run-a2-1000-c16",
+      "run-juice-10155d5b-c4-aborted",
+      "run-odoo-fixed-c16-killed"
+    ],
+    "ok": 15,
+    "total": 22
+  }
+}
