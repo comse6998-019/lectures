@@ -41,6 +41,27 @@ def test_overlong_big_number_passes_with_size_override():
     assert result == []
 
 
+def test_placeholder_inset_flags_a_two_line_title_that_used_to_fit():
+    # SECTION_HEADER_1 idx0's declared box (6.99x0.92in at 27pt) budgets 2
+    # lines with no inset subtracted. The template's own bodyPr inset on
+    # this placeholder shrinks the real text area to ~6.78x0.71in, which
+    # only holds 1 line. Two short hard lines that each fit their own
+    # width on their own still overflow the line count once the inset is
+    # subtracted.
+    result = check.check_slides(
+        [
+            slides.Slide(
+                layout="SECTION_HEADER_1",
+                title="First short line\nSecond short line",
+                notes="[10s] x",
+                seconds=10,
+            )
+        ]
+    )
+    assert [v.kind for v in result] == ["overflow"]
+    assert "SECTION_HEADER_1" in result[0].detail
+
+
 def test_composed_shape_that_fits_has_no_violations():
     table = Table(
         rows=[["A", "B"], ["ok", "also fine"]],
