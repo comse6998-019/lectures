@@ -37,7 +37,7 @@ def _fit_violations(index, slide_spec):
         if not text:
             continue
         _, _, width, height = theme.PLACEHOLDER_BOX[(layout, idx)]
-        pt = slide_spec.pt_override.get(idx, theme.PLACEHOLDER_PT[(layout, idx)])
+        pt = slides.point_size(layout, idx, slide_spec.pt_override)
         chars_per_line, max_lines, _ = theme.budget(width, height, pt)
         used = theme.wrapped_lines(text, chars_per_line)
         if used > max_lines:
