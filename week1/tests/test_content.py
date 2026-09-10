@@ -1,4 +1,28 @@
+import pytest
+
 import content
+
+
+def test_all_slides_skips_a_section_whose_module_is_genuinely_absent(monkeypatch):
+    missing = content.Section("nope", "s99_does_not_exist", 0, 1, 1)
+    monkeypatch.setattr(content, "SECTIONS", content.SECTIONS + (missing,))
+    slides, skipped = content.all_slides()
+    assert "nope" in skipped
+    assert isinstance(slides, list)
+
+
+def test_all_slides_raises_when_a_present_sections_own_import_is_broken(
+    monkeypatch, tmp_path
+):
+    (tmp_path / "broken_section.py").write_text(
+        "import this_inner_module_does_not_exist\n\n\ndef slides():\n    return []\n"
+    )
+    monkeypatch.setattr(content, "__path__", list(content.__path__) + [str(tmp_path)])
+    broken = content.Section("broken", "broken_section", 0, 1, 1)
+    monkeypatch.setattr(content, "SECTIONS", content.SECTIONS + (broken,))
+    with pytest.raises(ModuleNotFoundError) as exc_info:
+        content.all_slides()
+    assert exc_info.value.name == "this_inner_module_does_not_exist"
 
 
 def test_sections_are_contiguous_and_sum_to_110_minutes():

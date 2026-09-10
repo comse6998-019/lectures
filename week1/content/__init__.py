@@ -38,17 +38,28 @@ def figures():
     return json.loads(FIGURES_PATH.read_text())
 
 
+def _module_name(section):
+    return f"content.{section.module_name}"
+
+
 def load(key):
     section = next(s for s in SECTIONS if s.key == key)
-    module = importlib.import_module(f"content.{section.module_name}")
+    module = importlib.import_module(_module_name(section))
     return module.slides()
 
 
 def all_slides():
+    """Return (slides, skipped_keys). A section is skipped only when its own
+    module is absent; a broken import *inside* an existing section module
+    propagates instead, so a real bug is never mistaken for "not written yet".
+    """
     out = []
+    skipped = []
     for section in SECTIONS:
         try:
             out.extend(load(section.key))
-        except ModuleNotFoundError:
-            continue  # section not implemented yet
-    return out
+        except ModuleNotFoundError as exc:
+            if exc.name != _module_name(section):
+                raise
+            skipped.append(section.key)  # section not implemented yet
+    return out, skipped

@@ -28,8 +28,12 @@ def main(argv=None):
         section_slides = content.load(args.only)
         out_path = OUT_DIR / f"section-{args.only}.pptx"
     else:
-        section_slides = content.all_slides()
+        section_slides, skipped = content.all_slides()
         out_path = OUT_DIR / "lecture-01.pptx"
+        if skipped:
+            print(f"skipped {len(skipped)} unimplemented section(s): {', '.join(skipped)}")
+        else:
+            print("skipped 0 sections — all sections implemented")
 
     violations = check.check_slides(section_slides)
     if not check.report(violations):
