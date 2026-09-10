@@ -123,6 +123,61 @@ def test_keyvalues_flags_an_overlong_value():
     assert "KeyValues row1 value" in result[0].detail
 
 
+def test_table_margin_gap_flags_a_cell_a_no_margin_budget_would_miss():
+    # Each table cell keeps python-pptx's default 0.1in/0.05in text-frame
+    # inset. A 1x0.4in cell (width=2, height=0.4, 2 cols, 1 row) budgets to
+    # (13 chars, 2 lines) with no margin subtracted, and a 20-char cell
+    # fits (20 <= 26 chars of capacity) — but the real text area is only
+    # 0.8x0.3in, budgeting to (10, 1): 20 chars needs 2 lines, box holds 1.
+    table = Table(rows=[["short", "x" * 20]], left=0, top=0, width=2, height=0.4, pt=10)
+    result = check.check_slides(
+        [slides.Slide(layout="BLANK", shapes=[table], notes="[10s] x", seconds=10)]
+    )
+    assert [v.kind for v in result] == ["overflow"]
+    assert "Table row0 col1" in result[0].detail
+
+
+def test_code_no_wrap_flags_a_line_a_wrap_model_would_miss():
+    # Code.draw sets word_wrap = False, so a 36-char single line never
+    # wraps onto a second line. The wrap model would greedily wrap it to
+    # 3 lines against a 3-line box and call it clean; rendered, it is one
+    # 36-char line that overruns a 10-char-wide box.
+    code = Code(text="x" * 36, left=0, top=0, width=1.2, height=0.6, pt=11)
+    result = check.check_slides(
+        [slides.Slide(layout="BLANK", shapes=[code], notes="[10s] x", seconds=10)]
+    )
+    assert [v.kind for v in result] == ["overflow"]
+    assert "Code" in result[0].detail and "no wrap" in result[0].detail
+
+
+def test_code_overflow_depends_on_the_mono_advance_constant():
+    # At this box (2x0.3in, 11pt), the real mono capacity is 19 chars/line
+    # but the proportional advance would wrongly allow 21. A 20-char line
+    # overflows under the correct mono budget and would pass silently if
+    # Code were ever budgeted as proportional instead.
+    code = Code(text="x" * 20, left=0, top=0, width=2, height=0.3, pt=11)
+    result = check.check_slides(
+        [slides.Slide(layout="BLANK", shapes=[code], notes="[10s] x", seconds=10)]
+    )
+    assert [v.kind for v in result] == ["overflow"]
+    assert "Code" in result[0].detail
+
+
+def test_keyvalues_overflow_depends_on_the_mono_advance_constant():
+    # Value box here budgets to 12 chars/line under the correct mono
+    # advance but 13 under proportional. A 13-char value overflows only
+    # under the correct budget, so it would pass silently under the wrong
+    # one.
+    kv = KeyValues(
+        pairs=[("key", "0123456789abc")], left=0, top=0, width=2.5, height=0.5, pt=12
+    )
+    result = check.check_slides(
+        [slides.Slide(layout="BLANK", shapes=[kv], notes="[10s] x", seconds=10)]
+    )
+    assert [v.kind for v in result] == ["overflow"]
+    assert "KeyValues row0 value" in result[0].detail
+
+
 def test_missing_notes_is_flagged():
     result = check.check_slides([slides.Slide(layout="BLANK", seconds=10)])
     assert "notes" in [v.kind for v in result]

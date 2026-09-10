@@ -27,6 +27,27 @@ SLIDE_PART = re.compile(r"^ppt/slides/slide\d+\.xml$")
 
 NOTES_MARKER = re.compile(r"^\[(\d+)s\]")
 
+# python-pptx's default text-frame inset for add_table cells, add_textbox,
+# and add_shape autoshapes alike (verified against python-pptx: cell/
+# textbox/autoshape margin_left == margin_right == 91440 EMU == 0.1in,
+# margin_top == margin_bottom == 45720 EMU == 0.05in). None of shapes.py's
+# draw() methods override these, so the text area a composed shape's text
+# actually renders into is smaller than its declared width/height by this
+# inset on every side.
+TEXT_MARGIN_LR = 0.1
+TEXT_MARGIN_TB = 0.05
+
+
+def _text_area(width_in, height_in):
+    """A shape's declared box, shrunk by its text frame's fixed inset.
+    Floored so a small box still yields a positive area rather than a
+    zero or negative one (theme.budget floors its own outputs at 1, but
+    do not rely on that alone to survive a negative input)."""
+    return (
+        max(0.01, width_in - 2 * TEXT_MARGIN_LR),
+        max(0.01, height_in - 2 * TEXT_MARGIN_TB),
+    )
+
 
 def _fit_violations(index, slide_spec):
     out = []
@@ -53,9 +74,13 @@ def _fit_violations(index, slide_spec):
 
 
 def _shape_cells(shape):
-    """Yield (label, text, width_in, height_in, pt, mono) per budgeted unit
-    of a composed shape: one per table cell, one per box label, one for a
-    code block, one per key/value in a KeyValues row."""
+    """Yield (label, text, width_in, height_in, pt, mono, wraps) per budgeted
+    unit of a composed shape: one per table cell, one per box label, one for
+    a code block, one per key/value in a KeyValues row. `wraps` says whether
+    the rendered shape actually word-wraps its text: Table cells and the
+    autoshapes Boxes draws inherit wrap="square" and do wrap; Code sets
+    word_wrap = False explicitly and KeyValues's add_textbox boxes default to
+    wrap="none", so neither wraps."""
     if isinstance(shape, shapes.Table):
         n_rows = len(shape.rows)
         n_cols = len(shape.rows[0]) if n_rows else 0
@@ -63,41 +88,79 @@ def _shape_cells(shape):
         cell_h = shape.height / n_rows if n_rows else shape.height
         for r, row in enumerate(shape.rows):
             for c, value in enumerate(row):
-                yield (f"Table row{r} col{c}", str(value), cell_w, cell_h, shape.pt, False)
+                yield (f"Table row{r} col{c}", str(value), cell_w, cell_h, shape.pt, False, True)
     elif isinstance(shape, shapes.Boxes):
         count = len(shape.labels)
         gap = 0.18 if shape.arrows and count > 1 else 0.08
         box_w = (shape.width - gap * (count - 1)) / count if count else shape.width
         for i, label in enumerate(shape.labels):
-            yield (f"Boxes label{i}", str(label), box_w, shape.height, shape.pt, False)
+            yield (f"Boxes label{i}", str(label), box_w, shape.height, shape.pt, False, True)
     elif isinstance(shape, shapes.Code):
-        yield ("Code", shape.text, shape.width, shape.height, shape.pt, True)
+        yield ("Code", shape.text, shape.width, shape.height, shape.pt, True, False)
     elif isinstance(shape, shapes.KeyValues):
         key_w = shape.width * shape.key_fraction
         value_w = shape.width - key_w
         row_h = shape.height / max(1, len(shape.pairs))
         for i, (key, value) in enumerate(shape.pairs):
-            yield (f"KeyValues row{i} key", str(key), key_w, row_h, shape.pt, True)
-            yield (f"KeyValues row{i} value", str(value), value_w, row_h, shape.pt, True)
+            yield (f"KeyValues row{i} key", str(key), key_w, row_h, shape.pt, True, False)
+            yield (f"KeyValues row{i} value", str(value), value_w, row_h, shape.pt, True, False)
+
+
+def _wrapped_overflow(index, label, text, chars_per_line, max_lines, pt):
+    """Greedy-wrap violation, for a shape whose text frame actually wraps."""
+    used = theme.wrapped_lines(text, chars_per_line)
+    if used > max_lines:
+        return Violation(
+            index,
+            "overflow",
+            f"{label} at {pt}pt needs {used} lines, "
+            f"box holds {max_lines}: {text[:60]!r}",
+        )
+    return None
+
+
+def _unwrapped_overflow(index, label, text, chars_per_line, max_lines, pt):
+    """Per-hard-line violations, for a shape whose text frame never wraps:
+    every hard line must fit chars_per_line on its own, and the hard-line
+    count must fit max_lines."""
+    out = []
+    lines = text.split("\n")
+    for i, line in enumerate(lines):
+        if len(line) > chars_per_line:
+            out.append(
+                Violation(
+                    index,
+                    "overflow",
+                    f"{label} line {i} at {pt}pt (no wrap) is {len(line)} chars, "
+                    f"box holds {chars_per_line}: {line[:60]!r}",
+                )
+            )
+    if len(lines) > max_lines:
+        out.append(
+            Violation(
+                index,
+                "overflow",
+                f"{label} at {pt}pt (no wrap) needs {len(lines)} lines, "
+                f"box holds {max_lines}: {text[:60]!r}",
+            )
+        )
+    return out
 
 
 def _shape_violations(index, slide_spec):
     out = []
     for shape in slide_spec.shapes:
-        for label, text, width, height, pt, mono in _shape_cells(shape):
+        for label, text, width, height, pt, mono, wraps in _shape_cells(shape):
             if not text:
                 continue
-            chars_per_line, max_lines, _ = theme.budget(width, height, pt, mono=mono)
-            used = theme.wrapped_lines(text, chars_per_line)
-            if used > max_lines:
-                out.append(
-                    Violation(
-                        index,
-                        "overflow",
-                        f"{label} at {pt}pt needs {used} lines, "
-                        f"box holds {max_lines}: {text[:60]!r}",
-                    )
-                )
+            eff_w, eff_h = _text_area(width, height)
+            chars_per_line, max_lines, _ = theme.budget(eff_w, eff_h, pt, mono=mono)
+            if wraps:
+                violation = _wrapped_overflow(index, label, text, chars_per_line, max_lines, pt)
+                if violation:
+                    out.append(violation)
+            else:
+                out.extend(_unwrapped_overflow(index, label, text, chars_per_line, max_lines, pt))
     return out
 
 
