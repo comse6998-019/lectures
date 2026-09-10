@@ -27,8 +27,8 @@ def slides():
         Slide(
             layout="MAIN_POINT",
             title=(
-                "How do we place a probabilistic model inside a system "
-                "without surrendering the guarantees expected of production "
+                "How do we place a probabilistic model inside a software "
+                "system without surrendering the guarantees of production "
                 "software?"
             ),
             seconds=90,
