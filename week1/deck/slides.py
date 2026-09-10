@@ -75,6 +75,13 @@ def _apply_text(placeholder, text, pt):
             run.font.name = theme.BODY_FONT
 
 
+def point_size(layout, idx, pt_override=None):
+    """Point size for a placeholder: a slide's override wins, else the theme's."""
+    if pt_override and idx in pt_override:
+        return pt_override[idx]
+    return theme.PLACEHOLDER_PT[(layout, idx)]
+
+
 def render(prs, slide_spec):
     """Add one slide described by slide_spec and return the pptx slide."""
     if slide_spec.layout not in LAYOUTS:
@@ -88,9 +95,7 @@ def render(prs, slide_spec):
         field_name = PLACEHOLDER_FIELD.get((slide_spec.layout, idx))
         text = getattr(slide_spec, field_name, "") if field_name else ""
         if text:
-            pt = slide_spec.pt_override.get(
-                idx, theme.PLACEHOLDER_PT[(slide_spec.layout, idx)]
-            )
+            pt = point_size(slide_spec.layout, idx, slide_spec.pt_override)
             _apply_text(placeholder, text, pt)
         else:
             placeholder._element.getparent().remove(placeholder._element)

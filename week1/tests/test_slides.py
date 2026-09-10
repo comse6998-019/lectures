@@ -108,3 +108,11 @@ def test_unknown_layout_is_rejected():
     prs = slides.open_template(TEMPLATE)
     with pytest.raises(ValueError, match="unknown layout"):
         slides.render(prs, slides.Slide(layout="TWO_COLUMN", notes="[1s] x"))
+
+
+def test_point_size_override_does_not_require_a_theme_entry():
+    # ("TITLE", 99) is absent from theme.PLACEHOLDER_PT; the old
+    # `pt_override.get(idx, theme.PLACEHOLDER_PT[...])` expression evaluated
+    # the theme lookup eagerly and would raise KeyError here even though the
+    # override makes the theme table irrelevant.
+    assert slides.point_size("TITLE", 99, {99: 42.0}) == 42.0
