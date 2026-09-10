@@ -527,7 +527,7 @@ SLIDE_H = 5.625
 CANVAS = (0.26, 0.65, 6.98, 4.45)
 
 BODY_FONT = "Fira Sans"
-MONO_FONT = "Menlo"
+MONO_FONT = "Fira Code"
 
 # (layout, placeholder idx) -> point size.
 # Values with a template source are the template's own; the rest are overrides
@@ -571,9 +571,12 @@ PLACEHOLDER_BOX = {
 # measures 0.484 em (fontTools, FiraSans-Regular.otf, English letter-frequency
 # sample); 0.55 is deliberately pessimistic so the check errs toward flagging.
 # Fira Sans caps run narrower than Arial's (W 0.826 against 0.944), so headings
-# have more slack than this constant assumes, not less. Menlo is a fixed 0.60.
+# have more slack than this constant assumes, not less.
+# Fira Code is fixed-pitch at 1200/1950 = 0.6154 em (fontTools,
+# FiraCode-Regular.ttf); 0.62 rounds up so mono is pessimistic too. It is wider
+# than Menlo's 0.6021, so a mono budget written for Menlo would overrun here.
 PROPORTIONAL_ADVANCE = 0.55
-MONO_ADVANCE = 0.60
+MONO_ADVANCE = 0.62
 LINE_SPACING = 1.2
 
 
@@ -1033,6 +1036,14 @@ BANNED = (
     "/Users/rkrsn",
 )
 
+# Prompt text the template's own layouts carry. If any of these reaches a
+# rendered slide, a placeholder shipped unfilled. Measured from template.pptx:
+# BIG_NUMBER idx 0 prompts "xx%", and every layout's idx 12 prompts the
+# slide-number glyph. These are matched only against ppt/slides/slideN.xml,
+# never the layouts or masters, where they are supposed to appear.
+PLACEHOLDER_PROMPTS = ("xx%", "\u2039#\u203a", "Lorem", "lorem", "ipsum")
+SLIDE_PART = re.compile(r"^ppt/slides/slide\d+\.xml$")
+
 NOTES_MARKER = re.compile(r"^\[(\d+)s\]")
 
 
@@ -1107,7 +1118,7 @@ def check_slides(section_slides):
 
 
 def check_output(pptx_path):
-    """Scan a saved deck's XML for banned strings."""
+    """Scan a saved deck's XML for banned strings and unfilled placeholders."""
     out = []
     with zipfile.ZipFile(pptx_path) as zf:
         for name in zf.namelist():
@@ -1117,6 +1128,12 @@ def check_output(pptx_path):
             for banned in BANNED:
                 if banned in blob:
                     out.append(Violation(0, "redaction", f"{banned!r} in {name}"))
+            if SLIDE_PART.match(name):
+                for prompt in PLACEHOLDER_PROMPTS:
+                    if prompt in blob:
+                        out.append(
+                            Violation(0, "placeholder", f"{prompt!r} in {name}")
+                        )
     return out
 
 
@@ -2135,18 +2152,89 @@ If the total is not `110m00s`, `test_each_implemented_sections_seconds_fit_its_m
 Run: `cd lectures/week1 && ./proof.sh`
 Expected: a PDF and 113 PNGs in `render/`. macOS may ask once for permission to control PowerPoint; grant it.
 
-- [ ] **Step 4: Review the render against the definition of done**
+LibreOffice is not installed on this machine, so the `soffice`-based conversion
+path the pptx skill documents is unavailable, and `proof.sh` is the conversion
+path. That is the better path anyway: PowerPoint is the delivery runtime, so its own
+renderer is the one whose verdict matters for Friday.
 
-Walk every page and confirm, per spec §10:
-- No clipped or overflowing text.
-- No content beneath the slide-number placeholder at bottom right.
+- [ ] **Step 4: Content QA on the saved file**
+
+```bash
+cd lectures/week1
+python -m markitdown out/lecture-01.pptx > render/content.md
+grep -inE "xx%|‹#›|lorem|ipsum|this .*(page|slide) .*layout" render/content.md
+python ~/.claude/skills/pptx/scripts/office/validate.py out/lecture-01.pptx
+```
+
+Expected: `content.md` holds every slide's text in deck order; the grep returns
+nothing; `validate.py` reports no schema errors. A grep hit means a placeholder
+shipped unfilled — `check_output` should have caught it, so a hit here is also a
+bug in Task 4's `PLACEHOLDER_PROMPTS`.
+
+Read `content.md` against spec §10 and confirm:
 - Every measured figure matches `data/figures.json`.
 - Every run comparison states terminal status.
-- The four-units-against-three-homeworks mismatch and HW1's release timing appear on slides.
+- The four-units-against-three-homeworks mismatch and HW1's release timing
+  appear on slides.
+- No slide is missing, duplicated, or out of order.
 
-Record anything wrong as a list, fix the content modules, and rerun steps 2 and 3.
+- [ ] **Step 5: Visual QA by subagent, in batches**
 
-- [ ] **Step 5: Write the README**
+Do not inspect the render yourself — you wrote the content modules and will see
+what you intended. Dispatch subagents against the PNGs, at most 20 pages per
+subagent, with this prompt (from the pptx skill, verbatim except the file list):
+
+```
+Visually inspect these slides. Assume there are issues — find them.
+
+Look for:
+- Overlapping elements (text through shapes, lines through words, stacked elements)
+- Text overflow or cut off at edges/box boundaries
+- Decorative lines positioned for single-line text but title wrapped to two lines
+- Source citations or footers colliding with content above
+- Elements too close (< 0.3" gaps) or cards/sections nearly touching
+- Uneven gaps (large empty area in one place, cramped in another)
+- Insufficient margin from slide edges (< 0.5")
+- Columns or similar elements not aligned consistently
+- Low-contrast text (e.g., light gray text on cream-colored background)
+- Low-contrast icons (e.g., dark icons on dark backgrounds without a contrasting circle)
+- Text boxes too narrow causing excessive wrapping
+- Leftover placeholder content
+
+For each slide, list issues or areas of concern, even if minor.
+
+Read and analyze these images:
+1. /path/to/page-01.png (Expected: [brief description])
+...
+
+Report ALL issues found, including minor ones.
+```
+
+Two deck-specific overrides to state in every dispatch, because they contradict
+the generic rubric:
+- The margin floor is 0.26 in, not 0.5 in — this is a 7.5 in 4:3 canvas and
+  the template's own placeholders start at 0.26.
+- A `MAIN_POINT` slide carrying one sentence and nothing else is correct. Do not
+  report it as a text-only slide needing a visual.
+
+Assume the first render is wrong. A subagent reporting zero issues across 20
+pages did not look hard enough; re-dispatch it on the same batch.
+
+- [ ] **Step 6: Fix and verify, at least one full cycle**
+
+For each issue: fix the content module (never the render), rerun `python3
+build.py`, re-export only the affected pages, and re-inspect them.
+
+```bash
+pdftoppm -png -r 150 -f N -l N render/lecture-01.pdf render/page
+```
+
+One fix routinely creates the next — a shortened line reflows a table, a moved
+box uncovers a collision. Repeat until a full pass over the changed pages
+reports nothing new. Do not declare the deck done before completing at least one
+fix-and-verify cycle.
+
+- [ ] **Step 7: Write the README**
 
 `week1/README.md`:
 ```markdown
@@ -2182,7 +2270,7 @@ Design: `../docs/design/specs/2026-09-09-lecture1-deck-design.md`.
 - Token quantities are always four counters, never one sum.
 ```
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 cd lectures && git add week1/README.md week1/out/lecture-01.pptx
@@ -2196,7 +2284,7 @@ PowerPoint. Adds the build README."
 
 ## Self-Review
 
-**Spec coverage.** Every spec section maps to a task: §2 thesis → Tasks 8 and 11; §3 application scope → Task 16, enforced as a Global Constraint; §4.1–§4.10 → Tasks 7–19 one for one; §5 template and slide budget → Tasks 2, 3, 6; §6 data sources and redaction → Tasks 1 and 4; §7 build → Tasks 5, 6, 21; §8 out of scope → Global Constraints; §9 risks → risk 1 by `test_each_implemented_sections_seconds_fit_its_minutes`, risk 2 by the fit checker and Task 21 step 4, risk 3 by `test_odoo_c16_token_counters_are_four_distinct_quantities`, risk 4 by Task 5 preceding all content tasks, risks 5 and 6 by Tasks 13 and 1; §10 definition of done → Task 21 step 4.
+**Spec coverage.** Every spec section maps to a task: §2 thesis → Tasks 8 and 11; §3 application scope → Task 16, enforced as a Global Constraint; §4.1–§4.10 → Tasks 7–19 one for one; §5 template and slide budget → Tasks 2, 3, 6; §6 data sources and redaction → Tasks 1 and 4; §7 build → Tasks 5, 6, 21; §8 out of scope → Global Constraints; §9 risks → risk 1 by `test_each_implemented_sections_seconds_fit_its_minutes`, risk 2 by the fit checker and Task 21 steps 4–6, risk 3 by `test_odoo_c16_token_counters_are_four_distinct_quantities`, risk 4 by Task 5 preceding all content tasks, risks 5 and 6 by Tasks 13 and 1; §10 definition of done → Task 21 steps 4–6.
 
 **One gap found and closed.** Candidate C's `.traj` frontmatter fields were named in spec §4.9 but no task extracted them. Task 20 now extends `extract.py` and its test rather than letting the field names be typed into a content module.
 

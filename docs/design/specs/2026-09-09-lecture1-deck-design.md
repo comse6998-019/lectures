@@ -444,7 +444,12 @@ workflows and agents; Reflexion §3. Due: teams and repositories.
 - Slide size 6,858,000 × 5,143,500 EMU — 7.5 × 5.625 inches, 4:3.
 - Major and minor fonts both Fira Sans, set in `ppt/theme/theme1.xml` and
   `theme2.xml`. Fira Sans Regular measures 0.484 em average advance against
-  Arial's 0.485, so the fit budgets carry over unchanged.
+  Arial's 0.485, so the proportional fit budgets carry over unchanged.
+- Monospace runs (event kinds, JSON keys, tool names) are Fira Code, applied
+  per-run by the renderer rather than through the theme, which carries only a
+  major and a minor face. Fira Code is fixed-pitch at 0.6154 em, wider than
+  Menlo's 0.6021, so `MONO_ADVANCE` is 0.62 — the mono budget is pessimistic
+  in the same direction as the proportional one.
 - Palette: `dk1 #000000`, `lt1 #FFFFFF`, `dk2 #595959`, `lt2 #EEEEEE`,
   `accent1 #4285F4`, `accent2 #212121`, `accent3 #78909C`, `accent4 #FFAB40`,
   `accent5 #0097A7`, `accent6 #EEFF41`, hyperlinks `#0097A7`.
