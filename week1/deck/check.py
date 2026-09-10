@@ -4,7 +4,7 @@ import collections
 import re
 import zipfile
 
-from deck import slides, theme
+from deck import shapes, slides, theme
 
 Violation = collections.namedtuple("Violation", "slide_index kind detail")
 
@@ -52,6 +52,55 @@ def _fit_violations(index, slide_spec):
     return out
 
 
+def _shape_cells(shape):
+    """Yield (label, text, width_in, height_in, pt, mono) per budgeted unit
+    of a composed shape: one per table cell, one per box label, one for a
+    code block, one per key/value in a KeyValues row."""
+    if isinstance(shape, shapes.Table):
+        n_rows = len(shape.rows)
+        n_cols = len(shape.rows[0]) if n_rows else 0
+        cell_w = shape.width / n_cols if n_cols else shape.width
+        cell_h = shape.height / n_rows if n_rows else shape.height
+        for r, row in enumerate(shape.rows):
+            for c, value in enumerate(row):
+                yield (f"Table row{r} col{c}", str(value), cell_w, cell_h, shape.pt, False)
+    elif isinstance(shape, shapes.Boxes):
+        count = len(shape.labels)
+        gap = 0.18 if shape.arrows and count > 1 else 0.08
+        box_w = (shape.width - gap * (count - 1)) / count if count else shape.width
+        for i, label in enumerate(shape.labels):
+            yield (f"Boxes label{i}", str(label), box_w, shape.height, shape.pt, False)
+    elif isinstance(shape, shapes.Code):
+        yield ("Code", shape.text, shape.width, shape.height, shape.pt, True)
+    elif isinstance(shape, shapes.KeyValues):
+        key_w = shape.width * shape.key_fraction
+        value_w = shape.width - key_w
+        row_h = shape.height / max(1, len(shape.pairs))
+        for i, (key, value) in enumerate(shape.pairs):
+            yield (f"KeyValues row{i} key", str(key), key_w, row_h, shape.pt, True)
+            yield (f"KeyValues row{i} value", str(value), value_w, row_h, shape.pt, True)
+
+
+def _shape_violations(index, slide_spec):
+    out = []
+    for shape in slide_spec.shapes:
+        for label, text, width, height, pt, mono in _shape_cells(shape):
+            if not text:
+                continue
+            chars_per_line, max_lines, _ = theme.budget(width, height, pt, mono=mono)
+            used = theme.wrapped_lines(text, chars_per_line)
+            if used > max_lines:
+                out.append(
+                    Violation(
+                        index,
+                        "overflow",
+                        f"{label} at {pt}pt needs {used} lines, "
+                        f"box holds {max_lines}: {text[:60]!r}",
+                    )
+                )
+    return out
+
+
 def _text_of(slide_spec):
     return "\n".join(
         [
@@ -71,6 +120,7 @@ def check_slides(section_slides):
     out = []
     for index, slide_spec in enumerate(section_slides, start=1):
         out.extend(_fit_violations(index, slide_spec))
+        out.extend(_shape_violations(index, slide_spec))
 
         match = NOTES_MARKER.match(slide_spec.notes or "")
         if not match:
