@@ -5,7 +5,8 @@ def test_canvas_avoids_slide_number_placeholder():
     left, top, width, height = theme.CANVAS
     assert (left, top) == (0.26, 0.65)
     assert left + width <= 7.24
-    assert top + height <= 5.10
+    # 0.65 + 4.45 is not exactly 5.10 in IEEE 754 binary floating point; allow 1e-9 tolerance
+    assert top + height <= 5.10 + 1e-9
 
 
 def test_palette_exact_values():
