@@ -1,0 +1,311 @@
+\section{The tool boundary}
+\label{sec:boundary}
+
+\begin{upshot}
+\item \textbf{A tool contract spans the model-facing definition and the runtime's enforcement.} The
+  provider's schema carries the name, the description and the argument types; the result type, the
+  effect class and the execution constraints live in code we write and are enforced there.
+\item \textbf{A model response establishes that a tool was requested, not that one ran.} The
+  evidence that a function was entered is the runtime's own record of entering it.
+\item \textbf{A refused request and a permitted call that fails are different events with the same
+  shape.} Both become observations the model can read, and only one of them reached the
+  implementation.
+\item \textbf{Interface design changes outcomes with the model held fixed.} The action set, the
+  feedback format and the guardrails have measurable consequences, which puts them in the
+  architecture rather than in the plumbing.
+\end{upshot}
+
+\subsection{The tool contract}
+\label{sec:boundary-contract}
+
+A tool has two faces, and only one of them is visible to the model. The model reads a name, a
+description and an argument schema; the runtime holds the function, the constraints on where it may
+operate, and the decision about what happens when an argument is wrong. Calling the first face the
+tool is the mistake this section is built to prevent.
+
+\begin{definition}[Tool contract]
+\label{def:tool-contract}
+We use \emph{tool contract} for the complete specification of one tool. It has five parts: i) the
+name and purpose, ii) the typed arguments and their constraints, iii) the typed success result and
+the error representation, iv) the side-effect class, and v) the execution constraints. The
+side-effect class is read-only inspection of source for two of our three tools, and the execution
+constraint on all three is the directory they may touch. The model-facing definition covers the
+first two parts. The other three are properties of the implementation and its dispatcher, and a
+model that has read the description knows nothing about them.
+\end{definition}
+
+Our three tools make the contract concrete. \demoref{read\_file} takes a path and an optional line
+range and returns text; \demoref{search} takes a pattern and an optional glob and returns matching
+lines with their locations; \demoref{edit} replaces an exact string in a file. All three take the
+workspace root as their first parameter and resolve every path through it, and none of them can
+write outside that root.
+
+The signature is the contract, which decides where configuration goes. Tools read the run's
+configuration from the module rather than accepting it as a parameter, because the dispatcher
+validates the model's arguments by binding them against the signature, so \textbf{every parameter
+in a tool's signature is a value the model is permitted to supply}. A \demoref{config} parameter
+would be bindable, and a bindable parameter is one the model can set. The workspace root is a
+parameter, and it is the dispatcher that supplies it; the model never sees it in the schema and
+cannot pass it.
+
+\subsection{The dispatch cycle}
+\label{sec:boundary-dispatch}
+
+Between a model's request and a result there are five operations, and each of them can end the
+cycle. \Cref{fig:dispatch-cycle} follows one request through all of them.
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/dispatch-cycle.tikz}
+  \caption{One dispatch. The name is resolved against the registry and the arguments are bound
+  against the signature; the path is resolved inside the workspace root; the function runs. Every
+  path in the drawing produces an observation, which is what allows a run to continue after a
+  request the runtime would not carry out.}
+  \label{fig:dispatch-cycle}
+\end{figure}
+
+\bi
+
+\item \textbf{Resolve the name.} A request naming a tool that is not in the registry is refused, and
+the refusal names the tools that do exist. The registry is built from the tool enumeration, so
+there is one list and no way for a tool to be advertised to the model without being registered.
+
+\item \textbf{Bind the arguments.} The dispatcher binds the model's arguments against the function's
+signature before calling it, which turns a wrong argument name into a readable refusal instead of a
+\demoref{TypeError} raised from somewhere inside the tool. Binding checks names and arity and not
+types, so unambiguous type mismatches are coerced rather than spending a model call to complain
+about a string where an integer was wanted.
+
+\item \textbf{Check the policy.} Every path argument is resolved inside the workspace root, and a
+path that resolves outside it is refused before any file is opened.
+
+\item \textbf{Execute.} The function runs with the validated arguments and the dispatcher's
+workspace root.
+
+\item \textbf{Observe.} Success and failure alike become an \demoref{Observation} carrying the tool,
+the arguments, an \demoref{ok} flag and a string result, and the dispatcher writes a
+\demoref{tool\_result} event either way.
+
+\ei
+
+A refusal is an observation and not an exception, and the difference is what keeps the loop of
+\cref{sec:reactive} alive. An exception ends the run; an observation goes back to the model, which
+reads what went wrong and chooses again. When \demoref{edit} refuses an ambiguous target the model
+retries with more context, and a run that raised instead would die on its first imprecise edit.
+Exceptions stay for the genuinely unrecoverable, such as a trace that cannot be written.
+
+\subsection{What the model saw, and what ran}
+\label{sec:boundary-artifacts}
+
+The same tool call leaves traces in six places, and they support different claims.
+\Cref{tab:boundary-artifacts} follows the \demoref{read\_file} call of the recorded run through all
+of them.
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabularx}{\linewidth}{@{}p{0.21\linewidth}p{0.30\linewidth}X@{}}
+    \toprule
+    \textbf{Artifact} & \textbf{What it contains} & \textbf{What it establishes} \\
+    \midrule
+    Model input & The tool definitions and the conversation so far. & Which operations were
+      offered, and on what description. \\
+    Model response & A tool call with an identifier, a name and arguments. & That the model
+      requested an operation. Nothing more. \\
+    \demoref{tool\_request} event & The tool name and the arguments as the dispatcher received
+      them. & That the request reached the dispatcher and the cycle began. \\
+    Dispatcher & Registry lookup, argument binding, path resolution. & That the request satisfied
+      the contract, or the reason it did not. \\
+    \demoref{tool\_result} event & \demoref{ok=true}, 1,665 characters. & That the function ran and
+      returned, and how much text came back. \\
+    State and next input & One record appended to \demoref{observations}, one tool message appended
+      to \demoref{messages}. & What the next model call was allowed to see. \\
+    \bottomrule
+  \end{tabularx}
+  \caption{One \demoref{read\_file} call on \demoref{testcode/BenchmarkTest00283.py} through the
+  artifacts it leaves, from \demoref{runs/v1-bc284c6b.jsonl}, steps 3 and 4. The provider's raw
+  request stays in the message history; the trace records the dispatcher's view of it.}
+  \label{tab:boundary-artifacts}
+\end{table}
+
+The second and fifth rows are the pair worth separating. A model response containing a tool call is
+evidence about the model and not about the file system, and a transcript that shows a request
+followed by a plausible-looking result establishes nothing on its own, because both were produced by
+the model. The runtime's \demoref{tool\_result} event is what establishes that the function was
+entered, and it is our record rather than the model's.
+
+The demonstration is sequential on purpose. When a model returns several tool calls in one
+response, the dispatcher runs them one at a time and returns one observation for each, including
+the ones that failed, because a tool call left without an answer makes the next model message
+malformed.
+
+\subsection{The interface is a design decision}
+\label{sec:boundary-aci}
+
+The action set and the shape of the feedback are not conveniences around the real system; they move
+outcomes. SWE-agent is the clearest evidence for that, because it holds the model fixed and varies
+the interface.
+
+\begin{definition}[Agent-computer interface]
+\label{def:aci}
+An agent-computer interface is ``an abstraction layer between the LM agent and
+computer''~\citep{yang2024sweagent}, which ``specifies both the commands available to the LM and how
+the environment state is communicated back to the LM''~\citep[\S2]{yang2024sweagent}.
+\end{definition}
+
+Four principles come out of that work, and each has a counterpart in our dispatcher. Actions are
+simple and few; important operations are consolidated so that one action makes real progress;
+feedback is informative and concise; and guardrails catch the mistakes models make, so that an error
+does not propagate through the turns that follow \citep[\S2]{yang2024sweagent}. With GPT-4 Turbo, the resulting system resolves 12.47\%
+of the 2,294 SWE-bench test instances, against 3.8\% for the previous best non-interactive
+retrieval-augmented system, and the same interface carries to another model, with Claude 3 Opus
+resolving 10.5\% \citep[\S1]{yang2024sweagent}.
+
+The ablations of the interface bear on design decisions rather than on leaderboards
+(\cref{tab:boundary-aci}).
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabularx}{\linewidth}{@{}p{0.17\linewidth}p{0.27\linewidth}rX@{}}
+    \toprule
+    \textbf{Component} & \textbf{Variant} & \textbf{Resolved} & \textbf{Change} \\
+    \midrule
+    \multicolumn{2}{@{}l}{SWE-agent, as configured} & 18.0 & \\
+    Editor & edit action without linting & 15.0 & $-3.0$ \\
+           & no edit action at all & 10.3 & $-7.7$ \\
+    Search & iterative search & 12.0 & $-6.0$ \\
+           & no search tools & 15.7 & $-2.3$ \\
+    File viewer & 30-line window & 14.3 & $-3.7$ \\
+                & whole file & 12.7 & $-5.3$ \\
+    Context & full history & 15.0 & $-3.0$ \\
+            & no demonstration & 16.3 & $-1.7$ \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Percentage of SWE-bench Lite instances resolved under ablations of the interface, with
+  the base model held fixed. Table~3 of \citet{yang2024sweagent}.}
+  \label{tab:boundary-aci}
+\end{table}
+
+Two readings of that table are worth separating. It supports the claim that interface choices move
+outcomes by several points each, and the largest gap, 7.7 points between having an edit action and
+not having one, is larger than the gap between many published systems. It does not support a
+general ranking of interfaces, because every row varies one component of one system, evaluated on a
+300-instance subset with a single base model; a variant that helps this agent with this model on
+these instances may not transfer. The row worth dwelling on is the search comparison, where an
+interface that returns results one at a time scores below having no search tool at all, 12.0 against
+15.7: a well-intentioned interface can be worse than nothing when it invites the model to work
+through every match in turn.
+
+\subsection{Execution authority}
+\label{sec:boundary-authority}
+
+Everything in Part~B converges on one sentence, and it is worth stating plainly: the model proposes,
+the runtime executes, and the runtime may refuse. What makes that more than a slogan is that each
+clause names a component we can point at, and each component sits on the path the request has to
+travel.
+
+Two different distinctions hide inside the word ``control'', and they come apart under pressure.
+
+\bi
+
+\item \textbf{Decision timing and ownership.} Some choices are fixed when we write the program and
+others are computed while it runs, which is the question of \cref{sec:agents-mapping}. Timing does
+not tell us who owns a choice: a routing function that runs at run time is still code we wrote, and
+a limit evaluated mid-run is still our limit.
+
+\item \textbf{Proposal and execution.} A requested action, a claimed result, or a declaration that
+the work is finished becomes effective only by passing through the runtime's execution path. A
+model that writes that it has already run the tests has produced a sentence.
+
+\ei
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabularx}{\linewidth}{@{}Xp{0.42\linewidth}@{}}
+    \toprule
+    \textbf{Guarantee} & \textbf{Where it is enforced} \\
+    \midrule
+    Only registered tools run & The registry built from the tool enumeration, consulted before
+      anything is called. \\
+    Arguments satisfy the contract & Signature binding and coercion in the dispatcher, before the
+      call. \\
+    No file outside the workspace is read or written & \demoref{workspace.resolve}, called by every
+      tool on every path argument. \\
+    Source inspection does not modify the fixture & The tool implementations, which open files for
+      reading, and the pinned commit the diff is taken against. \\
+    An exhausted budget prevents another model call & The controller's check, made before the call
+      is issued. \\
+    A back edge obeys the attempt limit & The routing function and the attempt counter of
+      \cref{sec:control-backedges}. \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Each guarantee of the demo, and the component that enforces it. No row is enforced by a
+  sentence in a prompt.}
+  \label{tab:boundary-authority}
+\end{table}
+
+\demoref{workspace.resolve} is where an ordinary-looking shortcut fails. It resolves both the root
+and the candidate path fully before comparing them, so that \demoref{..} segments collapse and
+symlinks are followed and neither can be used to step outside. Comparing the two resolved paths as strings would look
+equivalent and would not be, because \demoref{/tmp/ws} is a prefix of the unrelated directory
+\demoref{/tmp/ws-evil}. An absolute path in the request lands outside the root when it is joined to
+it, and is refused for that reason rather than honoured.
+
+\subsection{The demo: a refused request}
+\label{sec:boundary-demo}
+
+Waiting for a model to produce a forbidden request is a poor way to demonstrate a boundary, so we
+construct one. Two requests go to the same dispatcher, one after the other: a permitted
+\demoref{read\_file} on the file the alert names, and a \demoref{read\_file} whose path climbs out
+of the workspace. Only the arguments differ.
+
+\bi
+
+\item \textbf{The request.} \demoref{\{"name": "read\_file", "args": \{"path":
+"../../etc/passwd"\}\}}, presented as a constructed request rather than one the model made.
+
+\item \textbf{The check that refuses it.} \demoref{workspace.resolve} raises
+\demoref{PathEscapeException}, the dispatcher catches it, and no file is opened.
+
+\item \textbf{The record.} An observation with \demoref{ok=false} whose result is the refusal
+message, and a \demoref{tool\_result} event carrying the same reason.
+
+\item \textbf{The evidence that nothing ran.} The trace holds a \demoref{tool\_request} event and a
+failed \demoref{tool\_result} event with no successful result between them, and the instrumented
+implementation records no entry.
+
+\ei
+
+Set beside the permitted request, the pair shows the branch: identical tool, identical dispatcher,
+and the argument decides whether execution happens. That is the whole of the ownership question, and
+it is answered in code rather than in a prompt.
+
+\subsection{Exercises}
+
+\begin{enumerate}
+\item Take the six artifacts of \cref{tab:boundary-artifacts} and mark the smallest set that would
+  convince you a file was read. Say what each of the others would still allow to be true.
+\item A tool is added whose signature is \verb|def rescan(ws, path, config)|. Name what the model
+  gains that it did not have before, and give the change that removes it.
+\item In \cref{tab:boundary-aci}, an iterative search interface scores below having no search tool.
+  Name the agent behaviour reported behind that result, and say which of the four design principles
+  it violates.
+\item Our dispatcher refuses a path outside the workspace root. Write the request you would send to
+  test that the check is on the execution path rather than in the prompt, and say which trace event
+  would tell you the check was skipped.
+\end{enumerate}
+
+\subsection{Reading}
+
+Before class: \S\S2--3 and Figure~3 of \citet{yang2024sweagent}, for the interface design principles
+and what the agent actually sees, and Table~3 for the ablations of \cref{tab:boundary-aci}.
+
+For reference while writing HW1: \citet{anthropic-tooluse} for the exact request and result
+representation a provider emits and expects, and \demoref{dispatch.py} and \demoref{workspace.py}
+for the checks that stand between the two.
+
+\paragraph{Looking ahead.} Part~A asked which decisions we fix at design time, and Part~B has given
+the machinery that carries them: a record with one reducer per field, routers and limits that read
+that record, and a dispatcher that decides what a request is allowed to do. HW1 uses the same
+fixture and the same tools for triage rather than repair. The question it puts to you is the one
+these notes have been working toward: for every decision your agent makes, name the component that
+made it and the artifact that proves it.

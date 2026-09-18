@@ -1,0 +1,39 @@
+% Agentless as three phases in a fixed order, redrawn in the deck palette after Figure 1 of
+% Xia et al. (FSE 2025). The point of the picture is that the arrows only ever run left to right.
+\begin{tikzpicture}[x=1cm, y=1cm, font=\small, text=navy,
+  phase/.style={rounded corners=5pt, draw=navy, line width=1pt, align=left,
+                inner sep=8pt, text width=4.7cm, minimum height=3.6cm, anchor=north west},
+  term/.style={rounded corners=3pt, draw=navy, line width=0.9pt, fill=white, align=center,
+               minimum width=2.1cm, minimum height=1.1cm},
+  fl/.style={-{Stealth[length=2.8mm]}, line width=1.2pt, draw=navy},
+  cnt/.style={font=\scriptsize, text=navy!70, align=center}]
+
+  \node[term] (in) at (0,0) {Issue\\+ repository};
+
+  \node[phase, fill=dblue!12] (p1) at (1.75,1.8)
+    {{\bfseries Localization}\\[5pt]
+     Repository structure\\{\scriptsize\color{navy!70}names only $\rightarrow$ top 3 files}\\[4pt]
+     File skeletons\\{\scriptsize\color{navy!70}headers, no bodies $\rightarrow$ elements}\\[4pt]
+     Element source\\{\scriptsize\color{navy!70}$\rightarrow$ edit locations}};
+
+  \node[phase, fill=dred!10] (p2) at (7.45,1.8)
+    {{\bfseries Repair}\\[5pt]
+     Each set of edit locations, widened by ten lines either side\\[4pt]
+     4 location sets $\times$ 10 samples\\{\scriptsize\color{navy!70}= 40 candidate patches}\\[4pt]
+     Search/replace edits\\{\scriptsize\color{navy!70}the model never writes the file}};
+
+  \node[phase, fill=dteal!10] (p3) at (13.15,1.8)
+    {{\bfseries Patch validation}\\[5pt]
+     A generated reproduction test\\[4pt]
+     Candidates run against it and against
+     the repository's own tests\\[4pt]
+     Survivors ranked by frequency\\{\scriptsize\color{navy!70}the runtime chooses, not the model}};
+
+  \node[term] (out) at (19.7,0) {Submitted\\patch};
+
+  \draw[fl] (in.east) -- (1.75,0);
+  \draw[fl] (6.45,0) -- (7.45,0);
+  \draw[fl] (12.15,0) -- (13.15,0);
+  \draw[fl] (17.85,0) -- (out.west);
+
+\end{tikzpicture}

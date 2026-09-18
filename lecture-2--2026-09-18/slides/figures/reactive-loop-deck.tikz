@@ -1,0 +1,43 @@
+% The graph lec2_reactive_agent compiles, laid out wide for a slide.
+% Three nodes. Solid edges are unconditional add_edge calls; dashed edges carry a predicate.
+\begin{tikzpicture}[x=1cm, y=1cm, font=\small, text=navy,
+  st/.style={rounded corners=4pt, draw=navy, line width=1pt, align=center,
+             minimum width=3.4cm, minimum height=1.5cm, inner sep=4pt},
+  mst/.style={st, fill=dblue!14},
+  rst/.style={st, fill=black!7},
+  fl/.style={-{Stealth[length=2.8mm]}, line width=1.2pt, draw=navy},
+  bk/.style={-{Stealth[length=2.6mm]}, line width=1pt, draw=navy, dashed},
+  ev/.style={font=\footnotesize, align=center, inner sep=2.5pt, fill=white},
+  who/.style={font=\scriptsize, text=navy!65}]
+
+  \def\sub#1{\\[-1pt]{\scriptsize\color{navy!70}#1}}
+  \def\by#1{\\[-1pt]{\scriptsize\color{navy!65}by the #1}}
+
+  \node[circle, fill=navy, inner sep=2.4pt] (start) at (-3.4,0) {};
+  \node[font=\footnotesize\bfseries, above=3pt of start] {Start};
+
+  \node[mst] (ctrl)  at (0,0)    {\textbf{controller}\sub{one model call}};
+  \node[rst] (tools) at (0,3.0)  {\textbf{tools}\sub{validate, execute, observe}};
+  \node[rst] (sub)   at (5.8,0)  {\textbf{submit}\sub{three checks}};
+  \node[circle, draw=navy, line width=1pt, inner sep=3.2pt] (end) at (10.4,0)
+        {\tikz\node[circle, fill=navy, inner sep=2.2pt]{};};
+  \node[font=\footnotesize\bfseries, above=3pt of end] {End};
+
+  \draw[fl] (start) -- (ctrl);
+
+  % the cycle: out on a predicate, back unconditionally
+  \draw[bk] (ctrl.north west) to[bend left=32]
+        node[ev, left=1pt, pos=0.55]{tool call emitted\by{model}} (tools.south west);
+  \draw[fl] (tools.south east) to[bend left=32]
+        node[ev, right=1pt, pos=0.45]{observation} (ctrl.north east);
+
+  \draw[bk] (ctrl) -- node[ev]{no tool call\by{model}} (sub);
+  \draw[bk] (sub) -- node[ev]{accepted} (end);
+
+  \draw[bk] (sub.south) to[out=-115, in=-65, looseness=0.9]
+        node[ev, pos=0.5]{rejected\sub{feedback}} (ctrl.south);
+
+  \draw[bk] (ctrl.south west) to[out=-150, in=-120, looseness=0.75]
+        node[ev, pos=0.22, below]{budget exhausted, or no progress\by{runtime}}
+        ([yshift=-4mm]end.south) to[out=60, in=-60] (end.south east);
+\end{tikzpicture}

@@ -1,0 +1,43 @@
+% Figure 15 of the notes (fig:control-graph), redrawn for a slide: the complete serial graph with
+% both back edges. Dashed edges are the two returns; the upper one revises a plan inside an
+% attempt, the lower one runs the reflection step and begins a new attempt.
+\begin{tikzpicture}[x=1cm, y=1cm, font=\small, text=navy,
+  st/.style={rounded corners=4pt, draw=navy, line width=1pt, align=center,
+             minimum width=3.6cm, minimum height=1.5cm, inner sep=4pt},
+  mst/.style={st, fill=dblue!14},
+  rst/.style={st, fill=black!7},
+  term/.style={st, fill=white, minimum width=3.2cm, minimum height=1.2cm},
+  fl/.style={-{Stealth[length=2.8mm]}, line width=1.2pt, draw=navy},
+  bk/.style={-{Stealth[length=2.6mm]}, line width=1pt, draw=navy, dashed},
+  ev/.style={font=\footnotesize, align=center, inner sep=2.5pt, fill=white}]
+
+  \def\sub#1{\\[-1pt]{\scriptsize\color{navy!70}#1}}
+
+  \node[circle, fill=navy, inner sep=2.4pt] (start) at (-2.6,0) {};
+  \node[font=\footnotesize\bfseries, above=3pt of start] {Input};
+
+  \node[mst] (plan) at (0.9,0)   {\textbf{plan}\sub{propose or revise subgoals}};
+  \node[mst] (exec) at (6.3,0)   {\textbf{executor}\sub{the reactive loop}};
+  \node[mst] (val)  at (11.7,0)  {\textbf{validate}\sub{accept or reject}};
+  \node[term] (out) at (16.8,0)  {\textbf{accepted}};
+
+  \node[mst] (refl)  at (11.7,-3.6) {\textbf{reflect}\sub{write guidance}};
+  \node[rst] (reset) at (6.3,-3.6)  {\textbf{reset attempt}\sub{retain guidance}};
+  \node[term] (stop) at (16.8,-3.6) {\textbf{unresolved}};
+
+  \draw[fl] (start) -- (plan);
+  \draw[fl] (plan) -- (exec);
+  \draw[fl] (exec) -- (val);
+  \draw[fl] (val)  -- node[ev, above] {accept} (out);
+
+  \draw[bk] (exec.north) to[out=125, in=55]
+    node[ev, above] {planned step failed\\after the free retry} (plan.north);
+
+  \draw[fl] (val) -- node[ev, left, pos=0.42, align=right]
+    {reject;\\another attempt\\allowed} (refl);
+  \draw[fl] (refl) -- (reset);
+  \draw[bk] (reset) -- (plan);
+
+  \draw[fl] (val.south east) to[out=-45, in=135]
+    node[ev, pos=0.62, align=center] {reject; attempt\\limit reached} (stop.north west);
+\end{tikzpicture}

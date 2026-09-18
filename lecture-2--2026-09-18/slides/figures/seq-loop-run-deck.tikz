@@ -1,0 +1,52 @@
+% One recorded run of the demo: runs/v1-bc284c6b.jsonl. Deck palette, spacing compressed and
+% participants pushed apart so the figure is landscape enough for a slide.
+\begin{tikzpicture}[x=1cm, y=1cm, text=navy,
+  head/.style={rounded corners=4pt, draw=navy, line width=0.9pt, align=center,
+               minimum width=4.2cm, minimum height=1.1cm, font=\footnotesize},
+  life/.style={draw=navy!40, dashed},
+  act/.style={-{Stealth[length=2.6mm]}, line width=1.4pt, draw=dblue},
+  run/.style={-{Stealth[length=2.6mm]}, line width=1.4pt, draw=navy!70},
+  ret/.style={-{Stealth[length=2.6mm]}, line width=1.4pt, draw=navy!45, dashed},
+  per/.style={-{Stealth[length=2.6mm]}, line width=1.4pt, draw=dred},
+  msg/.style={font=\scriptsize, fill=white, inner sep=1.8pt, align=center},
+  turn/.style={font=\scriptsize, text=navy!65, fill=white, inner sep=2pt},
+  fin/.style={rounded corners=3pt, draw=navy!55, fill=black!5, font=\scriptsize,
+              align=center, inner sep=4pt}]
+
+  \def\C{0} \def\R{7.0} \def\W{14.0}
+  \node[head, fill=dblue!14] (c) at (\C,0) {\textbf{Controller}\\{\scriptsize the model decides}};
+  \node[head, fill=black!7]  (r) at (\R,0) {\textbf{Runtime}\\{\scriptsize executes, checks}};
+  \node[head, fill=white]    (w) at (\W,0) {\textbf{Workspace}\\{\scriptsize the pinned fixture}};
+  \draw[life] (c.south) -- (\C,-12.0);
+  \draw[life] (r.south) -- (\R,-12.0);
+  \draw[life] (w.south) -- (\W,-12.0);
+
+  % turn 1
+  \node[turn, anchor=west] at (\C-1.9,-0.85) {0\,s \quad in 914, out 49};
+  \draw[act] (\C,-1.45) -- (\R,-1.45) node[msg, midway, above]{\texttt{read\_file(testcode/BenchmarkTest00283.py)}};
+  \draw[run] (\R,-1.97) -- (\W,-1.97) node[msg, midway, above]{execute};
+  \draw[ret] (\W,-2.49) -- (\R,-2.49) node[msg, midway, above]{1{,}665 chars};
+  \draw[per] (\R,-3.01) -- (\C,-3.01) node[msg, midway, above]{observation};
+
+  % turn 2
+  \node[turn, anchor=west] at (\C-1.9,-3.65) {20\,s \quad in 1{,}464, out 176};
+  \draw[act] (\C,-4.25) -- (\R,-4.25) node[msg, midway, above]{\texttt{read\_file(helpers/db\_sqlite.py)}};
+  \draw[run] (\R,-4.77) -- (\W,-4.77) node[msg, midway, above]{execute};
+  \draw[ret] (\W,-5.29) -- (\R,-5.29) node[msg, midway, above]{1{,}826 chars};
+  \draw[per] (\R,-5.81) -- (\C,-5.81) node[msg, midway, above]{observation};
+
+  % turn 3
+  \node[turn, anchor=west] at (\C-1.9,-6.45) {37\,s \quad in 2{,}196, out 154};
+  \draw[act] (\C,-7.05) -- (\R,-7.05) node[msg, midway, above]{\texttt{edit(testcode/BenchmarkTest00283.py, \ldots)}};
+  \draw[run] (\R,-7.57) -- (\W,-7.57) node[msg, midway, above]{execute};
+  \draw[ret] (\W,-8.09) -- (\R,-8.09) node[msg, midway, above]{47 chars};
+  \draw[per] (\R,-8.61) -- (\C,-8.61) node[msg, midway, above]{observation};
+
+  % turn 4: no tool call, so the runtime submits
+  \node[turn, anchor=west] at (\C-1.9,-9.25) {46\,s \quad in 2{,}381, out 64};
+  \draw[act] (\C,-9.85) -- (\R,-9.85) node[msg, midway, above]{no tool call, so the run is finished};
+  \draw[run] (\R,-10.37) -- (\W,-10.37) node[msg, midway, above]{rescan};
+  \node[fin, anchor=west] at (\R-3.4,-11.15)
+        {\texttt{applies}\,=\,true \quad \texttt{touches\_line}\,=\,true \quad \texttt{rescan\_clean}\,=\,true};
+  \node[turn, anchor=west] at (\R-3.4,-11.75) {routed to \texttt{accepted}, by the runtime};
+\end{tikzpicture}

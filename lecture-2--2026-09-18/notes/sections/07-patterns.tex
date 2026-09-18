@@ -1,0 +1,252 @@
+\section{Other agent design patterns}
+\label{sec:patterns}
+\paragraph{Learning objectives.}
+After this section you will be able to name the design patterns in Google Cloud's guide
+\citep{google2026patterns} and sort them by one criterion: whether a model or predefined
+logic decides which agent runs next. You will be able to state, for the coordinator,
+hierarchical decomposition, parallel, and review-and-critique patterns, what changes in
+task ownership, state boundaries, model-call overhead, latency, failure propagation, and
+inspectability relative to the serial agent of \cref{sec:reflection}. And you will be able
+to answer the question that closes the block: given forty alerts, a fixed per-alert budget,
+and an evidence requirement, which of the five versions you would deploy, and which axis decides it.
+
+\subsection{The problem the reading addresses}
+
+The serial agent built in \cref{sec:fixed,sec:reactive,sec:planning}
+is one point in a design space, and the space has names. The guide this section uses is
+supplementary engineering reading rather than study material: it is a vendor's
+architecture-center page, last updated 2026-05-28, whose purpose is to help a team choose
+an orchestration shape for a workload. It is cited here for two reasons. It names the
+patterns that appear in framework documentation and in job descriptions, so students will
+meet them. And its own classification of the patterns rests on the question this block has
+asked at every version: does a model orchestrate, or does predefined logic?
+
+The guide opens with four requirements it says a team must settle before choosing. Does the
+task decompose into predefined workflow steps, or is it open-ended and in need of a model to
+orchestrate? Does the workload prioritize fast responses, or can it tolerate delay for
+accuracy? What is the inference budget, and does it support several model calls per
+request? Are decisions high-stakes enough to need a person in the loop? It
+adds a caution the course endorses: a predictable, structured workload that a single model
+call can serve does not need an agentic system at all. Those four questions are the
+syllabus's axes in a vendor's words, and \cref{tab:patterns-axes} returns to them.
+
+\subsection{Mechanism}
+
+The guide describes twelve patterns. \Cref{tab:patterns-catalogue} lists them with the one
+property this course cares about first, the orchestration decision, and the tradeoff the
+guide itself states for each. Three of the multi-agent patterns (sequential, parallel,
+loop) are run by what the guide calls \emph{workflow agents}, which operate on predefined
+logic without consulting a model for orchestration; the coordinator, hierarchical, and
+swarm patterns use a model to route or decompose. The review-and-critique and iterative
+refinement patterns are, in the guide's words, implementations of the loop pattern.
+
+\begin{table}[htbp]
+  \caption{The guide's twelve patterns, sorted by who decides which agent runs next.
+  Tradeoffs are the guide's own statements, paraphrased.}
+  \label{tab:patterns-catalogue}
+  \small
+  \begin{tabularx}{\linewidth}{>{\RaggedRight}p{3.1cm}>{\RaggedRight}p{2.4cm}XX}
+    \toprule
+    Pattern & Orchestrated by & What it is & Tradeoff the guide states \\
+    \midrule
+    Single-agent & The model, within one agent & One model, one tool set, one system prompt; the model plans and picks tools & Degrades as tools and task complexity grow: latency, wrong tool choice, incomplete tasks \\
+    Sequential & Predefined logic & Specialized agents in a fixed linear order; each output is the next input & Lower latency and cost than model orchestration; rigid; cannot skip unneeded steps \\
+    Parallel & Predefined logic & Independent subagents run at once; a gather step synthesizes & Lower latency; higher immediate resource and token use; the gather step must reconcile conflicting results \\
+    Loop & Predefined logic & A sequence of subagents repeats until an exit condition (iteration cap or a state) & Risk of an unbounded loop if the exit condition is wrong or never reached \\
+    Review and critique & Predefined logic (a loop) & A generator produces; a critic evaluates against criteria and approves, rejects, or returns feedback & At least one extra model call per evaluation; latency and cost accumulate with each revision \\
+    Iterative refinement & Predefined logic (a loop) & One or more agents improve a result held in session state until a quality threshold or an iteration cap & Latency and cost per cycle; exit conditions must be designed \\
+    Coordinator & The model & A central agent decomposes the request and dispatches subtasks to specialists & More model calls than a single agent; higher token throughput, cost, and latency \\
+    Hierarchical task decomposition & The model, at several levels & A root agent decomposes; subagents decompose further until workers can execute & Considerable architectural complexity; harder to design, debug, and maintain; many model calls \\
+    Swarm & No central orchestrator; agents hand off to one another & All-to-all communication among specialists; a dispatcher starts the task; an explicit exit condition is required & The most complex and costly; risk of unproductive loops or failure to converge \\
+    Reason and act (ReAct) & The model, within one agent & Thought, action, observation repeated until an answer, an iteration cap, or an error & Higher end-to-end latency than one query; a misleading tool result can propagate to the answer \\
+    Human-in-the-loop & Predefined checkpoints & The agent pauses at a checkpoint and waits for a person to approve, correct, or supply input & Requires building and maintaining the external interaction system \\
+    Custom logic & Code the team writes & Conditional orchestration in code, mixing the other patterns & The team designs, implements, and debugs the whole flow \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Four of these are the ones the lecture discusses, each with the question the teaching plan
+attaches to it.
+
+\begin{description}[style=nextline]
+  \item[Coordinator and specialist routing.] Who selects the worker, what context is passed
+  to it, and who owns the returned result? In the guide's pattern the coordinator is a
+  model call that analyzes the request and routes it; the guide contrasts this with the
+  parallel pattern, whose dispatch is hardcoded.
+  \item[Hierarchical task decomposition.] How are subgoals assigned, and how are partial
+  results integrated? The guide presents this as the coordinator pattern applied
+  recursively, for ambiguous problems that need research, planning, and synthesis.
+  \item[Parallel work.] Which tasks are independent, and what does their eventual join
+  require? The guide's example fans one input out to four specialists and gathers four
+  outputs into one analysis.
+  \item[Review and critique, and iterative refinement.] Where does feedback route control,
+  and what causes the system to stop? The guide's critic can approve, reject, or return
+  the output with feedback; its refinement loop stops at a quality threshold or an
+  iteration cap.
+\end{description}
+
+The guide's own account of the ReAct pattern deserves one sentence, because it differs in
+emphasis from \cref{sec:reactive}: it describes the observation as something the model
+``saves in its memory'', and it lists an error that prevents continuation as a terminating
+condition. Both are correct as descriptions of what a framework does; in this course's
+vocabulary the runtime records the observation and the runtime declares the terminal
+status, and \cref{sec:reactive} said why that ownership matters.
+
+\subsection{Evidence}
+
+The guide reports no experiment, and none is claimed here. What it offers is a comparison
+that sorts the patterns by workload, reproduced in \cref{tab:patterns-comparison}. The
+sorting is useful because it makes the guide's implicit criterion visible: the first group
+is exactly the patterns whose orchestration is predefined, the second is exactly the
+patterns whose orchestration is a model, and the third is the patterns that loop. That is
+the design-time versus run-time question, and the termination question, applied to
+multi-agent systems. The academic papers of \cref{sec:fixed,sec:reactive,sec:planning}
+remain the evidence for what each shape costs and buys; the guide is a map of the names.
+
+\begin{table}[htbp]
+  \caption{The guide's comparison section, by workload type. The characteristics are the
+  guide's, paraphrased.}
+  \label{tab:patterns-comparison}
+  \small
+  \begin{tabularx}{\linewidth}{>{\RaggedRight}p{3.4cm}>{\RaggedRight}p{3.3cm}X}
+    \toprule
+    Workload & Patterns the guide lists & Characteristics the guide gives \\
+    \midrule
+    Deterministic & Sequential; parallel; iterative refinement & Steps known in advance; no model orchestration; a fixed sequence, or independent subtasks, or progressive improvement over cycles \\
+    Dynamic orchestration & Single agent; coordinator; hierarchical decomposition; swarm & The system plans, delegates, and coordinates without a script; higher latency and cost from the orchestrating model calls \\
+    Iteration & ReAct; loop; review and critique; iterative refinement & Cycles of refinement, feedback, and improvement; a distinct validation step; unpredictable latency while waiting for an exit condition \\
+    Special requirements & Human-in-the-loop; custom logic & Human supervision for high-stakes or subjective tasks; branching logic beyond a linear sequence \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Which decisions the programmer made}
+
+\Cref{tab:patterns-axes} takes the four selected patterns and asks what each would change
+about the serial agent, axis by axis. The serial agent is the reference row: one process,
+one state record, one investigation at a time, model calls bounded by the attempt limit
+and the overall execution limit, failures contained within an attempt, and a trace that is
+one sequence.
+
+\begin{table}[htbp]
+  \caption{What each pattern changes relative to the serial agent of \cref{sec:reflection}.}
+  \label{tab:patterns-axes}
+  \small
+  \begin{tabularx}{\linewidth}{>{\RaggedRight}p{2.5cm}XXXX}
+    \toprule
+    Axis & Coordinator & Hierarchical & Parallel & Review and critique \\
+    \midrule
+    Task ownership & The coordinator owns the task and delegates pieces; the specialist owns only its piece & Ownership is nested; each level owns the decomposition it made & Each worker owns one independent piece; the gather step owns the whole & Unchanged: the generator owns the candidate, the critic owns acceptance \\
+    State boundaries & The coordinator's context and each specialist's are separate; what crosses is what the coordinator passes & A state boundary per level; partial results cross upward & One state record per worker; the join reads all of them & Unchanged: one record; the critic's reasons are added to it \\
+    Model-call overhead & One routing call per request plus the specialists' calls & Multiplied by the depth of the hierarchy & The sum of the workers' calls, run concurrently & One evaluator call per candidate, plus revisions \\
+    Latency & The routing call is on the critical path & Each level adds a round trip & Reduced to the slowest worker plus the join & Each revision adds a round trip \\
+    Failure propagation & A misrouted task fails in the wrong specialist; the coordinator may not notice & A wrong decomposition propagates down and its cost multiplies & Contained per worker until the join, where a missing piece blocks the whole & A critic that accepts a wrong candidate passes it on; one that rejects a right one costs a revision \\
+    Inspectability & The routing decision and its reasons are in the trace, if recorded & Traces nest; which level decided what must be recoverable & Traces interleave; which worker wrote what must be recoverable & Improved: acceptance carries reasons \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Three things the table makes visible are worth stating. The two patterns that use a model
+to orchestrate (coordinator, hierarchical) move a control decision from design time to run
+time. Everything the course said about the loop applies to that decision: it is adaptive, its
+cost is not known in advance, and it must be recorded to be inspected. The parallel
+pattern changes no control decision at all; it changes who runs when, and its whole cost
+is at the join. That is Unit 2's subject, and HW2's. And the review-and-critique pattern is
+not new: it is the validator and the reflection step under another name. The guide's own tradeoff
+statement, that latency and cost accumulate with each revision, is the reason
+\cref{sec:reflection} put an attempt limit and an overall execution limit on the loop.
+
+\subsection{The demo}
+
+There is no sixth version. The demonstration for this section is to take the serial graph
+of \cref{sec:reflection} and say, for each selected pattern, which node would split and
+which edge would appear.
+
+\begin{itemize}
+  \item \textbf{Coordinator.} The planner becomes a router. Instead of producing a plan
+  for one executor, it selects among executors specialized by alert kind, and the edge from
+  the planner fans out to whichever it chose. Task ownership passes to the chosen executor
+  for the duration of its run and returns to the router with the candidate finding. The
+  routing decision is a model call and must be traced as one.
+  \item \textbf{Hierarchical decomposition.} The planner's subgoals stop being advisory
+  entries in one state record and become dispatched tasks, each with its own executor and
+  its own state. A new join node integrates the partial results before the validator sees a
+  candidate. The graph gains a level, and so does the trace.
+  \item \textbf{Parallel work.} Nothing inside the serial agent changes. Around it, forty
+  alerts fan out to forty instances of the same graph, and a report node joins their
+  findings. The join is where independence must be checked: two alerts that share a helper
+  file are not independent in their evidence, only in their verdicts. This is HW1's report
+  stage and, with bounded concurrency, HW2's experiment.
+  \item \textbf{Review and critique; iterative refinement.} Already present. The validator
+  is the critic, the reflection node and the reset are the refinement, and the two limits
+  are the exit conditions. The one change the guide's version would make is to let the
+  critic return feedback to the same generator without a reset; \cref{sec:reflection} said
+  why this course resets the attempt and retains only the guidance.
+\end{itemize}
+
+\begin{figneeded}{Google Cloud design-pattern diagrams}
+One SVG per pattern on the guide's page \citep{google2026patterns}, content licensed CC BY
+4.0. Credit each as ``Google Cloud Architecture Center, \emph{Choose a design pattern for
+your agentic AI system}, [pattern] diagram, CC BY 4.0.'' Every path below is under
+\url{https://docs.cloud.google.com/static/architecture/images/} and begins with
+\texttt{choose-design-pattern-agentic-ai-system-}.
+\begin{center}\small
+\begin{tabular}{ll}
+  \toprule
+  Pattern & File name suffix \\
+  \midrule
+  Coordinator & \texttt{coordinator.svg} \\
+  Hierarchical task decomposition & \texttt{hierarchical-task.svg} \\
+  Parallel & \texttt{parallel.svg} \\
+  Review and critique & \texttt{review-critique.svg} \\
+  Iterative refinement & \texttt{iterative-refinement.svg} \\
+  ReAct & \texttt{react.svg} \\
+  Loop & \texttt{loop.svg} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+\end{figneeded}
+
+The block closes on the question that has the shape of a midterm question. Given forty
+alerts, a fixed per-alert budget, and a requirement that every verdict carry evidence
+references that resolve: which of the five versions would you deploy, and which of the four axes,
+adaptability, model-call overhead, failure propagation, inspectability, decides it? The
+answer is not in these notes; the argument for it is. The chain cannot follow
+evidence it did not anticipate, so it fails the evidence requirement on any alert whose
+helper delegates. The loop can, at a cost that is not known before the run,
+which the per-alert budget must cap. The validator is what makes the evidence
+requirement checkable rather than hoped for. Whether the reflection step earns its second
+attempt under a fixed budget is an empirical question the trace can answer, and it is the
+question HW1 asks teams that adopt it.
+
+Part A ends here. After the break, Part B takes up the execution machinery that
+\cref{sec:reactive} only pointed at: the state schema and its reducers, transitions and
+conditional routing as predicates over state, terminal states, tool signatures and the
+request, dispatch, observation, state-update cycle, and execution authority.
+
+\subsection{Exercises}
+
+\begin{enumerate}
+  \item Using \cref{tab:patterns-catalogue}, sort the twelve patterns into those where a
+  model decides which agent runs next and those where predefined logic does. For each
+  model-orchestrated pattern, name the trace event that would have to exist for the
+  routing decision to be inspectable.
+  \item The guide lists ``iterative refinement'' under both deterministic workflows and
+  workflows that involve iteration (\cref{tab:patterns-comparison}). Explain, using the
+  distinction between decision timing and decision ownership from \cref{sec:fixed}, why
+  a loop with a fixed exit condition can belong in both.
+  \item Take the parallel row of \cref{tab:patterns-axes}. Two of the forty alerts share
+  one helper file, \demoref{helpers/\allowbreak separate\_request.py}. Say what the join must check
+  before it treats their findings as independent, and what the trace of each instance must
+  record to make that check possible.
+  \item Answer the closing question for a budget that permits, on average, one attempt per
+  alert. Which version do you deploy, which axis decided it, and what single number from
+  a trace would change your answer?
+\end{enumerate}
+
+\subsection{Reading}
+
+Supplementary, cited in lecture: \citet{google2026patterns}, the requirements section, the
+pattern descriptions, and the comparison section. The academic papers of
+\cref{sec:fixed,sec:reactive,sec:planning} and AIMA remain the
+principal study material for this block.

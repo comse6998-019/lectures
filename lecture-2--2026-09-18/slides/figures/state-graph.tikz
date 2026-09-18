@@ -1,0 +1,37 @@
+\begin{tikzpicture}[x=1cm, y=1cm, font=\small, text=navy,
+  st/.style={rounded corners=4pt, draw=navy, line width=0.9pt, align=center,
+             minimum width=4.1cm, minimum height=1.5cm, inner sep=3pt},
+  ctrl/.style={st, fill=dblue!14},
+  tool/.style={st, fill=dteal!14},
+  subm/.style={st, fill=dred!12},
+  ghost/.style={rounded corners=4pt, draw=navy!40, line width=0.6pt, fill=white,
+                minimum width=4.1cm, minimum height=1.5cm},
+  fl/.style={-{Stealth[length=2.6mm]}, line width=0.9pt, draw=navy},
+  ev/.style={align=center, inner sep=2.5pt, fill=white, text=navy, font=\small},
+  note/.style={align=center, inner sep=2pt, text=navy!70, font=\scriptsize}]
+
+  \def\cond#1{\\[-1pt]{\scriptsize\color{navy!70}#1}}
+
+  \node[circle, fill=navy, inner sep=2.6pt] (start) at (-0.4,0) {};
+  \node[note, above=4pt of start, text=navy, font=\small\bfseries] {Start};
+
+  \node[ghost] (t2) at (10.5,0.20) {};
+  \node[ghost] (t1) at (10.4,0.10) {};
+  \node[tool]  (tool) at (10.3,0) {\textbf{Tool}\cond{execute the requested tool}};
+  \node[note, above=9pt of t2] {one node per tool: read, search, edit};
+
+  \node[ctrl] (ctrl) at (3.4,0) {\textbf{Controller}\cond{decide the next action}};
+  \node[subm] (sub)  at (3.4,-3.35) {\textbf{Submit}\cond{validate the submission}};
+  \node[circle, draw=navy, line width=0.9pt, inner sep=3.6pt] (end) at (3.4,-5.85)
+        {\tikz\node[circle, fill=navy, inner sep=2.5pt]{};};
+  \node[note, below=4pt of end, text=navy, font=\small\bfseries] {End};
+
+  \draw[fl] (start) -- (ctrl);
+  \draw[fl] (ctrl.east) -- node[ev, above=1pt]{tool requested\cond{[tool\_name, args]}} (tool.west);
+  \draw[fl] (tool.south) to[out=-90, in=-20, looseness=0.75]
+            node[ev, pos=0.52]{tool finished\cond{[observation]}} (ctrl.south east);
+  \draw[fl] (ctrl.south) -- node[ev, left=1pt, pos=0.52]{submission requested\cond{[patch]}} (sub.north);
+  \draw[fl] (sub.west) to[out=178, in=192, looseness=1.7]
+            node[ev, left=2pt, pos=0.5]{rejected\cond{[feedback]}} (ctrl.south west);
+  \draw[fl] (sub.south) -- node[ev, right=3pt]{accepted} (end.north);
+\end{tikzpicture}
