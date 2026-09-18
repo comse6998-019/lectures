@@ -1,0 +1,91 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{Recap}{3}{part*.1}%
+\contentsline {section}{\numberline {1}Intelligent agents}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Rational agents}{3}{subsection.1.1}%
+\contentsline {subsubsection}{\numberline {1.1.1}The running example: \texttt {mini-swe-agent}{}}{4}{subsubsection.1.1.1}%
+\contentsline {subsubsection}{\numberline {1.1.2}Is this a rational agent?}{5}{subsubsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.2}The task environment}{6}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Properties of task environments}{6}{subsection.1.3}%
+\contentsline {subsubsection}{\numberline {1.3.1}Fully observable vs.\ partially observable}{6}{subsubsection.1.3.1}%
+\contentsline {subsubsection}{\numberline {1.3.2}Single-agent vs.\ multiagent}{6}{subsubsection.1.3.2}%
+\contentsline {subsubsection}{\numberline {1.3.3}Deterministic vs.\ nondeterministic}{7}{subsubsection.1.3.3}%
+\contentsline {subsubsection}{\numberline {1.3.4}Episodic vs.\ sequential}{7}{subsubsection.1.3.4}%
+\contentsline {subsubsection}{\numberline {1.3.5}Static vs.\ dynamic}{7}{subsubsection.1.3.5}%
+\contentsline {subsubsection}{\numberline {1.3.6}Discrete vs.\ continuous}{7}{subsubsection.1.3.6}%
+\contentsline {subsubsection}{\numberline {1.3.7}Known vs.\ unknown}{7}{subsubsection.1.3.7}%
+\contentsline {subsection}{\numberline {1.4}Where the vocabulary lives in \texttt {mini-swe-agent}{}}{7}{subsection.1.4}%
+\contentsline {subsection}{\numberline {1.5}Exercises}{8}{subsection.1.5}%
+\contentsline {subsection}{\numberline {1.6}Reading}{8}{subsection.1.6}%
+\contentsline {paragraph}{Looking ahead.}{9}{subsection.1.6}%
+\contentsline {section}{\numberline {2}Fixed workflows}{9}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Control decisions and content decisions}{9}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}What we gain and what we lose}{10}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}What we gain}{10}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2}What we lose}{10}{subsubsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.3}Agentless, one realization}{10}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Exercises}{12}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Reading}{12}{subsection.2.5}%
+\contentsline {paragraph}{Looking ahead.}{13}{subsection.2.5}%
+\contentsline {section}{\numberline {3}Reactive loops}{13}{section.3}%
+\contentsline {subsection}{\numberline {3.1}The action that only changes the context}{13}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}What we gain and what we lose}{14}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}What we gain}{14}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}What we lose}{14}{subsubsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.3}How a reactive loop fails}{14}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}The demo: the loop}{15}{subsection.3.4}%
+\contentsline {paragraph}{One run.}{15}{lstnumber.-4.1}%
+\contentsline {section}{\numberline {4}Planning, validation and reflection}{17}{section.4}%
+\contentsline {subsection}{\numberline {4.1}The plan as a field of state}{17}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Three shapes of planner}{18}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Revising plans}{19}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Does planning make a difference?}{19}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}The proposer and the judge}{20}{subsection.4.5}%
+\contentsline {subsection}{\numberline {4.6}What a model judge can and cannot see}{21}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.7}Why the judge does not decide acceptance}{21}{subsection.4.7}%
+\contentsline {subsection}{\numberline {4.8}What survives a refusal}{22}{subsection.4.8}%
+\contentsline {subsection}{\numberline {4.9}What we gain and what we lose}{22}{subsection.4.9}%
+\contentsline {subsubsection}{\numberline {4.9.1}What we gain}{23}{subsubsection.4.9.1}%
+\contentsline {subsubsection}{\numberline {4.9.2}What we lose}{23}{subsubsection.4.9.2}%
+\contentsline {subsection}{\numberline {4.10}The demo: the planner and the validator}{23}{subsection.4.10}%
+\contentsline {paragraph}{Two runs.}{23}{figure.caption.18}%
+\contentsline {subsection}{\numberline {4.11}Exercises}{24}{subsection.4.11}%
+\contentsline {subsection}{\numberline {4.12}Reading}{24}{subsection.4.12}%
+\contentsline {paragraph}{Looking ahead.}{25}{subsection.4.12}%
+\contentsline {section}{\numberline {5}Other agent design patterns}{25}{section.5}%
+\contentsline {paragraph}{Learning objectives.}{25}{section.5}%
+\contentsline {subsection}{\numberline {5.1}The problem the reading addresses}{25}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Mechanism}{25}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Evidence}{25}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Which decisions the programmer made}{27}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}The demo}{27}{subsection.5.5}%
+\contentsline {subsection}{\numberline {5.6}Exercises}{28}{subsection.5.6}%
+\contentsline {subsection}{\numberline {5.7}Reading}{28}{subsection.5.7}%
+\contentsline {section}{\numberline {6}The investigation record}{29}{section.6}%
+\contentsline {subsection}{\numberline {6.1}What connects one step to the next}{29}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Model context, runtime state, durable state}{29}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}The record is factored}{30}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Reducers, and what a later step is allowed to see}{31}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}The demo: one tool result becoming state}{31}{subsection.6.5}%
+\contentsline {subsection}{\numberline {6.6}Exercises}{32}{subsection.6.6}%
+\contentsline {subsection}{\numberline {6.7}Reading}{32}{subsection.6.7}%
+\contentsline {paragraph}{Looking ahead.}{32}{subsection.6.7}%
+\contentsline {section}{\numberline {7}Routing, feedback loops, and termination}{32}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Routing is code, not prose}{32}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}The same graph, different paths}{33}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Two returns to the planner}{33}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}What actually stops a loop}{33}{subsection.7.4}%
+\contentsline {subsection}{\numberline {7.5}What a trace establishes}{34}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.6}The demo: three endings}{34}{subsection.7.6}%
+\contentsline {subsection}{\numberline {7.7}Exercises}{34}{subsection.7.7}%
+\contentsline {subsection}{\numberline {7.8}Reading}{35}{subsection.7.8}%
+\contentsline {paragraph}{Looking ahead.}{35}{subsection.7.8}%
+\contentsline {section}{\numberline {8}The tool boundary}{35}{section.8}%
+\contentsline {subsection}{\numberline {8.1}The tool contract}{35}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}The dispatch cycle}{35}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}What the model saw, and what ran}{36}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}The interface is a design decision}{36}{subsection.8.4}%
+\contentsline {subsection}{\numberline {8.5}Execution authority}{37}{subsection.8.5}%
+\contentsline {subsection}{\numberline {8.6}The demo: a refused request}{37}{subsection.8.6}%
+\contentsline {subsection}{\numberline {8.7}Exercises}{38}{subsection.8.7}%
+\contentsline {subsection}{\numberline {8.8}Reading}{38}{subsection.8.8}%
+\contentsline {paragraph}{Looking ahead.}{38}{subsection.8.8}%

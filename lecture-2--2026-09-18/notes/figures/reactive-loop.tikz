@@ -1,0 +1,38 @@
+% The DAG the demo compiles, with each component named by the code that implements it.
+% Line numbers are demo/lec2_reactive_agent/graph.py.
+\begin{tikzpicture}[x=1cm, y=1cm,
+  st/.style={gnode, align=center, minimum width=3.1cm, minimum height=1.35cm, inner sep=3pt},
+  mst/.style={st, fill=ibmblue!12},
+  rst/.style={st, fill=black!6},
+  fl/.style={-{Stealth[length=2.4mm]}, thick, draw=ibmfg!85},
+  bk/.style={fl, dashed},
+  ev/.style={font=\sffamily\footnotesize, align=center, inner sep=3pt},
+  pred/.style={font=\ttfamily\scriptsize, text=ibmblue!75!black, align=center, fill=white, inner sep=2.5pt}]
+  \def\cond#1{\\[-1pt]{\footnotesize\color{ibmfg!70}#1}}
+  \def\code#1{\\[0pt]{\ttfamily\scriptsize\color{ibmfg!60}#1}}
+
+  \node[circle, fill=ibmfg, inner sep=2.4pt] (start) at (0,2.1) {};
+  \node[font=\sffamily\footnotesize\bfseries, left=4pt of start] {Start};
+  \node[mst] (ctrl)  at (0,0)       {\textbf{controller}\cond{one model call}\code{controller() 89--122}};
+  \node[rst] (tools) at (-4.1,-3.0) {\textbf{tools}\cond{execute, observe}\code{tools() 142--158}};
+  \node[rst] (sub)   at (4.1,-3.0)  {\textbf{submit}\cond{three checks}\code{submit() 159--178}};
+  \node[circle, draw=ibmfg, thick, inner sep=3.2pt] (end) at (0,-6.0)
+        {\tikz\node[circle, fill=ibmfg, inner sep=2.2pt]{};};
+  \node[font=\sffamily\footnotesize\bfseries, left=4pt of end] {End};
+
+  \draw[fl] (start) -- (ctrl);
+  \draw[bk] (ctrl.west) to[bend right=18]
+        node[ev, auto, swap]{tool call emitted\cond{by the model}} (tools.north);
+  \draw[fl] (tools.north east) to[bend right=18]
+        node[ev, auto, swap]{observation} (ctrl.south west);
+  \draw[bk] (ctrl.east) to[bend left=18]
+        node[ev, auto]{no tool call\cond{by the model}} (sub.north);
+  \draw[bk] (sub.north west) to[bend left=18]
+        node[ev, auto]{rejected\cond{feedback}} (ctrl.south east);
+  \draw[bk] (sub.south) to[bend left=20] node[ev, auto]{accepted} (end.east);
+  \draw[bk] (ctrl.south) -- node[ev, auto, swap, pos=0.8]
+        {budget exhausted,\\or no progress\cond{by the runtime}} (end.north);
+
+  \node[pred, anchor=north] at (0,-1.15) {after\_controller() 179--188};
+  \node[pred, anchor=north west] at (2.2,-4.45) {after\_submit() 189--191};
+\end{tikzpicture}

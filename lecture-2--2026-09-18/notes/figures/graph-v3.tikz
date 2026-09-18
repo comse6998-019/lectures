@@ -1,0 +1,22 @@
+% V3: a validator after the candidate finding. The validator is two nodes inside one dashed box:
+% the runtime's mechanical checks, then one model call. Two outcomes, both terminal; no recovery
+% path yet (V4 adds it). The in-run revision edge from V2 is kept.
+\begin{tikzpicture}[node distance=9mm and 4mm]
+  \node[tnode] (in) {Input};
+  \node[mnode, right=of in] (plan) {plan\\agent};
+  \node[mnode, right=of plan] (exec) {reactive\\executor};
+  \node[rnode, right=13mm of exec] (checks) {mechanical\\checks};
+  \node[mnode, right=of checks] (assess) {model\\assessment};
+  \node[tnode, align=center, right=9mm of assess] (accept) {Output:\\finding released};
+  \node[tnode, align=center, below=of assess] (reject) {Output: rejected,\\reasons recorded};
+  \node[draw=ibmfg!60, dashed, rounded corners=2pt, inner sep=3pt, fit=(checks)(assess),
+        label={[font=\sffamily\scriptsize]above:validator}] (val) {};
+  \draw[flow] (in) -- (plan);
+  \draw[flow] (plan) -- (exec);
+  \draw[flow] (exec) -- node[lab, below] {candidate\\finding} (checks);
+  \draw[flow] (checks) -- (assess);
+  \draw[flow] (assess) -- node[lab, above] {accept} (accept);
+  \draw[flow] (assess) -- node[lab, right] {reject} (reject);
+  \draw[flow] (checks) |- node[lab, pos=0.25, left] {a check\\fails} (reject);
+  \draw[back] (exec.north) to[out=120, in=60] node[lab, above] {planned step failed\\after retry} (plan.north);
+\end{tikzpicture}

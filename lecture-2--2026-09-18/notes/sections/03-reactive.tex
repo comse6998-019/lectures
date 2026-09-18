@@ -1,0 +1,312 @@
+\section{Reactive loops}
+\label{sec:reactive}
+
+\begin{upshot}
+\item \textbf{Action selection shifts from design time to run time.} In the fixed workflow,
+  the next operation is specified in advance (\cref{tab:fixed-decisions}). In a reactive loop,
+  the model selects the next action conditional on the percept history. The remaining
+  architectural differences follow from this transfer of control.
+\item \textbf{A thought modifies context without affecting the external environment.} The
+  action space is extended to include language. A thought updates the context used for the next
+  decision but produces no external state change or observation feedback.
+\item \textbf{Adaptive evidence collection relinquishes three guarantees.} Unlike a fixed
+  chain, a reactive loop can request additional evidence in response to intermediate observations.
+  This flexibility precludes an exact advance count of model calls, complicates attribution of
+  failure to an individual step, and requires an explicit bound to guarantee termination.
+\item \textbf{Model failures and runtime failures require distinct controls.} The model may
+  repeat prior thoughts and actions without progress or proceed on uninformative observations.
+  A separate runtime failure arises when model-generated content is accepted as an observation.
+  The runtime must therefore retain exclusive write access to the observation channel.
+\end{upshot}
+
+\subsection{The action that only changes the context}
+\label{sec:reactive-loop}
+
+\begin{definition}[Reactive loop]
+\label{def:reactive-loop}
+A \emph{reactive loop} is an agent program in which the model selects the next action from the percepts so far, and the runtime executes that action and returns an observation on which the next selection is conditioned. The action space includes language: ``we augment the agent's action space to $\hat{A} = A \cup L$, where $L$ is the space of language'' \citep[\S2]{yao2023react}, and an action drawn from the language part is a thought, which ``does not affect the external environment, thus leading to no observation feedback''.
+\end{definition}
+
+While a fixed workflow has one shape, a reactive loop has a shape that depends on what comes back from the model.
+
+The cycle has four steps:
+
+\bi
+
+\item \textbf{Decide.} One model call reads the context so far. It returns a thought, a tool
+request, or a submission.
+
+\item \textbf{Dispatch.} The runtime validates the request against the tool's signature and then
+executes it. An invalid request yields an observation rather than a crash.
+
+\item \textbf{Observe.} The runtime writes what the tool returned into state, where the next
+decision will read it. The model never writes this field.
+
+\item \textbf{Route.} A predicate we wrote reads the state and picks one of three successors: to
+Submit if the decision was a submission, to a terminal status if a runtime limit has been reached,
+and back to Decide otherwise. Because that predicate reads only the fields the runtime wrote, the
+model cannot talk the run past those limits.
+
+\ei
+
+\Cref{fig:reactive-loop} is the graph the demo compiles, and it has three nodes rather than four
+steps. Dispatch and Observe both happen inside \demoref{tools}, and Route is the predicate carried
+on the conditional edges rather than a node of its own. A thought passes through the same cycle
+with the middle two steps empty: nothing is dispatched, nothing is observed, and the only thing that changes is
+the context the next decision reads. That is worth being exact about, because a thought still costs
+a model call and still appears in the trace (and in \cref{sec:reflection} it will be the only part
+of a failed attempt that survives).
+
+\Cref{tab:reactive-decisions} puts the decisions of \cref{tab:fixed-decisions} side by side in the
+two architectures. \textbf{The model gains exactly one row, and that row is the whole difference
+between the two sections.}
+
+\begin{table}[htbp]
+  \caption{The same decisions as \cref{tab:fixed-decisions}, in a fixed workflow and in a reactive
+  loop.}
+  \label{tab:reactive-decisions}
+  \small
+  \begin{tabularx}{\linewidth}{Xll}
+    \toprule
+    Decision & Fixed workflow & Reactive loop \\
+    \midrule
+    Which operation runs next & We do, at design time & The model, at run time \\
+    Whether another operation runs after this one & We do, at design time & The model, until a limit fires \\
+    How many model calls the run makes & We do, at design time & Bounded by the budget, otherwise unknown \\
+    What ends the run & We do, at design time & A predicate we wrote over state \\
+    Which artifacts a step reads and writes & We do, at design time & We do, at design time \\
+    What a model call returns & The model & The model \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+The last two rows do not move, and that is the part worth holding on to. We still write the tool
+signatures, the state schema, the routing predicate and the runtime's limits, so the model selects its
+next action from a set we closed in advance. A reactive loop is not an agent we have stopped
+programming; it is an agent whose order of operations we have stopped writing down.
+
+\subsection{What we gain and what we lose}
+\label{sec:reactive-tradeoff}
+
+The loop trades certainty for reach: we can no longer say what a run will do, and the agent can
+now go and get what it needs.
+
+\subsubsection{What we gain}
+Three things come back to us in exchange for the one decision we gave away.
+
+\bi
+
+\item \textbf{Reach.} The agent can act to see. When the flagged line names a helper, the
+model can call \demoref{search}, read what comes back, and only then decide. The chain has no node
+in which to ask that question, and a loop needs no new node, because the edge back is the node.
+
+\item \textbf{Proportion.} The cost of a run now follows the alert: a two-line fix costs two or
+three turns, and a fix that crosses three files costs more. The chain pays the same price for both,
+because we fixed that price at design time.
+
+\item \textbf{Recovery.} An unhelpful observation is no longer fatal, because a search that returns
+nothing can be followed by a different search. The chain carries a bad read all the way to the patch.
+
+\ei
+
+\subsubsection{What we lose}
+The three guarantees of \cref{sec:fixed-tradeoff} go, and they go together.
+
+\bi
+
+\item \textbf{Shape.} We cannot count the cost of a run before it starts, because the model-call
+budget gives us a worst case and nothing more. What we allot to an alert is now an allowance
+against that ceiling rather than a price for the work.
+
+\item \textbf{Address.} A failure is spread over turns, each of which can look reasonable on its
+own while the run still ends in the wrong place, so finding the turn that went wrong means reading
+the whole trajectory.
+
+\item \textbf{Termination.} The run ends because we made it end. The cap guarantees that the run
+stops but not that it finishes, and a run that exhausts its budget has no patch to show for
+itself.
+
+\ei
+
+Two failure modes arrive with the loop, and both belong to the model: it can repeat its own
+previous thought and action without escaping the repetition, and it can act on an observation that
+carries nothing, then treat the next one the same way.
+
+Neither failure is wholly invisible to the program, and a runtime can guard against the degenerate
+case. Ours does: when the last three observations come back with the same result, the run stops
+with the status \demoref{no\_progress} (\cref{sec:reactive-demo}). \textbf{What no rule of that
+kind can catch is a run in which something new comes back every turn and none of it helps.}
+Novelty is observable and progress is not, so the loop counts turns.
+
+That gap is what \cref{sec:planning} exists to fill: a plan held in state gives the run something
+to compare a turn against, and a validator gives it a judge other than the model that proposed the
+work. \Cref{sec:reactive-react} reports how often these failures occur in
+practice.
+
+\subsection{How a reactive loop fails}
+\label{sec:reactive-react}
+
+The reactive loop takes its name from ReAct \citep[\S2]{yao2023react}, which prompts a 
+frozen model with a small number of worked trajectories so that thoughts and actions 
+are produced in a single stream. Here, the agent conditions subsequent reasoning and
+action selection on observations returned by external tools or the environment, rather than
+relying solely on model-generated claims. Such observations, while they provide evidence against which
+claims can be checked, do not guarantee correct interpretation or a correct answer.
+
+Access to external evidence does not eliminate failure; fixed workflows and reactive loops
+exhibit different failure distributions.
+\Cref{tab:agent-failures} summarizes a manual annotation of 150 failed issues on SWE-bench Verified
+across three tools using the same backbone model, Claude 3.5 Sonnet
+\citep[\S3.2, \S6.1]{liu2025issuefailures}. Holding the backbone model fixed removes model identity
+as a source of variation, but does not isolate the causal effect of architecture: the tools may
+also differ in prompts, interfaces, and implementation. The results therefore support a
+descriptive comparison of these systems rather than a causal attribution to architecture alone.
+
+\begin{table}[htbp]
+  \caption{Where failures appear, by architecture. Each share is of that tool's own failed issues,
+  from 150 hand-annotated failures on SWE-bench Verified with one backbone model, Claude 3.5
+  Sonnet \citep[\S6.1]{liu2025issuefailures}.}
+  \label{tab:agent-failures}
+  \small
+  \begin{tabularx}{\linewidth}{llXr}
+    \toprule
+    Tool & Architecture & Stage where the failure appears & Share \\
+    \midrule
+    Agentless-1.5 & Fixed workflow & Localization & 51.3\% \\
+    OpenHands-CodeAct-2.1 & Reactive loop & Iteration and validation & 49.1\% \\
+    Tools + Claude 3.5 Sonnet & Reactive loop & Iteration and validation & 51.7\% \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+A fixed workflow fails where it commits earliest: over half of its failed issues carry a
+localization error, and because no later node can revisit that choice, the remainder of the run
+elaborates a mistake it cannot see. The reactive loops fail instead inside the iteration, a stage
+the fixed workflow does not possess at all, which is to say that the machinery bought in
+\cref{sec:reactive-tradeoff} is also where the new failures live.
+
+Roughly 65\% of the failures in that study originate in flawed reasoning rather than in missing
+information or environmental friction, and within a loop that flaw takes three named shapes
+\citep[\S6.1, \S6.2]{liu2025issuefailures}.
+
+\bi
+
+\item \textbf{Non-progressive iteration.} The tool repeats modification cycles, regenerating
+near-identical patches that differ only trivially while the defect persists. It is a loop that
+runs without going anywhere, and \cref{sec:planning} answers it by giving the run an explicit plan
+against which a turn can be measured.
+
+\item \textbf{Validation retreat.} The tool edits the failing test rather than the code, so that
+the test passes. The proposer is grading its own work, and \cref{sec:validation} answers it by
+handing acceptance to a judge that did not write the patch.
+
+\item \textbf{Context amnesia.} The agent loses its original objective over a long interaction.
+\Cref{sec:reflection} answers it by giving an attempt memory that outlives the run.
+
+\ei
+
+\begin{wrapfigure}{r}{0.6\linewidth}
+  \centering
+  \resizebox{\linewidth}{!}{\input{figures/reactive-loop.tikz}}
+  \caption{The DAG the demo compiles, with every component named by the code that implements it:
+  method and line range in \demoref{demo/lec2\_reactive\_agent/graph.py}. Blue is the only node
+  where a model call decides, grey is runtime work, and the two predicates in blue type are the
+  conditional edges. The one solid edge, from \demoref{tools} back to \demoref{controller}, is
+  what makes the loop a loop.}
+  \label{fig:reactive-loop}
+\end{wrapfigure}
+
+One of the three belongs to us rather than to the model. Unless the runtime owns the observation
+channel, the model will supply the observations itself: ``soliloquizing, where the model self-generates hallucinated observations without interacting with the environment'' \citep{abramovich2025enigma}. It affected 48.4\% of trajectories on one capture-the-flag benchmark with one model, while two other models produced none of it \citep[Table~4]{abramovich2025enigma}. \textbf{The runtime must write the observation field, and the routing predicate must read only the fields the runtime wrote.}
+
+The other two are failures of judgement over a whole run, and they cost more than a wasted turn.
+Failed issues consume roughly 3.5 times as many interaction steps as successful ones, and where
+one tool covers 80\% of its successes within 25 rounds, it requires 54 to cover 80\% of its
+failures \citep[\S4.3, \S6.2]{liu2025issuefailures}. Every rate here comes from a single benchmark
+and a single backbone model, so what transfers is the shape and not the number.
+
+\textbf{A loop cannot tell which of those two runs it is in, because it never wrote down what it
+was trying to do.} It has its own thoughts in the transcript and its observations in state, but
+nothing that says what the next three steps were supposed to achieve, so there is nothing for a
+turn to fall short of. \Cref{sec:planning} puts that intention into state, where the run can be
+measured against it and, when the evidence contradicts it, revised.
+
+\subsection{The demo: the loop}
+\label{sec:reactive-demo}
+
+The loop is a runnable program, \demoref{demo/lec2\_reactive\_agent}, sitting beside these notes.
+One alert runs it:
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize, frame=none]
+python -m lec2_reactive_agent --alert-id bc284c6b
+\end{lstlisting}
+
+\noindent That is the worked alert of \cref{sec:fixed-agentless}. The architecture is one file of
+about two hundred lines, \demoref{graph.py}, and \cref{fig:reactive-loop} is a picture of it:
+every box in that figure names the method that implements it and the lines it occupies.
+
+The file defines one class, \demoref{AgentDAG}. Each node of the graph is a method on it, each
+routing predicate is a method on it, and \demoref{compile} wires them together. Nothing else in the
+program decides anything.
+
+\bi
+
+\item \textbf{\demoref{controller}, lines 89 to 122.} The only node where a model decides. It does
+two things before it decides anything: it stops the run if the model-call budget of forty is
+spent, and it stops the run if \demoref{stalled} reports that the last three observations came back
+the same. Only then does it issue a call. Both limits are checked \emph{before} the call rather
+than after it, because a limit checked afterwards is a post-mortem and not a control.
+
+\item \textbf{\demoref{tools}, lines 142 to 158.} Runtime work. It executes every call the model
+requested and returns an observation for each one, including the ones that failed. A failed call
+still gets an answer, because a model given no answer writes its next message malformed.
+
+\item \textbf{\demoref{submit}, lines 159 to 178.} Runtime work, and deliberately dull. It runs the
+three checks of \cref{sec:fixed-agentless} and routes on the outcome: accepted ends the run,
+rejected returns the reasons to the controller as feedback. No model judges acceptance here, which
+is precisely what makes a validator worth adding in \cref{sec:validation}.
+
+\item \textbf{\demoref{after\_controller}, lines 179 to 188.} The routing predicate, and the one
+row \cref{tab:reactive-decisions} hands to the model. It branches on the run's status and on
+whether the last message carried a tool call, and on nothing else. It never reads the model's
+prose, so no amount of arguing inside a thought moves the run.
+
+\item \textbf{\demoref{after\_submit}, lines 189 to 191.} Three lines: end, or go back to the
+controller with the rejection.
+
+\item \textbf{\demoref{compile}, lines 192 to 206.} The wiring. Two conditional edge sets and one
+unconditional edge, and it is the unconditional one that matters: the return from \demoref{tools}
+to \demoref{controller}. The comment beside it in the source calls it the one line that makes the
+version reactive. Delete that line and the program is a chain again.
+
+\ei
+
+What \demoref{graph.py} does not contain, it calls. The state record and its reducers are in
+\demoref{state.py}, the three tool signatures in \demoref{tools.py}, the validate-execute-observe
+sequence in \demoref{dispatch.py}, the three submission checks in \demoref{submit.py}, and the
+terminal statuses and the trace writer in \demoref{trace.py}. \Cref{sec:reflection} and Part~B take
+those up one at a time; for this section they are collaborators the DAG calls, and the DAG is the
+architecture.
+
+\paragraph{One run.} \Cref{fig:seq-loop-run} is a recorded trajectory, rendered from the run's own
+trace by \demoref{trajectory.py}: four model calls, three tool calls, forty-seven seconds.
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/seq-loop-run.tikz}
+  \caption{One recorded run on the worked alert, from \demoref{runs/v1-bc284c6b.jsonl}. Blue arrows
+  leave the controller, red arrows return to it, and grey arrows are the runtime working against
+  the fixture. Nothing reaches the controller that the runtime did not put there.}
+  \label{fig:seq-loop-run}
+\end{figure}
+
+Three things in that trajectory are worth naming. At twenty seconds the model reads
+\demoref{helpers/db\_sqlite.py}, a file the alert never mentioned, and that is the second question
+\cref{sec:fixed} could not ask. The token counts stay in their own columns throughout, so the last
+call reports 2,381 input and 64 output rather than one number that conceals which of them grew. And
+the run ends because \demoref{submit} passed three mechanical checks, none of which asked whether
+the endpoint still returns what it returned before.
+
+What the trajectory does not contain is the point. It holds four thoughts, one for each model call,
+and no plan. Nothing recorded at zero seconds says what the run intended to have done by
+forty-seven, so nothing later in the run can fall short of it.
