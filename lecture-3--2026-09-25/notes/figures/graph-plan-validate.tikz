@@ -1,0 +1,37 @@
+% The DAG of lec2_planning_and_validation_agent, with each component named by the
+% code that implements it. Line numbers are that package's graph.py.
+\begin{tikzpicture}[x=1cm, y=1cm,
+  st/.style={gnode, align=center, minimum width=2.9cm, minimum height=1.3cm, inner sep=3pt},
+  mst/.style={st, fill=ibmblue!12},
+  rst/.style={st, fill=black!6},
+  fl/.style={-{Stealth[length=2.4mm]}, thick, draw=ibmfg!85},
+  bk/.style={fl, dashed},
+  ev/.style={font=\sffamily\footnotesize, align=center, fill=white, inner sep=2.5pt},
+  pred/.style={font=\ttfamily\scriptsize, text=ibmblue!75!black, align=center, fill=white, inner sep=2pt}]
+  \def\cond#1{\\[-1pt]{\footnotesize\color{ibmfg!70}#1}}
+  \def\code#1{\\[0pt]{\ttfamily\scriptsize\color{ibmfg!60}#1}}
+
+  \node[circle, fill=ibmfg, inner sep=2.4pt] (start) at (-7.4,0) {};
+  \node[font=\sffamily\footnotesize\bfseries, above=3pt of start] {Start};
+  \node[mst] (plan) at (-4.6,0)    {\textbf{plan}\cond{writes the plan}\code{plan() 182--226}};
+  \node[mst] (ctrl) at (0,0)       {\textbf{controller}\cond{one model call}\code{controller() 249--267}};
+  \node[rst] (tools) at (0,-4.0)   {\textbf{tools}\cond{execute, observe}\code{tools() 287--322}};
+  \node[rst] (sub)  at (5.4,0)     {\textbf{submit}\cond{three checks}\code{submit() 323--354}};
+  \node[mst] (val)  at (5.4,-4.0)  {\textbf{validate}\cond{the judge}\code{validate() 355--385}};
+  \node[circle, draw=ibmfg, thick, inner sep=3.2pt] (end) at (5.4,-6.4)
+        {\tikz\node[circle, fill=ibmfg, inner sep=2.2pt]{};};
+  \node[font=\sffamily\footnotesize\bfseries, below=3pt of end] {End};
+
+  \draw[fl] (start) -- (plan);
+  \draw[bk] (plan) -- node[ev, auto]{the plan} (ctrl);
+  \draw[bk] (ctrl) -- node[ev, auto, pos=0.26]{tool call\cond{by the model}} (tools);
+  \draw[bk] (tools.east) to[bend right=32] node[ev, auto, swap, pos=0.3]{observation} (ctrl.south east);
+  \draw[bk] (tools.west) to[bend right=32]
+        node[ev, auto, swap, pos=0.62]{nothing new came back\cond{by the runtime}} (plan.south);
+  \draw[bk] (ctrl) -- node[ev, auto]{no tool call\cond{by the model}} (sub);
+  \draw[bk] (sub) -- node[ev, auto, swap]{checks passed\cond{by the runtime}} (val);
+  \draw[bk] (sub.north west) to[bend right=22]
+        node[ev, auto, swap]{checks failed} (ctrl.north east);
+  \draw[fl] (val) -- node[ev, auto]{accepted} (end);
+
+\end{tikzpicture}

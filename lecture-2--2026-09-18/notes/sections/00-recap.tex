@@ -1,28 +1,24 @@
 \section*{Recap}
 \addcontentsline{toc}{section}{Recap}
 
-Last week we drew an agentic system as five component roles and one caller, and gave every box
-an owner.
+In the previous lecture, we characterized an agentic system in terms of five component roles
+and an external caller, assigning explicit responsibilities to each.
 \begin{itemize}
-  \item The \emph{caller} sits outside the agent. It starts or resumes a run, supplies the task,
-  the input, and any constraints, and receives the result.
-  \item The \emph{model} interprets observations and selects the next action: it reasons, plans,
-  and proposes.
-  \item The \emph{runtime} owns control flow, validation, scheduling, and termination. It
-  executes the loop, keeps the budget, and writes the terminal event.
-  \item \emph{Tools} are the only path from a proposal to a real effect: narrow, typed
-  interactions with external systems.
-  \item \emph{State} is what outlives the call, the step, and the process. \emph{Context} is
-  what the model can see on this call.
-  \item The \emph{environment} holds external truth: the sources of data the agent observes and
-  can change, and the failures it did not cause.
+  \item The \emph{caller} is external to the agent. It initiates or resumes a run, supplies
+  the task, input, and applicable constraints, and receives the result.
+  \item The \emph{model} interprets observations and proposes subsequent actions through
+  reasoning and planning.
+  \item The \emph{runtime} is responsible for control flow, validation, scheduling, and
+  termination. It executes the control loop, manages the resource budget, and records the
+  terminal event.
+  \item \emph{Tools} provide the sole mechanism by which proposed actions produce external
+  effects, through narrowly scoped, typed interfaces to external systems.
+  \item \emph{State} comprises information that persists beyond individual calls, steps, and
+  processes. \emph{Context} comprises the information available to the model during a given call.
+  \item The \emph{environment} provides the authoritative sources of external data that the
+  agent can observe and modify, and encompasses failures that originate outside the agent.
 \end{itemize}
-Two sentences carry these notes. The caller starts the run, the runtime executes the loop, and
-the model proposes what to do next. A requested action is not an executed action, and an
-executed action is not a verified outcome.
-
-We also keep three habits. Token usage is four counters, \demoref{input}, \demoref{output},
-\demoref{cache\_read}, and \demoref{cache\_create}, and is never summed. Three terminal statuses
-exist, \demoref{ok}, \demoref{error}, and no terminal event at all, and the third is never folded
-into the second. Every number about a published system is read from the version cited and
-pointed at its table or figure.
+Two principles summarize this decomposition. First, the caller initiates the run, the runtime
+executes the control loop, and the model proposes subsequent actions. Second, an action request
+does not establish that execution has occurred, and execution alone does not establish a
+verified outcome.

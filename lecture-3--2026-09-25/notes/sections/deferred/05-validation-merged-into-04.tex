@@ -1,0 +1,320 @@
+\section{Validation and reflection}
+\label{sec:validation}
+
+\begin{upshot}
+\item \textbf{Independent acceptance requires both a separate check and a trustworthy signal.}
+  Asking a model to ``check its work'' supplies neither independent control over acceptance nor
+  external evidence of correctness. Without an external signal, self-assessment can lower accuracy
+  while adding calls. The workflow therefore gives mechanical checks control over acceptance and
+  confines the model-based validator to rejection.
+\item \textbf{A refused attempt leaves behind guidance, not its context.} Reflection turns a
+  refusal into text that outlives the attempt reset, and the reset is what separates a second
+  attempt from a longer first one.
+\end{upshot}
+
+\subsection{The proposer and the judge}
+\label{sec:validation-actor}
+
+Acceptance has been the runtime's job since the chain, and nothing so far has asked whether the
+runtime is any good at it. The three checks in \demoref{submit} are cheap and they are dull, and
+both of those turn out to be load-bearing properties rather than shortcomings.
+
+\begin{definition}[Actor and evaluator]
+\label{def:actor-evaluator}
+An agent separates \emph{proposal} from \emph{assessment} when the component that produces a candidate is not the component that scores it. Reflexion draws the split as two of three models: ``an Actor, denoted as $M_a$, which generates text and actions; an Evaluator model, represented by $M_e$, that scores the outputs produced by $M_a$'' \citep[\S3]{shinn2023reflexion}. The evaluator ``takes as input a generated trajectory and computes a reward score that reflects its performance within the given task context'', and it may be an exact-match grader, a heuristic written for the task, or another instance of a language model \citep[\S3]{shinn2023reflexion}.
+\end{definition}
+
+Self-Refine draws the same picture with one model in all three roles. It generates an output,
+prompts the same model for feedback on that output, and prompts it again to revise, with three
+prompts and no training \citep[\S2]{madaan2023selfrefine}. What matters for us is where its loop
+exits, because the stopping condition ``either stops at a specified timestep $t$, or extracts a
+stopping indicator (e.g.\ a scalar stop score) from the feedback''
+\citep[\S2]{madaan2023selfrefine}, and the feedback is written by the model whose work is being
+assessed.
+
+Our loop exits on a value the runtime wrote. That difference does not show up in a diagram of boxes
+and arrows, and it is not something a prompt can establish. \textbf{The accepting decision belongs
+to whichever component writes the value the exit edge reads, which is a fact about the graph we
+compiled and not about anything we asked the model to do.} Instruct a model to be strict with itself
+and it remains the author of the number the edge tests.
+
+So the question in front of us is not whether to separate the proposer from the judge, because
+\demoref{submit} has been separate from the controller since the chain. The question is what a
+second model adds to a separation we already have, and what it costs to let that model hold the
+decision.
+
+\subsection{What a model judge can and cannot see}
+\label{sec:validation-judge}
+
+Each check answers its question with a program rather than an opinion: i) the patch applies, so the
+edit is well formed; ii) it touches the flagged line, so the run addressed its alert; iii) the
+rescan is clean, so the scanner is quiet. Each is fast, each is reproducible,
+and none of them needs a model.
+
+Here, a verifier is \emph{sound} when it never accepts an incorrect solution, and \emph{complete}
+when it never refuses a correct one. Soundness on its own buys nothing, because a verifier that
+refuses everything never accepts an incorrect solution. \textbf{Completeness is what carries the
+property the argument below rests on: a verifier that produces no false refusals leaves a system no
+worse off than not checking at all, because anything generated correctly is still accepted.} The
+external verifiers behind the gains in \cref{sec:validation-evidence} are both at once, being
+decision procedures for their domains.
+
+Our three checks are neither. A scanner that reports nothing has not established that nothing is
+there, and an edit that renames the flagged expression or moves it behind a wrapper can clear an
+alert while leaving the weakness in place, which is a false acceptance. A correct patch that fixes
+the weakness somewhere other than the flagged line fails the second check, which is a false refusal.
+What the checks are is cheap and reproducible, and the error to avoid is reading them as though they
+were sound.
+
+That gap is the validator's job, and it is a narrow one. Given the alert, the candidate patch, the
+results of the three checks, and the trajectory that produced them, a validator can ask three
+questions the checks cannot.
+
+\bi
+
+\item \textbf{Weakness or alert.} Does the patch remove the unsafe behavior, or does it remove the
+scanner's ability to see it? This is the validation-retreat failure of \cref{sec:reactive-react}
+under a different name, and on this fixture it is the failure most worth catching.
+
+\item \textbf{Behavior.} Does the edit change what the endpoint returns? The performance measure
+cares and none of the three checks looks.
+
+\item \textbf{Provenance.} Did the run actually establish what its patch assumes, or did it assert
+it? The trajectory is in front of the validator and was never in front of the checks.
+
+\ei
+
+\subsection{Why the judge does not decide acceptance}
+\label{sec:validation-evidence}
+
+Having found something for a second model to do, we now have to decide how much authority it gets,
+and the evidence on that question is unusually one-sided.
+
+Start with the setting the results are about. \emph{Intrinsic} self-correction is the case in which
+a model revises ``based solely on its inherent capabilities, without the crutch of external
+feedback'' \citep[\S1]{huang2024selfcorrect}, which is precisely the case where a validator holds
+the accepting decision and nothing else does. Measured that way on reasoning benchmarks, accuracy
+falls while cost rises: one model answers a grade-school mathematics benchmark at 95.5\% in a single
+call, 91.5\% after one round of self-correction across three calls, and 89.0\% after two rounds
+across five \citep[Table~3]{huang2024selfcorrect}. The same pattern appears on a commonsense
+benchmark, where a weaker model falls from 75.8\% to 38.1\% after one round
+\citep[Table~3]{huang2024selfcorrect}.
+
+Supply the ground-truth label instead, so that correct answers are never revised, and the same
+procedure improves that mathematics result from 95.5\% to 97.5\%
+\citep[Table~2]{huang2024selfcorrect}. The gain is real and it is not available: ``If we are already
+in possession of the ground truth, there seems to be little reason to deploy LLMs for
+problem-solving'' \citep[\S3]{huang2024selfcorrect}. Two systems whose reported improvements rest on
+that setup are named, and one of them is Reflexion \citep[Table~1]{huang2024selfcorrect}, which
+matters for how we read \cref{sec:reflection}.
+
+A second study separates the verifier from the generator and varies only the verifier. Across 100
+instances per domain with one model, self-critique moves a graph-coloring result from 16\% to 2\%
+and a Game of 24 result from 5\% to 3\%. Replacing the model verifier with a sound one moves the
+same two results to 38\% and 36\% \citep[Table~1]{stechly2025selfverification}. On a
+blocks-planning domain self-critique does help, from 40\% to 55\%, and a sound verifier still beats
+it at 60\% to 87\% depending on how much detail the critique carries
+\citep[Table~1]{stechly2025selfverification}.
+
+The verifier's error profile explains the collapse. Used as a verifier, the model reaches 72.4\%
+accuracy on graph coloring, refusing 95.8\% of the correct answers it saw and accepting 6.5\% of the
+incorrect ones, and 79.6\% on a disguised blocks domain, where those two rates are 97.09\% and 0.5\%
+\citep[Table~2]{stechly2025selfverification}. A judge
+that refuses nearly every correct answer does not merely fail to help, because ``the system rejects
+most answers and then times out on a set of later, worse generations''
+\citep[\S5]{stechly2025selfverification}. The acceptance error runs the other way. On the two
+domains where the judge does least badly it accepts 10.4\% of incorrect Game of 24 answers and
+18.55\% of incorrect blocks plans, against 6.5\% and 0.5\% on the two where it refuses almost
+everything \citep[Table~2]{stechly2025selfverification}.
+
+One finding sets our design rule. Once the verifier is sound, binary feedback, feedback naming the
+first error, and feedback naming every error land within four points of one another on three of the
+four domains. Those readings are 38\%, 37\% and 34\% on graph coloring, 36\% against 38\% on Game of
+24, and 10\%, 8\% and 6\% on the disguised blocks domain. On blocks planning they do not, running 60\%, 87\% and
+83\%, so there naming the first error is worth twenty-seven points over a bare refusal
+\citep[Table~1]{stechly2025selfverification}. \textbf{What a loop needs first from its judge is a
+trustworthy accept-or-reject bit; what an attached explanation adds on top of that ran from nothing
+to twenty-seven points across the four domains.} Dropping the critique altogether and sampling
+repeatedly does at least as well on two of them, reaching 44\% on graph coloring and 42\% on Game of
+24 at twenty-five samples \citep[Table~1]{stechly2025selfverification}.
+
+These are four reasoning and planning domains with one model family, not program repair, and repair
+has something those domains lack: a rescan and a test suite are real programs that run. What
+transfers is the error profile of the source rather than a rate we can borrow. Where the accepting
+signal comes from a model, the outcome follows that model's error rates rather than the idea. The
+loop collapses on the two domains whose false-refusal rates run above 95\%, and on blocks planning, where that rate is
+15.48\%, it gains fifteen points where a decision procedure gains twenty to forty-seven
+\citep[Tables~1 and 2]{stechly2025selfverification}. Where the signal comes from a verifier that is
+correct in both directions, the loop improves on all four. Our three checks are programs and they
+are correct in neither direction, so what they inherit is reproducibility rather than the
+guarantee.
+
+That is why the mechanical checks keep the accepting decision. \textbf{The validator may refuse a candidate that
+passed all three checks, and it may not release one that failed them.} Confined that way, the only
+error it can make is refusing work that was already finished, and a refusal costs a turn against a
+budget we set. Were it allowed to release, its false acceptances would end the run, and nothing
+downstream would look again. Given false-negative rates of the size measured above, a judge confined
+to refusal can still stall a run by refusing everything, which is what the attempt cap of
+\cref{sec:reflection} is for.
+
+\Cref{sec:fixed} and \cref{sec:reactive} both promised that acceptance would move to something that
+did not write the patch, and it has. \demoref{submit} is that something, and the validator is a
+second one standing beside it. Neither section promised that the judge would be a model, and the
+evidence above is why we do not make it one.
+
+\subsection{What survives a refusal}
+\label{sec:reflection}
+
+A refusal ends an attempt, and it need not end everything the attempt learned. What crosses that
+boundary is a design decision, and the two obvious answers are both wrong.
+
+The loop itself is short. The validator refuses a candidate, the attempt limit permits another try,
+and the runtime starts the next attempt from a cleared record. Something has to change between the
+two, or the second attempt is the first one repeated at twice the price. What changes is the
+context the next attempt begins with, and we get to choose what goes into it.
+
+\bi
+
+\item \textbf{The whole trajectory.} Too large to carry, and it is the accumulation we were trying
+to get out of. An attempt that inherits every observation of the attempt before it is a longer first
+attempt wearing a new label.
+
+\item \textbf{The patch.} The artifact that just failed. Carrying it invites the next attempt to
+defend it, which is the one thing we do not want a fresh attempt doing.
+
+\item \textbf{The thought.} The action that changes the context and touches nothing else
+(\cref{sec:reactive-loop}). It costs a model call, it has no effect in the environment, and it is
+the only one of the three that is smaller than what produced it.
+
+\ei
+
+\begin{definition}[Reflection step]
+\label{def:reflection}
+A reflection step converts the outcome of a failed attempt into text that conditions later attempts.
+Reflexion adds it as the third of its three models, ``a Self-Reflection model, denoted as $M_{sr}$,
+which generates verbal reinforcement cues to assist the Actor in
+self-improvement'' \citep[\S3]{shinn2023reflexion}. Given ``a sparse reward signal, such as a binary
+success status (success/fail), the current trajectory, and its persistent memory'', it produces
+feedback that ``is then stored in the agent's memory'' \citep[\S3]{shinn2023reflexion}.
+\end{definition}
+
+Two lifetimes come with that arrangement, and they are the same two our state record keeps: ``the
+trajectory history serves as the short-term memory while outputs from the Self-Reflection model are
+stored in long-term memory'' \citep[\S3]{shinn2023reflexion}. The trajectory dies with the attempt;
+the reflection does not.
+
+Our reflection node runs on rejection and writes one short entry from four inputs: the alert, the
+candidate patch, the validator's reasons, and the trajectory that produced them. The entry appends
+to \demoref{reflections}, which survives the reset, while the observations, the plan, the candidate
+and the validation are cleared for the new attempt. The counters survive too, so the budget of forty
+model calls still binds across both attempts rather than restarting with each one.
+\textbf{The reset is what makes the guidance worth anything, because guidance delivered alongside
+the context that produced the failure is just more context.} Which fields are cleared, and why
+clearing an appending field takes an explicit assignment, is the state machinery of Part~B.
+
+What this does not buy is a second opinion from nowhere. The signal our reflection step receives is
+the validator's rejection reasons, which are the three mechanical checks plus a model's objections,
+and \cref{sec:validation-judge} said what those checks are worth: they are neither sound nor
+complete. The measurements in \cref{sec:validation-evidence} were about revision with no external
+signal at all, and this is not that case, but it is not the ground-truth case either. What we expect
+is improvement where the failure was legible in the reasons the run was given, and no improvement at
+all on an alert for which no patch exists. The attempt cap is there because neither outcome
+announces itself.
+
+\subsection{What we gain and what we lose}
+\label{sec:validation-tradeoff}
+
+A validator and a reflection step are additions of the same kind as the planner: we wrote the
+validator's authority, the routing predicate and the reset contract, and every one of those is
+still design time. What changes is that a second model now speaks about work the first model did.
+
+\subsubsection{What we gain}
+
+\bi
+
+\item \textbf{Refusal.} A patch that passes all three mechanical checks can still be turned back,
+which closes the one gap those checks were always going to leave open.
+
+\item \textbf{Memory.} A refused attempt leaves guidance behind, so a second attempt starts from
+what the first one was told rather than from the empty context the first one started in.
+
+\ei
+
+\subsubsection{What we lose}
+
+\bi
+
+\item \textbf{Judgement.} A second model is a second source of error, and its refusals are
+expensive in a way its silence is not. A validator that refuses good work spends the budget on work
+that was already done.
+
+\item \textbf{Attempts.} The attempt loop multiplies everything beneath it, because a second attempt
+pays for a second plan, a second set of turns and a second validation against the same budget. The
+guidance it starts from was written by the model whose attempt failed.
+
+\ei
+
+What \cref{sec:planning-tradeoff} left open was that nothing checked the finished work, and a
+validator closes it without returning any of the guarantees \cref{sec:fixed-tradeoff} named. Shape
+and termination stay gone, the attempt cap replaces termination with a counter we set, and the
+accepting decision stays with the three checks, because neither the validator nor the reflection
+step is safe to hold it.
+
+\subsection{The demo: the validator and the reflection step}
+\label{sec:validation-demo}
+
+\begin{demostub}
+Expected artifact: the validation node and the reflection node of
+\demoref{demo/lec2\_planning\_and\_validation\_agent}, with one recorded run of each under
+\demoref{demo/runs/}, beside the planner artifacts of \cref{sec:planning-demo}.
+
+For the validator, one selected candidate that passes all three checks in \demoref{submit} and is
+refused anyway, with the four inputs it was given and the reasons it returned. A run in which the
+mechanical checks fail and the validator is never consulted belongs beside it, because the order of
+the two is the design rule of \cref{sec:validation-evidence}.
+
+For the reflection step, one rejected attempt and the attempt that follows it, side by side. Four
+things go on the page: the reasons the validator returned, the entry appended to
+\demoref{reflections}, the fields the runtime cleared, and the first model input of the second
+attempt, where the guidance arrives without the context that produced it. The usage ledger runs
+across both attempts in the same view.
+\end{demostub}
+
+\subsection{Exercises}
+
+\be
+
+\item Give the validator authority to release a patch as well as refuse one. Using a false-positive
+rate of the order measured in \cref{sec:validation-evidence}, say what the worst case costs on a
+batch of forty alerts, and why the mechanical checks are the cheaper place to keep the decision.
+
+\item A rejected attempt leaves one entry in \demoref{reflections}. Write the entry you would want
+after a patch that cleared the scanner alert by renaming the flagged expression, and say which of
+the validator's three questions your entry would have to have been told about.
+
+\item Argue the other side of the design rule in \cref{sec:validation-evidence}: describe a fixture
+on which letting the validator release a patch is the right choice, and name the property of that
+fixture that ours does not have.
+
+\ee
+
+\subsection{Reading}
+
+Before class: \citet{madaan2023selfrefine}, \S2 and Algorithm~1, for a refinement loop in which one
+model fills every role. Then \S3 of \citet{shinn2023reflexion} for all three of its models, the
+actor and evaluator split of \cref{sec:validation-actor} and the self-reflection model and memory of
+\cref{sec:reflection}.
+
+The counterweight is the part of the reading to do slowly. \citet{huang2024selfcorrect}, \S\S1 and 3
+with Tables~1 to 3, defines intrinsic self-correction and measures it. \citet{stechly2025selfverification},
+\S5 with Tables~1 and 2, separates the verifier from the generator and varies only the verifier.
+Read both against the claim \cref{sec:validation-actor} makes about who writes the value the exit
+edge reads.
+
+\paragraph{Looking ahead.}
+The serial agent is now complete. A plan gives the run something to fall short of, the mechanical
+checks and the validator give it a refusal it cannot argue with, and reflection gives a refused
+attempt something to leave behind. Every version of it has been one model call at a time, on one
+trajectory, against one alert, and each addition was paid for in a guarantee we gave up.
+\Cref{sec:patterns} asks what changes when the work is divided among several agents instead, and
+what each division costs in the same currency.

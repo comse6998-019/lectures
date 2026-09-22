@@ -1,0 +1,244 @@
+\section{Routing, feedback loops, and termination}
+\label{sec:control}
+
+\begin{upshot}
+\item \textbf{A routing decision is executable code over state.} A model proposes values, the
+  runtime records them, and a routing function applies the transition rules, so a router that reads
+  the model's prose has handed the control decision back to the model.
+\item \textbf{A back edge needs an exit predicate and a bound.} An acceptance condition states when
+  a loop may stop and does not establish that it will, so what terminates a loop is a limit the
+  runtime owns and checks.
+\item \textbf{A dynamic path does not require a dynamic graph.} The compiled graph is fixed for the
+  run, and different values in state select different paths through it.
+\item \textbf{Termination is a predicate the runtime evaluates and records.} A trace establishes a
+  completed assessment, a declared stop, or no observed ending, and the third of these is not an
+  error until other evidence says so.
+\end{upshot}
+
+\subsection{Routing is code, not prose}
+\label{sec:control-routing}
+
+A conditional edge is where a run's next step is chosen, and the choice is a comparison written in
+Python rather than a sentence written by a model. Both things are true at once, which is what makes
+the arrangement worth describing carefully: the model's output decides which way the comparison
+comes out, and the comparison decides where the run goes.
+
+\begin{definition}[Conditional edge]
+\label{def:conditional-edge}
+A conditional edge is a function that receives the current state and returns the name of the next
+node, or the terminal node \demoref{END}, which is ``a special node that represents a terminal
+node''~\citep{langgraph-graph-api}. The function runs in the runtime's process and its return value
+is the transition.
+\end{definition}
+
+Three responsibilities sit on three different components, and keeping them apart is the whole of
+this section.
+
+\bi
+
+\item \textbf{The model proposes.} It emits a tool call, a plan, a candidate finding, or a judgement
+about whether a candidate is acceptable. Every one of those is a value, not an action.
+
+\item \textbf{The runtime records.} It merges the proposal into state through the reducers of
+\cref{sec:state-reducers}, and it writes what happened to the trace.
+
+\item \textbf{The router decides.} It reads named fields and returns a node name, applying the
+transition rules and the limits we fixed when we wrote it.
+
+\ei
+
+Our loop's router is \demoref{after\_controller}, and what it reads is the point. It branches on
+\demoref{status}, and then on whether the last message carried tool calls; there is no third
+condition. It never reads the model's prose, so a model that writes ``I am confident the patch is
+correct, submit it'' moves the run exactly as far as a model that writes nothing: the branch is
+taken by the presence or absence of a tool call, not by the sentence. \demoref{after\_submit} is one
+line, returning \demoref{END} when the submission was accepted and the controller otherwise.
+
+The trace records who decided, and this is the field to read when a run surprises us. A
+\demoref{routing} event carries \demoref{by="model"} when the model's output selected the branch
+and \demoref{by="runtime"} when a limit did. \textbf{Neither value means the model chose the edge},
+because the edge was chosen when we wrote the predicate; \demoref{by="model"} names the origin of
+the value the predicate tested.
+
+\subsection{The same graph, different paths}
+\label{sec:control-paths}
+
+Compilation fixes the graph and nothing else. \demoref{compile} adds three nodes, two conditional
+edge sets and one unconditional edge, and the result is the same object on every run. What differs
+between two runs on the same alert is the sequence of states, and therefore the sequence of edges
+that the routers select.
+
+\begin{figure}[htbp]
+  \centering
+  \input{figures/graph-v4.tikz}
+  \caption{The complete serial graph, with both back edges. The upper edge revises a plan inside an
+  attempt; the lower path runs the reflection step and begins a new attempt. Every edge in the
+  drawing is a line of wiring code, and every label on one is a predicate over state.}
+  \label{fig:control-graph}
+\end{figure}
+
+The unconditional edge is the one that made the loop a loop: the return from \demoref{tools} to
+\demoref{controller}. Delete that line and the same three nodes become a chain. The conditional
+edges are what give one compiled graph its different shapes at run time, and the run in
+\cref{fig:seq-loop-run} traverses the controller four times without the graph changing once.
+
+\subsection{Two returns to the planner}
+\label{sec:control-backedges}
+
+\Cref{fig:control-graph} has two back edges, and they answer different questions. One asks what to
+do about a step that did not work; the other asks what to do about an attempt that did not work.
+Collapsing them produces a system that either rewrites its plan over every transient tool error or
+retries a whole investigation over one failed edit.
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabularx}{\linewidth}{@{}p{0.155\linewidth}p{0.235\linewidth}XX@{}}
+    \toprule
+    \textbf{Back edge} & \textbf{Trigger} & \textbf{Retained} & \textbf{Reset} \\
+    \midrule
+    In-run plan revision & A planned step is still unsuccessful after the runtime's one free retry.
+      The planner receives the failed subgoal and the error. & The attempt's observations, its
+      progress so far, and the accounting. & The remaining subgoals, which the planner rewrites. \\
+    New attempt after reflection & The validator rejects the candidate and the attempt limit
+      permits another try. & Reflections, identity, the counters and the usage ledger. &
+      Observations, plan, candidate patch and validation, all set explicitly. \\
+    \bottomrule
+  \end{tabularx}
+  \caption{The two back edges of \cref{fig:control-graph}. The retry that precedes the upper edge
+  costs no model call, which is what makes it the runtime's decision rather than the model's.}
+  \label{tab:control-backedges}
+\end{table}
+
+Ownership divides along the same line. The free retry is ours: the runtime reissues a failed tool
+call once without consulting anyone, because a transient failure is not evidence about the plan.
+The revision that follows a second failure is the model's proposal, recorded by the runtime and
+merged into \demoref{plan}. The new attempt is ours again, because it is a comparison on the attempt
+counter, and \textbf{a limit that the model can talk its way past is not a limit}.
+
+\subsection{What actually stops a loop}
+\label{sec:control-bounds}
+
+Every loop in \cref{fig:control-graph} has an exit predicate, and no predicate is a guarantee. The
+validator's acceptance condition says when an attempt may end; it says nothing about whether any
+attempt will satisfy it, and a run whose candidate is rejected every time will keep going until
+something other than acceptance stops it. Three limits do that work, and all three are comparisons
+the runtime performs on fields it owns.
+
+\bi
+
+\item \textbf{The model-call budget.} Forty calls per run, and the controller checks it before it
+issues a call rather than after. A limit checked afterwards is a post-mortem: the call has already
+been paid for. Exceeding it sets \demoref{budget\_exhausted} and the router sends the run to
+\demoref{END}.
+
+\item \textbf{The stall check.} Three consecutive observations with identical results end the run
+with \demoref{no\_progress}. Comparing results rather than requests is deliberate, because it also
+catches six distinct searches that all return nothing, which is the repeated-action failure mode
+that ReAct reports for its own trajectories \citep[\S3.3]{yao2023react}.
+
+\item \textbf{The attempt limit.} Two attempts, counted in a field that survives the reflection
+reset. An attempt counter that reset with the attempt would bound nothing.
+
+\ei
+
+The framework contributes one more, underneath all of these: a recursion limit on the number of
+super-steps a single execution may run, which raises an error when it is
+reached~\citep{langgraph-graph-api}. It is a failsafe against a wiring mistake and not a control on
+the investigation, because it knows nothing about alerts, attempts or costs. We prefer our limits to
+fire first, and the budget of forty is set low enough that they do.
+
+\subsection{What a trace establishes}
+\label{sec:control-termination}
+
+A run ends in one of five ways, and the vocabulary is closed on purpose: \demoref{accepted},
+\demoref{unresolved}, \demoref{budget\_exhausted}, \demoref{no\_progress} and \demoref{error}. The
+trace writer refuses a status outside that set, and it also refuses the opposite mistake. Closing a
+trace that never recorded a terminal event raises \demoref{NoTerminalStatus}, because
+\textbf{a run that never said how it ended is a defect in our instrumentation rather than an
+outcome we can report}.
+
+That is what we control. What a trace lets a reader conclude is a separate question, and it has
+three answers rather than five.
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabularx}{\linewidth}{@{}p{0.31\linewidth}X@{}}
+    \toprule
+    \textbf{What the trace records} & \textbf{What it supports} \\
+    \midrule
+    A verdict, then a terminal event with status \demoref{accepted} & A completed assessment under
+    the runtime's acceptance rules, whose quality is a separate question from its completion. \\
+    A terminal event with a stop status and its reason & A declared end to execution without a
+    completed assessment, with whatever partial evidence the run had gathered. \\
+    No terminal event & Completion has not been established by this record. The run may still be
+    active, may have been interrupted, or may have written an incomplete trace. \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Three readings of a trace. The third is a statement about the evidence and not about the
+  run, and treating it as \demoref{error} attributes a cause the record does not carry.}
+  \label{tab:control-outcomes}
+\end{table}
+
+Three distinctions keep those readings honest. Errors and outcomes are not the same thing: a
+refused tool call is an observation inside a run that can still end in \demoref{accepted}, and a
+process killed between two events leaves a run with no status at all. The finding and the execution
+status are not the same thing either, because an assessment that reports insufficient information is
+a completed assessment, while a declared stop can carry partial evidence and no finding. And
+reaching \demoref{END} establishes only that the graph stopped: the reason lives in
+\demoref{status}, which we set.
+
+Termination therefore stays where routing is. A model's statement that it is finished is a proposal,
+like every other value it produces; the controller applies the completion rules, sets the status,
+and the trace records what was set. Stopping conditions and token-budget accounting are taken up
+in their own right in the coming weeks.
+
+\subsection{The demo: three endings}
+\label{sec:control-demo}
+
+The recorded run of \cref{fig:seq-loop-run} ends the first way. Its seventeenth event is a
+\demoref{terminal} record with status \demoref{accepted} and the run's usage totals, written after
+\demoref{submit} reported that all three mechanical checks passed, and the routing event just before
+it carries \demoref{by="runtime"}. Nothing in that trace is a model's opinion about whether the work
+was done.
+
+A budget-exhausted run ends the second way, and its shape differs in one instructive place. The
+controller's last event is not a model call, because the check that fired precedes the call: the
+trace shows a \demoref{routing} event with decision \demoref{budget\_exhausted} and
+\demoref{by="runtime"}, then the terminal event, and no fifth model call between them. The evidence
+the run had gathered is still in \demoref{observations}, and the absence of a finding is not the
+absence of work.
+
+The third ending is the one we cannot label. Interrupt a run between its tool result and its next
+model call and the trace stops there, with events that are all individually valid and no
+\demoref{terminal} record at the end. What we may say about that file is that no ending was
+observed. What we may not say is which ending would have arrived, and an excerpt used in teaching
+is worth marking with how it was produced.
+
+\subsection{Exercises}
+
+\begin{enumerate}
+\item \demoref{after\_controller} reads two fields. Write a model reply that would make a reader
+  expect the run to end and that in fact routes to \demoref{tools}, and say which field decided.
+\item The budget check sits before the model call. Move it after, and describe the two ways the
+  resulting trace would differ from the current one on a run that exhausts the budget.
+\item A colleague proposes ending a run when the model writes \verb|DONE| in its message. Give one
+  run in which that predicate ends the run too early and one in which it never fires, and name the
+  field each failure would have read instead.
+\item Take a trace whose last event is a tool result. List everything you can state about how that
+  run ended, and mark each statement with the event that supports it.
+\end{enumerate}
+
+\subsection{Reading}
+
+Before class: \citet{langgraph-graph-api}, the sections on conditional edges, \demoref{END} and the
+recursion limit. \S3.3 of \citet{yao2023react} supplies the repeated-action failure mode that the
+stall check is built against, with its own trajectory counts.
+
+For reference while writing HW1: the terminal statuses and trace events of \demoref{trace.py}, which
+are the vocabulary every claim in \cref{tab:control-outcomes} is made in.
+
+\paragraph{Looking ahead.} Routing decides which node runs next, and one of those nodes executes
+what the model asked for. The last section of these notes takes that step apart. We ask what a tool
+contract contains beyond the schema the model sees, what the dispatcher does between a request and a
+result, which artifact proves that a function was entered, and which component refuses a request
+that the run is not allowed to make.
