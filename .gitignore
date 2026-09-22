@@ -1,5 +1,3 @@
-*.md
-slides/
 # LaTeX auxiliary and build files
 *.aux
 *.log
@@ -59,6 +57,8 @@ slides/
 *.spl
 *.sta
 *.tdo
+*.md
+*/slides/
 *.fmt
 *.pre
 *.vrb
