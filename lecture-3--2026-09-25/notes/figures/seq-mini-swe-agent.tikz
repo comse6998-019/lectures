@@ -1,0 +1,22 @@
+% One run of mini-swe-agent on the worked alert. Actions left to right, percepts right to left.
+\begin{tikzpicture}[x=1cm, y=1cm,
+  head/.style={gnode, minimum width=3.4cm, font=\sffamily\small},
+  life/.style={draw=black!45, dashed},
+  act/.style={-{Stealth[length=2.6mm]}, line width=1.4pt, draw=ibmblue},
+  per/.style={-{Stealth[length=2.6mm]}, line width=1.4pt, draw=red!70!black},
+  msg/.style={font=\sffamily\footnotesize, fill=white, inner sep=1.5pt, align=center}]
+  \node[head] (agent) at (0,0) {Controller};
+  \node[head] (rt) at (11.4,0) {Runtime and tools};
+  \draw[life] (agent.south) -- (0,-7.4);
+  \draw[life] (rt.south) -- (11.4,-7.4);
+  \draw[per] (11.4,-1.0) -- (0,-1.0) node[msg, midway, above]
+        {alert as an issue report: Bandit B608,\\ \texttt{testcode/BenchmarkTest00283.py} line 46};
+  \draw[act] (0,-2.0) -- (11.4,-2.0) node[msg, midway, above] {\texttt{read\_file(testcode/BenchmarkTest00283.py, 40--52)}};
+  \draw[per] (11.4,-3.1) -- (0,-3.1) node[msg, midway, above]
+        {line 46 builds the query from \texttt{bar} with an f-string;\\ line 49 runs \texttt{cur.execute(sql)}};
+  \draw[act] (0,-4.1) -- (11.4,-4.1) node[msg, midway, above] {\texttt{edit}: a placeholder on line 46, \texttt{bar} bound on line 49};
+  \draw[per] (11.4,-5.0) -- (0,-5.0) node[msg, midway, above] {edit applied: two lines changed};
+  \draw[act] (0,-5.9) -- (11.4,-5.9) node[msg, midway, above] {\texttt{submit}: the patch, one file, two lines};
+  \draw[per] (11.4,-6.9) -- (0,-6.9) node[msg, midway, above]
+        {accepted: the patch applies and the rescan\\ no longer reports line 46. The run ends};
+\end{tikzpicture}

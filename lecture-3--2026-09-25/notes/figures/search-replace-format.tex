@@ -1,0 +1,39 @@
+% Agentless's Search/Replace edit format (its Figure 3), redrawn on our own worked alert.
+\begingroup
+\lstset{basicstyle=\ttfamily\scriptsize, numberstyle=\tiny\color{ibmfg!55}, xleftmargin=2.6em,
+        aboveskip=2pt, belowskip=2pt}
+
+{\sffamily\footnotesize\bfseries Original file\quad\mdseries\demoref{testcode/BenchmarkTest00283.py}\par}
+\begin{lstlisting}[numbers=left, firstnumber=46]
+sql = f'SELECT username from USERS where password = \'{bar}\''
+con = helpers.db_sqlite.get_connection()
+cur = con.cursor()
+cur.execute(sql)
+\end{lstlisting}
+
+{\centering\footnotesize $\downarrow$\enspace one model call returns the block below, and nothing else\par}
+
+\begin{lstlisting}[numbers=none]
+<<<<<<< SEARCH
+sql = f'SELECT username from USERS where password = \'{bar}\''
+=======
+sql = 'SELECT username from USERS where password = ?'
+>>>>>>> REPLACE
+
+<<<<<<< SEARCH
+cur.execute(sql)
+=======
+cur.execute(sql, (bar,))
+>>>>>>> REPLACE
+\end{lstlisting}
+
+{\centering\footnotesize $\downarrow$\enspace the runtime matches each search block and substitutes its replacement\par}
+
+{\sffamily\footnotesize\bfseries Edited file\par}
+\begin{lstlisting}[numbers=left, firstnumber=46]
+sql = 'SELECT username from USERS where password = ?'
+con = helpers.db_sqlite.get_connection()
+cur = con.cursor()
+cur.execute(sql, (bar,))
+\end{lstlisting}
+\endgroup

@@ -1,0 +1,14 @@
+% V0: fixed workflow. Four nodes, one kind of edge, no edge back, no node that can call search.
+\begin{tikzpicture}[node distance=5mm and 4mm]
+  \node[tnode] (in) {Alert};
+  \node[rnode, right=of in] (loc) {locate\\(\texttt{read\_file})};
+  \node[mnode, right=of loc] (lines) {name the lines\\to edit};
+  \node[mnode, right=of lines] (patch) {write the patch\\(\texttt{edit})};
+  \node[rnode, right=of patch] (sub) {Submit\\(three checks)};
+  \node[tnode, right=of sub] (out) {Patch};
+  \draw[flow] (in) -- (loc);
+  \draw[flow] (loc) -- (lines);
+  \draw[flow] (lines) -- (patch);
+  \draw[flow] (patch) -- (sub);
+  \draw[flow] (sub) -- (out);
+\end{tikzpicture}

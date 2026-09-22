@@ -2,30 +2,27 @@
 \label{sec:agents}
 
 \begin{upshot}
-\item \textbf{The agent} is characterized by a mapping from percept sequences to actions.
-  The agent function specifies this mapping; the agent program implements it and embodies
-  the relevant design choices. \msa{} serves as the running example: its percepts comprise
-  a single alert and subsequent tool outputs, and its actions are \demoref{read\_file},
-  \demoref{search}, \demoref{edit}, and \demoref{submit}.
-\item \textbf{The environment} is specified through a PEAS description before the program
-  is designed and classified according to seven properties that constrain the suitability
-  of agent programs. The environment considered here is partially observable, single-agent,
-  deterministic, sequential within a single alert, static, discrete, and known. Partial
-  observability is particularly consequential: rational action in this setting requires
-  actions that acquire information.
-\item \textbf{The performance measure} specifies which sequences of environment states
-  constitute desirable outcomes. Defined by the task designer, it evaluates the environment
-  rather than the agent's beliefs. Rationality is defined relative to this measure: the agent
-  selects the action expected to maximize performance, given its percept sequence and built-in
-  knowledge. For \msa{}, the objective is a patch that eliminates the reported weakness while
-  preserving the endpoint's intended behavior, at bounded cost.
-\item \textbf{The organizing question} concerns the extent to which the percept-to-action
-  mapping is fixed at design time rather than computed from percepts at run time. A fixed
-  workflow prespecifies nearly the entire mapping and remains rational only insofar as the
-  designer's prior knowledge remains applicable. A reactive loop computes the next action
-  from the percept sequence available thus far. Planning, validation, and reflection each
-  transfer an additional decision to run time; the design patterns combine these mechanisms.
-  Successive versions of \msa{} illustrate this progression.
+\item \textbf{The agent} is a mapping from percept sequences to actions. The agent function is
+  that mapping; the agent program is the code that computes it, and the program is where our
+  design choices live. \msa{} is the running example: its percepts are one alert and whatever
+  its tools return, and its actions are \demoref{read\_file}, \demoref{search}, \demoref{edit},
+  and \demoref{submit}.
+\item \textbf{The environment} is specified before the program is designed, as a PEAS
+  description, and classified by seven properties that decide which programs can work. Ours is
+  partially observable, single-agent, deterministic, sequential within one alert, static,
+  discrete, and known. One property matters: partially observable means a rational agent here
+  must act to see.
+\item \textbf{The performance measure} says which sequences of environment states count as
+  good. It is ours, it scores the environment and not the agent's beliefs, and rationality is
+  defined against it: select the action expected to do best given the percept sequence so far.
+  For \msa{}, a patch that removes the reported weakness and leaves the endpoint behaving as it
+  did, at bounded cost.
+\item \textbf{One question orders everything that follows:} how much of the percept-to-action mapping do we
+  fix at design time, and how much does the program compute from percepts at run time? A fixed
+  workflow fixes nearly all of it and is rational only while the designer's prior knowledge
+  holds. A reactive loop computes the next action from the percepts so far. A planner, a
+  validator, and a reflection step each move one more decision to run time, and the design
+  patterns compose these. \msa{} walks that order, one version per step.
 \end{upshot}
 
 \subsection{Rational agents}
@@ -385,11 +382,15 @@ the code it names.
 
 \subsection{Reading}
 
-\citet{russell2020aima}, \S2.3.2 (properties of task environments) and
+Before class: \citet{russell2020aima}, \S2.3.2 (properties of task environments) and
 \S\S2.4.1--2.4.5 (agent programs through utility-based agents). The agent programs of \S2.4 are
 taken up in \cref{sec:patterns}, once the five versions exist to place on them.
 Covered in these notes only: \S2.1, \S2.2, and \S2.3.1. The state representations of \S2.4.7 are
-taken up in Part~B with the state.
+taken up in Part~B with the state schema. Quotations, figures, and page numbers are from the
+Global Edition, in which the chapter occupies pages 54 to 79 and the assigned sections pages 61
+to 74; the summary on page 78 is a fair self-test.\footnote{The United States printing of the
+fourth edition paginates the chapter as pages 36 to 63. Section and figure numbers are the same
+in both printings.}
 
 \paragraph{Looking ahead.}
 The rest of these notes walk the question one decision at a time, on \msa{}, each version a

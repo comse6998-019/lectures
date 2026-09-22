@@ -1,0 +1,43 @@
+% One Agentless run. The pipeline initiates every call; the model only answers.
+% Counts are the paper's defaults. Compare figures/seq-mini-swe-agent.tikz, where the
+% controller initiates instead and the arrows therefore start on the other lifeline.
+\begin{tikzpicture}[x=1cm, y=1cm,
+  head/.style={gnode, minimum width=3.0cm, font=\sffamily\small},
+  life/.style={draw=black!45, dashed},
+  act/.style={-{Stealth[length=2.6mm]}, line width=1.4pt, draw=ibmblue},
+  per/.style={-{Stealth[length=2.6mm]}, line width=1.4pt, draw=red!70!black},
+  msg/.style={font=\sffamily\scriptsize, fill=white, inner sep=1.5pt, align=center},
+  phase/.style={font=\sffamily\footnotesize\bfseries, fill=white, inner sep=2pt},
+  note/.style={gnode, fill=black!6, font=\sffamily\scriptsize, align=center, inner sep=3pt}]
+
+  \def\P{0} \def\M{7.4} \def\R{14.2}
+  \node[head] (pipe) at (\P,0) {Pipeline (fixed)};
+  \node[head] (mod)  at (\M,0) {Model};
+  \node[head] (repo) at (\R,0) {Repository and tests};
+  \draw[life] (pipe.south) -- (\P,-12.5);
+  \draw[life] (mod.south)  -- (\M,-12.5);
+  \draw[life] (repo.south) -- (\R,-12.5);
+
+  \draw[black!25] (-1.1,-0.75) -- (15.3,-0.75);
+  \node[phase] at (7.1,-0.75) {Localization};
+  \draw[act] (\P,-1.45) -- (\M,-1.45) node[msg, midway, above] {structure format and the issue:\\which three files are suspicious?};
+  \draw[per] (\M,-2.2) -- (\P,-2.2) node[msg, midway, above] {three file names};
+  \draw[act] (\P,-2.9) -- (\R,-2.9) node[msg, midway, above] {embed the files that survive folder filtering, retrieve by similarity to the issue};
+  \draw[act] (\P,-3.6) -- (\M,-3.6) node[msg, midway, above] {skeletons of those files:\\which classes and functions?};
+  \draw[per] (\M,-4.35) -- (\P,-4.35) node[msg, midway, above] {the elements worth reading};
+  \draw[act] (\P,-5.05) -- (\M,-5.05) node[msg, midway, above] {their full source:\\which lines to edit? ($4$ samples)};
+  \draw[per] (\M,-5.8) -- (\P,-5.8) node[msg, midway, above] {four sets of edit locations};
+
+  \draw[black!25] (-1.1,-6.5) -- (15.3,-6.5);
+  \node[phase] at (7.1,-6.5) {Repair};
+  \draw[act] (\P,-7.2) -- (\M,-7.2) node[msg, midway, above] {context windows, $\pm 10$ lines:\\write a patch ($10$ per set)};
+  \draw[per] (\M,-7.95) -- (\P,-7.95) node[msg, midway, above] {forty Search/Replace patches};
+
+  \draw[black!25] (-1.1,-8.65) -- (15.3,-8.65);
+  \node[phase] at (7.1,-8.65) {Patch validation};
+  \draw[act] (\P,-9.35) -- (\M,-9.35) node[msg, midway, above] {write a test that reproduces the issue ($40$ samples)};
+  \draw[per] (\M,-10.1) -- (\P,-10.1) node[msg, midway, above] {forty candidate tests};
+  \draw[act] (\P,-10.8) -- (\R,-10.8) node[msg, midway, above] {apply each patch, run the regression suite, then run the reproduction test};
+  \draw[per] (\R,-11.55) -- (\P,-11.55) node[msg, midway, above] {pass or fail, for every patch};
+  \node[note, anchor=west] at (0.2,-12.2) {a majority vote over the survivors selects the patch to submit. The run ends};
+\end{tikzpicture}
