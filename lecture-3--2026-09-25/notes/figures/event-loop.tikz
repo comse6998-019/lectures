@@ -1,0 +1,54 @@
+% The event-driven agent (fig:event-loop): cyberbird/event_driven/workflow.py.
+% Each step is drawn with the event types its signature accepts; every event a step returns or
+% sends goes back to the queue. Styles from the lecture_notes.tex preamble.
+\begin{tikzpicture}[
+  rt/.style={gnode, minimum width=20mm},
+  hm/.style={mnode, minimum width=21mm},
+  hr/.style={rnode, minimum width=21mm},
+  ev/.style={lab, font=\ttfamily\scriptsize, align=left},
+  every node/.append style={text=ibmfg}
+]
+  % runtime components
+  \node[rt] (queue) at (0,0) {event queue\\(pending events)};
+  \node[rt] (disp) at (3.9,0) {dispatcher};
+
+  % steps, top to bottom in the order an alert meets them
+  \node[hr] (start) at (11.4,5.6) {start};
+  \node[hr] (scan) at (11.4,4.2) {scan};
+  \node[hr] (gate) at (11.4,2.8) {gate};
+  \node[hm] (plan) at (11.4,1.4) {plan};
+  \node[hm] (ctl) at (11.4,0) {controller};
+  \node[hr] (tools) at (11.4,-1.4) {tools};
+  \node[hr] (submit) at (11.4,-2.8) {submit};
+  \node[hm] (val) at (11.4,-4.2) {validate $\times V$};
+  \node[hr] (judge) at (11.4,-5.6) {judge};
+
+  % start and end of the run
+  \node[tnode] (req) at (-3.6,0) {run request};
+  \node[tnode, minimum width=14mm] (end) at (3.9,-4.2) {END};
+
+  \draw[flow] (req) -- node[lab, above] {filters} (queue);
+  \draw[flow] (queue) -- node[lab, above] {next\\event} (disp);
+
+  % dispatch: each arrow carries the event types its step accepts
+  \draw[thick, draw=ibmfg!80] (disp.east) -- (6.2,0);
+  \draw[thick, draw=ibmfg!80] (6.2,5.6) -- (6.2,-5.6);
+  \draw[flow] (6.2,5.6) -- node[ev, above] {RunRequested} (start.west);
+  \draw[flow] (6.2,4.2) -- node[ev, above] {ScanRequested} (scan.west);
+  \draw[flow] (6.2,2.8) -- node[ev, above] {AlertFound, AlertDone} (gate.west);
+  \draw[flow] (6.2,1.4) -- node[ev, above] {AlertStarted, Stalled} (plan.west);
+  \draw[flow] (6.2,0) -- node[ev, above] {PlanCreated, Observed,\\ChecksFailed} (ctl.west);
+  \draw[flow] (6.2,-1.4) -- node[ev, above] {ToolsRequested} (tools.west);
+  \draw[flow] (6.2,-2.8) -- node[ev, above] {Submitted} (submit.west);
+  \draw[flow] (6.2,-4.2) -- node[ev, above] {ValidateRequested} (val.west);
+  \draw[flow] (6.2,-5.6) -- node[ev, above] {Verdict} (judge.west);
+
+  % the stop event ends the run
+  \draw[flow] (disp) -- node[lab, left] {StopEvent\\with the results} (end);
+
+  % every event a step emits returns to the queue
+  \foreach \h in {start, scan, gate, plan, ctl, tools, submit, val, judge} {
+    \draw[dashed, thick, draw=ibmfg!80] (\h.east) -- (13.4,0 |- \h.east);
+  }
+  \draw[back] (13.4,-5.6) -- (13.4,6.7) -| node[lab, above, pos=.25] {emitted events} (queue.north);
+\end{tikzpicture}

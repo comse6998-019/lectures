@@ -1,0 +1,22 @@
+% Path policy may be checked inside the tool before the external effect.
+% The dispatch cycle, top to bottom: one model request, through validation and policy, to an
+% observation. The two dashed branches are refusals, and they rejoin at the same object the
+% successful path produces, which is the point of the drawing: a refusal and a tool error are both
+% observations, and neither is an exception.
+\begin{tikzpicture}[node distance=4mm and 14mm]
+  \node[tnode, align=center] (req) {tool request};
+  \node[rnode, below=of req, text width=42mm] (val) {resolve the name; bind the arguments};
+  \node[rnode, below=of val, text width=42mm] (pol) {resolve the path\\inside the workspace root};
+  \node[rnode, below=of pol, text width=42mm] (exec) {perform the permitted operation};
+  \node[rnode, below=8mm of exec, text width=42mm] (obs) {observation: \texttt{ok}, result, args};
+  \node[tnode, align=center, below=of obs] (next) {state, trace event, next model input};
+  \draw[flow] (req) -- (val);
+  \draw[flow] (val) -- (pol);
+  \draw[flow] (pol) -- (exec);
+  \draw[flow] (exec) -- node[lab, right] {result, or tool error} (obs);
+  \draw[flow] (obs) -- (next);
+  \draw[back] (val.west) to[out=180, in=180, looseness=2.1]
+    node[lab, left, pos=0.22, align=right] {unregistered, or arguments\\that do not bind} (obs.west);
+  \draw[back] (pol.west) to[out=180, in=180, looseness=0.9]
+    node[lab, left, pos=0.78, align=right] {outside the root} (obs.west);
+\end{tikzpicture}

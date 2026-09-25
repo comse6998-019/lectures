@@ -1,0 +1,60 @@
+% The controller's three return sites (plan_and_validation/graph.py, controller) against the
+% loop's ten-key record. Each path returns a partial update; the runtime merges only the keys
+% present, through that key's reducer, and every other key keeps its value.
+\begin{tikzpicture}[
+  key/.style={rnode, font=\ttfamily\scriptsize, minimum height=5mm, minimum width=13mm, inner sep=3pt},
+  kept/.style={key, text=black!50, draw=ibmfg!35},
+  hit/.style={key, draw=ibmblue, thick},
+  upd/.style={gnode, font=\ttfamily\scriptsize, align=left, inner sep=4pt},
+  flow/.style={-{Stealth[length=2mm]}, thick, draw=ibmfg!80, rounded corners=1.5mm},
+]
+  % ---- s_{t+1}: the record after the merge, ten keys in schema order ----------------------
+  \node[kept] (k1) at (0,0) {alert};
+  \node[kept, right=1mm of k1] (k2) {repo};
+  \node[kept, right=1mm of k2] (k3) {commit};
+  \node[kept, right=1mm of k3] (k4) {workspace};
+  \node[hit,  right=1mm of k4] (k5) {messages};
+  \node[kept, right=1mm of k5] (k6) {observations};
+  \node[kept, right=1mm of k6] (k7) {candidate\_patch};
+  \node[hit,  right=1mm of k7] (k8) {usage};
+  \node[hit,  right=1mm of k8] (k9) {model\_calls};
+  \node[hit,  right=1mm of k9] (k10) {status};
+  \node[lab, font=\sffamily\footnotesize, left=3mm of k1] (s1) {state $s_{t+1}$};
+  \node[lab, right=2mm of k10] {no reducer: replace};
+
+  % ---- the three partial updates ----------------------------------------------------------
+  \node[upd, anchor=south] (u3) at ($(k6.north)+(0,15mm)$)
+    {\{"messages": [reply],\\\ "model\_calls": 1,\\\ "usage": \{input, output\}\}};
+  \node[upd, anchor=south] (u2) at ($(k10.north)+(-2.5mm,15mm)$)
+    {\{"status":\\\ NO\_PROGRESS\}};
+  \node[upd, anchor=south west] (u1) at ($(u2.south east)+(3mm,0)$)
+    {\{"status":\\\ BUDGET\_EXHAUSTED\}};
+
+  % ---- the controller and the state it reads --------------------------------------------
+  \node[mnode, anchor=south] (ctrl) at ($(u3.north)+(0,12mm)$) {controller};
+  \node[rnode, left=16mm of ctrl] (s0) {state $s_t$};
+  \draw[flow] (s0) -- (ctrl);
+
+  % ---- controller to update: which path, and the guard that selects it --------------------
+  \draw[flow] (ctrl.south) -- node[lab, right] {otherwise: one model call} (u3.north);
+  \draw[flow] ([yshift=-1.5mm]ctrl.east) -| (u2.north)
+    node[lab, pos=0.22, below] {last three observations identical};
+  \draw[flow] ([yshift=1.5mm]ctrl.east) -| (u1.north)
+    node[lab, pos=0.22, above] {model\_calls $\geq$ 40};
+
+  % ---- update to record: one reducer per key that appears in the update -------------------
+  \draw[flow] ([xshift=-10mm]u3.south) -- ++(0,-5mm) -| (k5.north)
+    node[lab, pos=0.3] {add\_messages: append};
+  \draw[flow] ([xshift=10mm]u3.south) -- ++(0,-9mm) -| (k8.north)
+    node[lab, pos=0.3] {add\_usage: sum};
+  \draw[flow] ([xshift=18mm]u3.south) -- ++(0,-4mm) -| (k9.north)
+    node[lab, pos=0.3] {operator.add: $+1$};
+  \draw[flow] (u2.south) -- ([xshift=-2.5mm]k10.north);
+  \draw[flow] (u1.south) -- ++(0,-7mm) -| ([xshift=2.5mm]k10.north);
+
+  % ---- the keys no path writes ------------------------------------------------------------
+  \node[lab, text=black!60, anchor=north] at ($(k2.south)!0.5!(k3.south)+(0,-1.5mm)$)
+    {kept from $s_t$: absent from every update};
+  \node[lab, text=black!60, anchor=north] at ($(k6.south)!0.5!(k7.south)+(0,-1.5mm)$)
+    {kept from $s_t$};
+\end{tikzpicture}

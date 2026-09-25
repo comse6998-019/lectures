@@ -1,24 +1,6 @@
 \section{Reactive loops}
 \label{sec:reactive}
 
-\begin{upshot}
-\item \textbf{Action selection shifts from design time to run time.} In the fixed workflow,
-  the next operation is specified in advance (\cref{tab:fixed-decisions}). In a reactive loop,
-  the model selects the next action conditional on the percept history. The remaining
-  architectural differences follow from this transfer of control.
-\item \textbf{A thought modifies context without affecting the external environment.} The
-  action space is extended to include language. A thought updates the context used for the next
-  decision but produces no external state change or observation feedback.
-\item \textbf{Adaptive evidence collection relinquishes three guarantees.} Unlike a fixed
-  chain, a reactive loop can request additional evidence in response to intermediate observations.
-  This flexibility precludes an exact advance count of model calls, complicates attribution of
-  failure to an individual step, and requires an explicit bound to guarantee termination.
-\item \textbf{Model failures and runtime failures require distinct controls.} The model may
-  repeat prior thoughts and actions without progress or proceed on uninformative observations.
-  A separate runtime failure arises when model-generated content is accepted as an observation.
-  The runtime must therefore retain exclusive write access to the observation channel.
-\end{upshot}
-
 \subsection{The action that only changes the context}
 \label{sec:reactive-loop}
 
@@ -65,8 +47,7 @@ between the two sections.}
   \caption{The same decisions as \cref{tab:fixed-decisions}, in a fixed workflow and in a reactive
   loop.}
   \label{tab:reactive-decisions}
-  \small
-  \begin{tabularx}{\linewidth}{Xll}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{XXX}
     \toprule
     Decision & Fixed workflow & Reactive loop \\
     \midrule
@@ -77,7 +58,7 @@ between the two sections.}
     Which artifacts a step reads and writes & We do, at design time & We do, at design time \\
     What a model call returns & The model & The model \\
     \bottomrule
-  \end{tabularx}
+  \end{tabularx}\end{adjustbox}
 \end{table}
 
 The last two rows do not move, and that is the part worth holding on to. We still write the tool
@@ -162,13 +143,12 @@ as a source of variation, but does not isolate the causal effect of architecture
 also differ in prompts, interfaces, and implementation. The results therefore support a
 descriptive comparison of these systems rather than a causal attribution to architecture alone.
 
-\begin{table}[htbp]
+\begin{table*}[tbp]
   \caption{Where failures appear, by architecture. Each share is of that tool's own failed issues,
   from 150 hand-annotated failures on SWE-bench Verified with one backbone model, Claude 3.5
   Sonnet \citep[\S6.1]{liu2025issuefailures}.}
   \label{tab:agent-failures}
-  \small
-  \begin{tabularx}{\linewidth}{llXr}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{XXXr}
     \toprule
     Tool & Architecture & Stage where the failure appears & Share \\
     \midrule
@@ -176,8 +156,8 @@ descriptive comparison of these systems rather than a causal attribution to arch
     OpenHands-CodeAct-2.1 & Reactive loop & Iteration and validation & 49.1\% \\
     Tools + Claude 3.5 Sonnet & Reactive loop & Iteration and validation & 51.7\% \\
     \bottomrule
-  \end{tabularx}
-\end{table}
+  \end{tabularx}\end{adjustbox}
+\end{table*}
 
 A fixed workflow fails where it commits earliest: over half of its failed issues carry a
 localization error, and because no later node can revisit that choice, the remainder of the run
@@ -205,16 +185,16 @@ handing acceptance to a judge that did not write the patch.
 
 \ei
 
-\begin{wrapfigure}{r}{0.6\linewidth}
+\begin{figure}[htbp]
   \centering
-  \resizebox{\linewidth}{!}{\input{figures/reactive-loop.tikz}}
+  \begin{adjustbox}{width=\linewidth}\input{figures/reactive-loop.tikz}\end{adjustbox}
   \caption{The DAG the demo compiles, with every component named by the code that implements it:
   method and line range in \demoref{demo/lec2\_reactive\_agent/graph.py}. Blue is the only node
   where a model call decides, grey is runtime work, and the two predicates in blue type are the
   conditional edges. The one solid edge, from \demoref{tools} back to \demoref{controller}, is
   what makes the loop a loop.}
   \label{fig:reactive-loop}
-\end{wrapfigure}
+\end{figure}
 
 One of the three belongs to us rather than to the model. Unless the runtime owns the observation
 channel, the model will supply the observations itself: ``soliloquizing, where the model self-generates hallucinated observations without interacting with the environment'' \citep{abramovich2025enigma}. It affected 48.4\% of trajectories on one capture-the-flag benchmark with one model, while two other models produced none of it \citep[Table~4]{abramovich2025enigma}. \textbf{The runtime must write the observation field, and the routing predicate must read only the fields the runtime wrote.}
@@ -293,7 +273,7 @@ trace by \demoref{trajectory.py}: four model calls, three tool calls, forty-seve
 
 \begin{figure}[htbp]
   \centering
-  \input{figures/seq-loop-run.tikz}
+  \begin{adjustbox}{width=\linewidth}\input{figures/seq-loop-run.tikz}\end{adjustbox}
   \caption{One recorded run on the worked alert, from \demoref{runs/v1-bc284c6b.jsonl}. Blue arrows
   leave the controller, red arrows return to it, and grey arrows are the runtime working against
   the fixture. Nothing reaches the controller that the runtime did not put there.}

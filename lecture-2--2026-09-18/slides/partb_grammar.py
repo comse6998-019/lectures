@@ -37,8 +37,16 @@ def sub(el, tag, **attrs):
 
 
 def _scheme(font, val):
-    sf = sub(font._rPr, 'a:solidFill')
-    sub(sf, 'a:schemeClr', val=val)
+    """Colour a run from the scheme. Goes through python-pptx so the solidFill lands before any
+    latin element: an appended fill after <a:latin> is out of schema order and PowerPoint drops
+    it on load, which turned section dividers black on 2026-09-25."""
+    from pptx.enum.dml import MSO_THEME_COLOR
+    names = {'tx1': MSO_THEME_COLOR.TEXT_1, 'tx2': MSO_THEME_COLOR.TEXT_2,
+             'bg1': MSO_THEME_COLOR.BACKGROUND_1, 'bg2': MSO_THEME_COLOR.BACKGROUND_2,
+             'accent1': MSO_THEME_COLOR.ACCENT_1, 'accent2': MSO_THEME_COLOR.ACCENT_2,
+             'accent3': MSO_THEME_COLOR.ACCENT_3, 'accent4': MSO_THEME_COLOR.ACCENT_4,
+             'accent5': MSO_THEME_COLOR.ACCENT_5, 'accent6': MSO_THEME_COLOR.ACCENT_6}
+    font.color.theme_color = names[val]
 
 
 def add_runs(p, runs, size, on_navy=False):

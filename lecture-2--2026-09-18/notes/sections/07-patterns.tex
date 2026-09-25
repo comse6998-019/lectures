@@ -40,12 +40,11 @@ logic without consulting a model for orchestration; the coordinator, hierarchica
 swarm patterns use a model to route or decompose. The review-and-critique and iterative
 refinement patterns are, in the guide's words, implementations of the loop pattern.
 
-\begin{table}[htbp]
+\begin{table*}[tbp]
   \caption{The guide's twelve patterns, sorted by who decides which agent runs next.
   Tradeoffs are the guide's own statements, paraphrased.}
   \label{tab:patterns-catalogue}
-  \small
-  \begin{tabularx}{\linewidth}{>{\RaggedRight}p{3.1cm}>{\RaggedRight}p{2.4cm}XX}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{L{0.17\linewidth}L{0.13\linewidth}XX}
     \toprule
     Pattern & Orchestrated by & What it is & Tradeoff the guide states \\
     \midrule
@@ -62,8 +61,8 @@ refinement patterns are, in the guide's words, implementations of the loop patte
     Human-in-the-loop & Predefined checkpoints & The agent pauses at a checkpoint and waits for a person to approve, correct, or supply input & Requires building and maintaining the external interaction system \\
     Custom logic & Code the team writes & Conditional orchestration in code, mixing the other patterns & The team designs, implements, and debugs the whole flow \\
     \bottomrule
-  \end{tabularx}
-\end{table}
+  \end{tabularx}\end{adjustbox}
+\end{table*}
 
 Four of these are the ones the lecture discusses, each with the question the teaching plan
 attaches to it.
@@ -107,8 +106,7 @@ remain the evidence for what each shape costs and buys; the guide is a map of th
   \caption{The guide's comparison section, by workload type. The characteristics are the
   guide's, paraphrased.}
   \label{tab:patterns-comparison}
-  \small
-  \begin{tabularx}{\linewidth}{>{\RaggedRight}p{3.4cm}>{\RaggedRight}p{3.3cm}X}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{L{0.24\linewidth}L{0.29\linewidth}X}
     \toprule
     Workload & Patterns the guide lists & Characteristics the guide gives \\
     \midrule
@@ -117,7 +115,7 @@ remain the evidence for what each shape costs and buys; the guide is a map of th
     Iteration & ReAct; loop; review and critique; iterative refinement & Cycles of refinement, feedback, and improvement; a distinct validation step; unpredictable latency while waiting for an exit condition \\
     Special requirements & Human-in-the-loop; custom logic & Human supervision for high-stakes or subjective tasks; branching logic beyond a linear sequence \\
     \bottomrule
-  \end{tabularx}
+  \end{tabularx}\end{adjustbox}
 \end{table}
 
 \subsection{Which decisions the programmer made}
@@ -128,11 +126,10 @@ one state record, one investigation at a time, model calls bounded by the attemp
 and the overall execution limit, failures contained within an attempt, and a trace that is
 one sequence.
 
-\begin{table}[htbp]
+\begin{table*}[tbp]
   \caption{What each pattern changes relative to the serial agent of \cref{sec:reflection}.}
   \label{tab:patterns-axes}
-  \small
-  \begin{tabularx}{\linewidth}{>{\RaggedRight}p{2.5cm}XXXX}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{L{0.14\linewidth}XXXX}
     \toprule
     Axis & Coordinator & Hierarchical & Parallel & Review and critique \\
     \midrule
@@ -143,8 +140,8 @@ one sequence.
     Failure propagation & A misrouted task fails in the wrong specialist; the coordinator may not notice & A wrong decomposition propagates down and its cost multiplies & Contained per worker until the join, where a missing piece blocks the whole & A critic that accepts a wrong candidate passes it on; one that rejects a right one costs a revision \\
     Inspectability & The routing decision and its reasons are in the trace, if recorded & Traces nest; which level decided what must be recoverable & Traces interleave; which worker wrote what must be recoverable & Improved: acceptance carries reasons \\
     \bottomrule
-  \end{tabularx}
-\end{table}
+  \end{tabularx}\end{adjustbox}
+\end{table*}
 
 Three things the table makes visible are worth stating. The two patterns that use a model
 to orchestrate (coordinator, hierarchical) move a control decision from design time to run
@@ -190,8 +187,8 @@ One SVG per pattern on the guide's page \citep{google2026patterns}, content lice
 your agentic AI system}, [pattern] diagram, CC BY 4.0.'' Every path below is under
 \url{https://docs.cloud.google.com/static/architecture/images/} and begins with
 \texttt{choose-design-pattern-agentic-ai-system-}.
-\begin{center}\small
-\begin{tabular}{ll}
+\begin{center}
+\begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{@{}L{0.42\linewidth}X@{}}
   \toprule
   Pattern & File name suffix \\
   \midrule
@@ -203,7 +200,7 @@ your agentic AI system}, [pattern] diagram, CC BY 4.0.'' Every path below is und
   ReAct & \texttt{react.svg} \\
   Loop & \texttt{loop.svg} \\
   \bottomrule
-\end{tabular}
+\end{tabularx}\end{adjustbox}
 \end{center}
 \end{figneeded}
 

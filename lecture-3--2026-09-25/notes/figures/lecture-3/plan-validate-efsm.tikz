@@ -1,0 +1,60 @@
+% Extended state machine for the current plan_and_validation/graph.py.
+% Edges read the record after the source node's partial update is merged.
+% The lower panels explicitly include terminal guards and representative updates.
+\begin{tikzpicture}[
+  ctl/.style={mnode, minimum width=23mm},
+  box/.style={draw=ibmfg!25, rounded corners=2pt, fill=black!2,
+    font=\sffamily\footnotesize, inner sep=7pt, align=left},
+  every node/.append style={text=ibmfg}
+]
+  \node[font=\sffamily\bfseries\small, anchor=west] at (-1.7,3.3)
+    {Planning and validation: an extended state machine};
+  \node[font=\sffamily\scriptsize, anchor=west] at (-1.7,2.85)
+    {Control locations + application variables + guarded transitions and updates};
+
+  \node[tnode] (start) at (-1.1,0) {START};
+  \node[ctl] (plan) at (1.3,0) {plan};
+  \node[ctl] (controller) at (5.1,0) {controller};
+  \node[rnode, minimum width=23mm] (tools) at (9.0,0) {tools};
+  \node[rnode, minimum width=23mm] (submit) at (5.1,-2.45) {submit};
+  \node[ctl] (validate) at (9.0,-2.45) {validate};
+  \node[tnode, minimum width=15mm] (end) at (12.0,-2.45) {END};
+
+  \draw[flow] (start) -- (plan);
+  \draw[flow] (plan) -- node[lab, above] {running} (controller);
+  \draw[flow] (controller) -- node[lab, above=4pt] {running;\\tool calls} (tools);
+  \draw[back] (tools.north) -- ++(0,.9) -|
+    node[lab, pos=.25, above] {$f=\emptyset$} (controller.north);
+  \draw[back] ([xshift=3mm]tools.north) -- ++(0,1.65) -|
+    node[lab, pos=.25, above] {$f\ne\emptyset$: revise plan} (plan.north);
+  \draw[flow] (controller) -- node[lab, right] {running;\\no tool calls} (submit);
+  \draw[flow] (submit) -- node[lab, above=4pt] {running;\\checks pass} (validate);
+  \draw[back] (submit.west) -- ++(-.85,0) |-
+    node[lab, pos=.25, left] {running;\\checks fail} ([yshift=-1.5mm]controller.west);
+  \draw[flow] (validate) -- node[lab, above] {always} (end);
+
+  \node[box, anchor=north west, text width=64mm] (record) at (-1.7,-3.75) {
+    \textbf{Application variables}\\[3pt]
+    $\sigma$: status; $c$: completed model calls; $B$: call limit.\\[2pt]
+    $O$: observations; $H$: messages; $u$: usage.\\[2pt]
+    $f$: \texttt{failed\_step}; $r$: \texttt{replanned\_at}.\\[2pt]
+    Plan, candidate patch, checks, and validation are retained too.\\[5pt]
+    \textbf{Representative updates}\\[3pt]
+    Model reply: $c\gets c+1$, $u\gets u+\Delta u$.\\[2pt]
+    Tools: append observations and result messages; first stalled window sets $f$.\\[2pt]
+    Replan: replace plan, clear $f$, set $r\gets|O|$.
+  };
+  \node[box, anchor=north west, text width=64mm] (guards) at (6.0,-3.75) {
+    \textbf{Guards and terminal routes}\\[3pt]
+    Plan, controller, and validate check $c<B$ before calling a model. Otherwise:\\[-1pt]
+    \hspace*{3mm}$\sigma\gets\mathrm{budget\_exhausted}$.\\[3pt]
+    A stalled planning window at controller sets $\sigma\gets\mathrm{no\_progress}$.\\[5pt]
+    \textbf{After plan, controller, or submit:}\\[2pt]
+    $[\sigma\ne\mathrm{running}]\ \longrightarrow\ \mathrm{END}$.\\[3pt]
+    This guard has priority over the main routes above.\\[3pt]
+    \textbf{After validate:} always $\longrightarrow\mathrm{END}$; the verdict sets accepted or rejected.
+  };
+  \node[fit=(record)(guards), inner sep=0pt] (panels) {};
+  \node[font=\sffamily\scriptsize, anchor=north west, text width=144mm]
+    at ($(panels.south west)+(0,-.3)$) {The control label is only part of a configuration. Guards read the merged record; node execution produces updates.};
+\end{tikzpicture}

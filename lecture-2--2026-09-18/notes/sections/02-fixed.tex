@@ -1,25 +1,6 @@
 \section{Fixed workflows}
 \label{sec:fixed}
 
-\begin{upshot}
-\item \textbf{A fixed workflow is defined by who decides, and when.} We settle every control
-  decision at design time: which operation runs next, how many model calls the run makes, and
-  what ends it. The model is called at points we choose, and what it returns is content that
-  travels through the graph without changing the graph.
-\item \textbf{The fixed shape is what we buy.} One shape per run means the cost is known before
-  the run starts, a failure belongs to the stage that produced it, and the run ends because the
-  graph ends rather than because a counter ran out.
-\item \textbf{The fixed shape is also what we pay.} Our environment is partially observable, so
-  the evidence a decision needs may not exist until an action produces it. A graph with no edge
-  back has nowhere to ask a second question, and the question it cannot ask is the one its own
-  output depended on.
-\item \textbf{The sections that follow give these decisions away one at a time.} \Cref{sec:reactive}
-  hands the choice of the next action to the model, \cref{sec:planning} puts the intended sequence
-  into state where it can be revised and moves acceptance off the component that proposed the work,
-  and \cref{sec:reflection} lets one attempt change the context of the next. Every move costs
-  something the fixed shape was giving us for free, so every move has to be earned.
-\end{upshot}
-
 \subsection{Control decisions and content decisions}
 \label{sec:fixed-decisions}
 
@@ -40,11 +21,10 @@ The distinction is not about difficulty. What I mean is, naming the file to patc
 problem (and the model decides that for us). Deciding that a file is named before lines are read is the one that fixes the shape of
 the run (and that's something that we do). \Cref{tab:fixed-decisions} sorts the decisions of an agent program on that line.
 
-\begin{table}[htbp]
+\begin{table*}[tbp]
   \caption{The decisions an agent program makes, and where a fixed workflow puts each one.}
   \label{tab:fixed-decisions}
-  \small
-  \begin{tabularx}{\linewidth}{Xlll}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{XXXX}
     \toprule
     Decision & Kind & Who decides & When \\
     \midrule
@@ -57,8 +37,8 @@ the run (and that's something that we do). \Cref{tab:fixed-decisions} sorts the 
     What a model call returns & Content & The model & Run time \\
     Which values travel to the next step & Content & The model, within our schema & Run time \\
     \bottomrule
-  \end{tabularx}
-\end{table}
+  \end{tabularx}\end{adjustbox}
+\end{table*}
 
 Fixed does not mean straight. A fixed workflow may branch, filter, and repeat a step a set
 number of times; what makes it fixed is that we wrote the predicate on which it branches, so the
@@ -163,7 +143,7 @@ once the survivors are normalized \citep[\S3.3]{xia2025agentless}.
 
 \begin{figure}[htbp]
   \centering
-  \resizebox{\linewidth}{!}{\input{figures/seq-agentless.tikz}}
+  \begin{adjustbox}{width=\linewidth}\input{figures/seq-agentless.tikz}\end{adjustbox}
   \caption{One Agentless run, with the paper's default counts \citep[\S3, \S4]{xia2025agentless}.
   Blue arrows are calls the pipeline makes; red arrows are what comes back. Read it against
   \cref{fig:agents-sequence}, which uses the same colors for the same things: there every blue

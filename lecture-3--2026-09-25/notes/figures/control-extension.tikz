@@ -1,0 +1,23 @@
+% Notes-owned copy of graph-v4.tikz (fig:control-extension), relabelled so that its implemented
+% edges match the planner's graph.py and its added path is marked as a designed extension.
+% graph-v4.tikz stays unchanged. Two rows so the drawing stays inside the text width.
+\begin{tikzpicture}[node distance=15mm and 7mm]
+  \node[tnode] (in) {Alert};
+  \node[mnode, right=of in] (plan) {Plan};
+  \node[mnode, right=of plan] (exec) {Controller,\\tools, submit};
+  \node[mnode, right=of exec] (val) {Validator};
+  \node[tnode, right=20mm of val] (out) {Accepted};
+  \node[rnode, densely dotted, below=of plan] (reset) {Keep reflection;\\reset attempt};
+  \node[mnode, densely dotted, below=of val] (refl) {Reflection};
+  \node[tnode, align=center, below=of out, xshift=11mm] (stop) {Rejected};
+  \draw[flow] (in) -- (plan);
+  \draw[flow] (plan) -- (exec);
+  \draw[flow] (exec) -- node[lab, above] {checks\\pass} (val);
+  \draw[flow] (val) -- node[lab, above] {accept} (out);
+  \draw[back] (exec.north) to[out=120, in=60] node[lab, above] {first stall} (plan.north);
+  \draw[back] ([xshift=-5mm]exec.south) to[out=-120, in=-60, looseness=2.2] node[lab, below, inner sep=0.5pt] {checks fail} ([xshift=5mm]exec.south);
+  \draw[flow, densely dotted] (val) -- node[lab, left] {reject;\\$a < A$} (refl);
+  \draw[flow, densely dotted] (refl) -- (reset);
+  \draw[back, densely dotted] (reset) -- (plan);
+  \draw[flow] (val.south east) -- node[lab, pos=0.55, above, align=center] {reject;\\$a \geq A$} (stop.west);
+\end{tikzpicture}

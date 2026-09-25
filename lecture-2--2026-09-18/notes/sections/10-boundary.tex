@@ -1,20 +1,6 @@
 \section{The tool boundary}
 \label{sec:boundary}
 
-\begin{upshot}
-\item \textbf{A tool contract spans the model-facing definition and the runtime's enforcement.} The
-  provider's schema carries the name, the description and the argument types; the result type, the
-  effect class and the execution constraints live in code we write and are enforced there.
-\item \textbf{A model response establishes that a tool was requested, not that one ran.} The
-  evidence that a function was entered is the runtime's own record of entering it.
-\item \textbf{A refused request and a permitted call that fails are different events with the same
-  shape.} Both become observations the model can read, and only one of them reached the
-  implementation.
-\item \textbf{Interface design changes outcomes with the model held fixed.} The action set, the
-  feedback format and the guardrails have measurable consequences, which puts them in the
-  architecture rather than in the plumbing.
-\end{upshot}
-
 \subsection{The tool contract}
 \label{sec:boundary-contract}
 
@@ -56,7 +42,7 @@ cycle. \Cref{fig:dispatch-cycle} follows one request through all of them.
 
 \begin{figure}[htbp]
   \centering
-  \input{figures/dispatch-cycle.tikz}
+  \begin{adjustbox}{width=\linewidth}\input{figures/dispatch-cycle.tikz}\end{adjustbox}
   \caption{One dispatch. The name is resolved against the registry and the arguments are bound
   against the signature; the path is resolved inside the workspace root; the function runs. Every
   path in the drawing produces an observation, which is what allows a run to continue after a
@@ -103,7 +89,7 @@ of them.
 
 \begin{table}[htbp]
   \centering
-  \begin{tabularx}{\linewidth}{@{}p{0.21\linewidth}p{0.30\linewidth}X@{}}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{@{}L{0.27\linewidth}L{0.30\linewidth}X@{}}
     \toprule
     \textbf{Artifact} & \textbf{What it contains} & \textbf{What it establishes} \\
     \midrule
@@ -120,7 +106,7 @@ of them.
     State and next input & One record appended to \demoref{observations}, one tool message appended
       to \demoref{messages}. & What the next model call was allowed to see. \\
     \bottomrule
-  \end{tabularx}
+  \end{tabularx}\end{adjustbox}
   \caption{One \demoref{read\_file} call on \demoref{testcode/BenchmarkTest00283.py} through the
   artifacts it leaves, from \demoref{runs/v1-bc284c6b.jsonl}, steps 3 and 4. The provider's raw
   request stays in the message history; the trace records the dispatcher's view of it.}
@@ -165,7 +151,7 @@ The ablations of the interface bear on design decisions rather than on leaderboa
 
 \begin{table}[htbp]
   \centering
-  \begin{tabularx}{\linewidth}{@{}p{0.17\linewidth}p{0.27\linewidth}rX@{}}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{@{}L{0.23\linewidth}Xrr@{}}
     \toprule
     \textbf{Component} & \textbf{Variant} & \textbf{Resolved} & \textbf{Change} \\
     \midrule
@@ -179,7 +165,7 @@ The ablations of the interface bear on design decisions rather than on leaderboa
     Context & full history & 15.0 & $-3.0$ \\
             & no demonstration & 16.3 & $-1.7$ \\
     \bottomrule
-  \end{tabularx}
+  \end{tabularx}\end{adjustbox}
   \caption{Percentage of SWE-bench Lite instances resolved under ablations of the interface, with
   the base model held fixed. Table~3 of \citet{yang2024sweagent}.}
   \label{tab:boundary-aci}
@@ -220,7 +206,7 @@ model that writes that it has already run the tests has produced a sentence.
 
 \begin{table}[htbp]
   \centering
-  \begin{tabularx}{\linewidth}{@{}Xp{0.42\linewidth}@{}}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{@{}XL{0.42\linewidth}@{}}
     \toprule
     \textbf{Guarantee} & \textbf{Where it is enforced} \\
     \midrule
@@ -237,7 +223,7 @@ model that writes that it has already run the tests has produced a sentence.
     A back edge obeys the attempt limit & The routing function and the attempt counter of
       \cref{sec:control-backedges}. \\
     \bottomrule
-  \end{tabularx}
+  \end{tabularx}\end{adjustbox}
   \caption{Each guarantee of the demo, and the component that enforces it. No row is enforced by a
   sentence in a prompt.}
   \label{tab:boundary-authority}
