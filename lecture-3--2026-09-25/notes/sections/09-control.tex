@@ -4,48 +4,50 @@
 \subsection{Routing functions and guards}
 \label{sec:control-routing}
 
-The routing function selects the next step by testing values in the record. The model helps
-produce those values; the function applies the transition rules written by the programmer.
+The routing function uses values in the record to choose the next step. Model output supplies
+some of these values. The programmer writes the rules that the function applies to them.
 
 \begin{definition}[Conditional edge]
 \label{def:conditional-edge}
-A conditional edge is the set of outgoing transitions of one control location, together with a
-routing function that selects among them. The routing function reads the record after the
-location's update has been merged, evaluates the guard of each outgoing transition, and returns the
-destination whose guard holds.
+A conditional edge consists of the transitions that leave a control location and a routing
+function that chooses among them. After the runtime merges the location's update, the routing
+function reads the record. It tests the guards on the outgoing transitions and returns the
+destination selected by those tests.
 \end{definition}
 
-In the notation of \cref{sec:efsm-notation}, a guard is a predicate $g(v, e)$ over the variables and
-the step's input. The routing function receives these through the merged record
-$v' = \mathrm{merge}(v, u)$. The node has already stored the information it retained from $e$.
+In the notation of \cref{sec:efsm-notation}, a guard is a predicate $g(v, e)$: a true-or-false test
+on the variables and the step's input. The routing function tests the merged record
+$v' = \mathrm{merge}(v, u)$, which includes the information the node kept from $e$.
 \textbf{A guard can test stored information; it cannot test information the node discarded.}
 Routing is deterministic in the sense of \cref{def:determinism} when it selects exactly one
-destination for every merged record. A first-match chain with a final default does this by using
-test order to resolve overlapping conditions. The default may still be wrong: it also handles
-records the programmer did not anticipate.
+destination for every merged record. One way to do this is to test conditions in order, take the
+first match, and use a default if none matches. The order decides which transition to take when
+several conditions hold. The default may still select an unsuitable destination for a record the
+programmer did not anticipate.
 
 A graph also needs a destination that ends the run. LangGraph provides it as \demoref{END}: ``The
 END Node is a special node that represents a terminal node''~\citep{langgraph-graph-api}. A routing
 function that returns it stops the run. The record states the reason.
 
-Three components have separate responsibilities.
+The model, runtime, and routing function each have a role in this process.
 
 \bi
 
 \item \textbf{Proposal.} The model emits a tool request, a plan, a candidate patch or a verdict.
-Each proposal is a value that the runtime must process before it can take effect.
+The runtime must process this proposal before it can take effect.
 
-\item \textbf{Record.} The runtime merges the proposal into state through the reducers of
-\cref{sec:state-reducers} and records what happened in the trace.
+\item \textbf{Record.} The runtime uses the reducers of \cref{sec:state-reducers} to merge the
+proposal into state. It also records what happened in the trace.
 
-\item \textbf{Decision.} The routing function reads named fields of the merged record and returns a
-destination according to the guards and limits written by the programmer.
+\item \textbf{Decision.} The routing function reads fields of the merged record. It applies the
+programmer's guards and limits to choose a destination.
 
 \ei
 
-In our planning agent, \demoref{after\_controller} tests the status first. It returns \demoref{END} unless
-the run is still active. Otherwise, it returns \demoref{tools} if the last reply contains tool
-requests, or \demoref{submit} if it contains none. The function does not read the reply's prose.
+In our planning agent, \demoref{after\_controller} tests the status first. If the run is no longer
+active, it returns \demoref{END}. If the run is active, it checks the last reply for tool requests.
+It returns \demoref{tools} when it finds requests and \demoref{submit} when it finds none.
+The function does not read the reply's prose.
 A reply that says ``the
 patch is correct, submit it'' while requesting a tool therefore routes to \demoref{tools}.
 
@@ -58,14 +60,14 @@ the edge.} The programmer defined the edge and its guard.
 \label{sec:control-paths}
 
 The compiled graph contains the locations, unconditional edges, and routing functions. Its
-structure stays the same across runs. Runs can differ in their sequence of merged records and,
-consequently, in the destinations their routing functions select.
+structure stays the same across runs. The records produced during a run can differ, so the routing
+functions can choose different destinations.
 
-In the terms of \cref{sec:efsm-traces}, the compiled graph defines the machine, and each run follows
-one trajectory through its computation tree. Each visit to a location creates a new node in that
-tree, with its own configuration. A run that calls the controller twelve times passes through
-twelve branch points without changing the graph. \textbf{Compilation fixes the possible paths;
-the values encountered during a run determine its path.}
+Using the terms of \cref{sec:efsm-traces}, the compiled graph defines the machine. Each run follows
+one trajectory through its computation tree. Each visit to a location appears as a separate node
+in that tree, with its own configuration. A run that calls the controller twelve times passes
+through twelve branch points without changing the graph. \textbf{Compilation fixes the possible
+paths; the values produced during a run determine which path it takes.}
 
 \Cref{fig:efsm-planner} shows our planning agent's machine, and \cref{fig:efsm-trace-tree} unfolds part of
 its computation tree. \Cref{sec:control-demo} examines two recorded runs that follow different paths.
@@ -73,32 +75,32 @@ its computation tree. \Cref{sec:control-demo} examines two recorded runs that fo
 \subsection{Feedback edges}
 \label{sec:control-backedges}
 
-A feedback edge returns control to a location the run has already visited. Its definition must
-specify the trigger and the information passed back. If it restarts work, it must also specify
-which fields retain their values and which are reset.
+A feedback edge returns control to a location the run has already visited. To define one, we must
+state what triggers the return and what information goes back with it. If the edge restarts work,
+we must also state which fields keep their values and which are reset.
 
 Agents of this kind commonly use two feedback edges with different triggers and destinations.
 
 \bi
 
-\item \textbf{Revision.} A runtime check detects that progress has stalled and records the
-reason in a handoff field. The router then returns control to the planning location, which reads
-the reason, replaces the plan, and clears the field. A marker identifies the first observation
-under the revised plan, so later checks assess the revision using its own evidence
+\item \textbf{Revision.} A runtime check detects a stall and stores the reason in a field for
+the plan node to read. The routing function returns control to that node. It reads the reason,
+replaces the plan, and clears the field. A marker identifies the first observation under the
+revised plan. Later stall checks use only observations from that point onward
 (\cref{sec:state-lifetimes}).
 
-\item \textbf{Repair.} When a proposed artifact fails a mechanical check, the runtime appends the
-check's reasons to the conversation and the router returns the run to the location that proposed
-it. No fields need resetting. The conversation retains the failed proposal, and the next proposal
-replaces the stored one.
+\item \textbf{Repair.} When a proposed artifact fails a mechanical check, the runtime adds the
+check's reasons to the conversation. The routing function returns control to the location that
+proposed the artifact. No fields need resetting. The failed proposal stays in the conversation,
+and the next proposal replaces the one stored in the artifact field.
 
 \ei
 
-The first edge identifies a problem with the plan; the second identifies a problem with the
-artifact. Both continue the run and therefore need a bound. \textbf{A feedback edge without its own
-counter depends on the limits for the whole run.} Our planning agent has both edges. The first stall
-returns control to the plan node once. Failed checks return control and their reasons to the
-controller as often as the call budget allows.
+The revision edge responds to a problem with the plan. The repair edge responds to a problem with
+the artifact. Both allow the run to continue, so both need a limit on how often they can be taken.
+\textbf{A feedback edge without its own counter depends on the limits for the whole run.} Our
+planning agent has both edges. The first stall returns control to the plan node once. Failed
+checks return control and their reasons to the controller as often as the call budget allows.
 
 \begin{figure}[htbp]
   \centering
@@ -112,13 +114,14 @@ controller as often as the call budget allows.
 \end{figure}
 
 The proposed extension adds a third feedback edge (\cref{fig:control-extension}). In the current
-planning agent, the validator's verdict always ends the run. The extension would send a rejection to a
-reflection step, which records what went wrong, then start a new attempt at the plan node. This
-edge requires an explicit reset policy. Results from the failed attempt, including its plan,
-patch, and checks, would mislead the next attempt. These fields therefore have the attempt lifetime
-defined in \cref{sec:state-lifetimes} and require explicit clearing. The reflection, attempt counter
-$a$, and call counter have the run lifetime and must survive the reset. \textbf{Resetting the
-attempt counter with each attempt prevents it from reaching its limit.}
+planning agent, the validator's verdict always ends the run. In the extension, a rejection would
+lead to a reflection step that records what went wrong. A new attempt would then start at the
+plan node. We would need to define which fields this transition resets. The failed attempt's
+plan, patch, and check results would mislead the next attempt if left in place. These fields have
+the attempt lifetime defined in \cref{sec:state-lifetimes}, so the transition must clear them.
+The reflection, attempt counter $a$, and call counter have the run lifetime: they must keep their
+values across attempts. \textbf{Resetting the attempt counter with each attempt prevents it from
+reaching its limit.}
 
 \begin{table*}[tbp]
   \centering
@@ -129,15 +132,15 @@ attempt counter with each attempt prevents it from reaching its limit.}
     \midrule
     Revision: tools to plan node & Three identical observations within the current plan's window, none a
       successful edit. & The stall reason and the previous plan, read by the plan node. & The plan is
-      replaced, the handoff field cleared, and the stall window moved; observations are kept. & At
+      replaced, the handoff field cleared, and the start of the stall window moved; observations are kept. & At
       most once per run. A second stall ends the run with \demoref{no\_progress}. \\
     Repair: submit to controller & At least one of the three checks fails. & The checks' reasons, as
       a message in the conversation. & Nothing. The next submission replaces the stored patch and
       check results. & The call budget alone. \\
     New attempt: validator to reflection to plan node (proposed, not implemented) & The validator
       rejects, and fewer than $A$ attempts have been made. & A written reflection on the rejected
-      attempt. & Every attempt-lifetime field, by explicit writes. & The attempt limit, on a counter
-      with the run lifetime, and the call budget. \\
+      attempt. & Each field with an attempt lifetime is explicitly cleared. & The attempt limit,
+      whose counter keeps its value across attempts, and the call budget. \\
     \bottomrule
   \end{tabularx}\end{adjustbox}
   \caption{The planning agent's two implemented feedback edges and the proposed third edge. Only the
@@ -148,10 +151,10 @@ attempt counter with each attempt prevents it from reaching its limit.}
 \subsection{Loop bounds and termination}
 \label{sec:control-bounds}
 
-An exit from a loop does not by itself guarantee termination. An acceptance
-predicate identifies a successful ending without ensuring that one occurs. If a run's patches
-keep being rejected or are never submitted, another condition must stop it. A termination argument
-establishes that some condition will eventually do so.
+An exit from a loop does not by itself guarantee termination. An acceptance predicate tells us
+when a run has succeeded, but the run may never satisfy it. If patches keep being rejected or are
+never submitted, another condition must stop the run. A termination argument shows that the run
+will eventually reach a condition that stops it.
 
 \begin{definition}[Variant]
 \label{def:variant}
@@ -160,20 +163,21 @@ show that some quantity strictly decreases, and that it cannot decrease indefini
 is called the decrementing function or loop variant.''~\citep{cornell-cs2112-loopinv}
 \end{definition}
 
-For a graph, an iteration is a cycle that continues the run. We use a simple variant: a nonnegative
-integer computed from the record that strictly decreases on every continuing cycle. It cannot
-decrease indefinitely, so its initial value bounds the number of cycles. This argument does not
-bound the duration of a step.
+For a graph, we treat each cycle that continues the run as an iteration. Our variant is a
+nonnegative integer computed from the record. It must decrease on every such cycle. Because it
+cannot fall below zero, its initial value limits the number of cycles. This argument places no
+limit on how long an individual step can take.
 
-Remaining calls, $B - c$, is one candidate. The call invariant of \cref{sec:state-invariants} keeps
-$c \leq B$, so the quantity is nonnegative. It serves as a variant under two conditions: i) every
-cycle includes a transition that consumes a call, and ii) every step between calls returns or
-times out. A cycle consisting only of runtime work consumes no call. Examples include a check
-that repeats itself or a tool retry that does not consult the model. In such cycles, $B - c$ stays
-constant. \textbf{A cycle that consumes no model calls needs its own bound.}
+The number of remaining calls, $B - c$, is one possible variant. The call invariant of
+\cref{sec:state-invariants} keeps $c \leq B$, so this number is nonnegative. To use it, we need two
+conditions: i) every cycle makes a model call, and ii) every step between calls returns or times
+out. A cycle that consists only of runtime work makes no model call. Examples include a check
+that repeats itself or a tool retry that does not consult the model. In these cycles, $B - c$
+stays constant. \textbf{A cycle that consumes no model calls needs its own bound.}
 
-A stall check detects a particular pattern of non-progress, such as repeated identical results,
-and then ends or redirects the run. A run can fail to progress without producing that pattern.
+A stall check looks for a particular pattern that indicates a lack of progress, such as repeated
+identical results. When it finds that pattern, it ends or redirects the run. A run can fail to
+progress without producing the pattern.
 For example, each search may return a different irrelevant result. \textbf{Detecting one failure
 pattern does not prove termination.} ReAct's recorded trajectories include repeated actions that
 make no progress~\citep[\S3.3]{yao2023react}.
@@ -182,16 +186,18 @@ Three runtime checks can end a run before a verdict. Each compares values in the
 
 \bi
 
-\item \textbf{Budget.} A limit on model calls, checked before each call rather than after. A limit
-checked afterwards cannot prevent the cost of the call. When the limit holds on every cycle,
-remaining calls is the variant.
+\item \textbf{Budget.} The runtime checks the model-call limit before each call. By the time a call
+has finished, its cost can no longer be prevented. When each cycle uses this limited call budget,
+the number of remaining calls is the variant.
 
-\item \textbf{Stall.} A check that recognizes repeated results. It can redirect the run to
-revision the first time and end it the next, which bounds the revisions but not the run.
+\item \textbf{Stall.} The runtime checks for repeated results. The first stall can trigger a plan
+revision, and the next can end the run. This limits the number of revisions. It gives no bound on
+a run that never produces the repeated results.
 
-\item \textbf{Recursion limit.} LangGraph caps the number of supersteps (\cref{def:superstep}) one execution may run and
-raises an error when execution reaches that cap~\citep{langgraph-graph-api}. This check uses no
-information about the task or its costs. It provides a failsafe against incorrect graph wiring.
+\item \textbf{Recursion limit.} LangGraph limits the number of supersteps
+(\cref{def:superstep}) in one execution. It raises an error when execution reaches that
+limit~\citep{langgraph-graph-api}. This check uses no information about the task or its costs.
+It provides a fallback when errors in the graph's connections would otherwise let execution continue.
 
 \ei
 
@@ -201,24 +207,26 @@ call budget.
 \subsection{What a trace establishes}
 \label{sec:control-termination}
 
-A trace can support three distinct claims: i) execution terminated; ii) the acceptance procedure
-passed; iii) the artifact satisfies the task's postcondition. Each claim is stronger than the
-previous one. A terminal event establishes the first; an accepting terminal status also establishes
-the second. No event establishes the third. The acceptance procedure provides evidence about the
-artifact, without proving that it meets the postcondition. \textbf{The trace records the outcome
-of acceptance checks. It does not establish that the patch is correct.}
+When reading a trace, we must distinguish three claims: i) execution terminated; ii) the acceptance
+procedure passed; iii) the artifact satisfies the task's postcondition. Each claim is stronger
+than the previous one. A terminal event establishes the first. If its status is accepted, it also
+establishes the second. No event establishes the third. The acceptance procedure provides evidence
+about the artifact, but it does not prove that the artifact meets the postcondition.
+\textbf{The trace records the outcome of acceptance checks. It does not establish that the patch
+is correct.}
 
 The trace writer uses a fixed vocabulary of five terminal statuses:
 \demoref{accepted}, \demoref{rejected}, \demoref{budget\_exhausted}, \demoref{no\_progress} and
 \demoref{error}. It refuses other values. Closing a trace without a terminal event raises
-\demoref{NoTerminalStatus}. \textbf{A missing ending at normal trace closure indicates an
-instrumentation defect; it is not a reportable outcome.} When an exception escapes the run, the
-writer records terminal status \demoref{error}, then writes a record naming the exception. The
-status identifies the kind of ending; the next record identifies its cause.
+\demoref{NoTerminalStatus}. \textbf{If a trace closes normally without a terminal event, the trace
+recording has a defect. The missing event cannot serve as an outcome.} When an exception escapes
+the run, the writer records terminal status \demoref{error}, then writes a record naming the
+exception. The status identifies the kind of ending; the next record identifies its cause.
 
 If the process receives \texttt{SIGKILL}, no handler runs. The file ends at the last written event,
-without a terminal or exception record. A power loss may also lose that last event: the writer
-flushes events to the operating system but does not force them to disk
+without a terminal or exception record. A power loss may also erase that last event. The writer
+flushes events to the operating system, which may still be holding them in memory, but does not
+force them to disk
 (\cref{tab:control-outcomes}).
 
 \begin{table}[htbp]
@@ -233,13 +241,13 @@ flushes events to the operating system but does not force them to disk
     A terminal event with a stop status & Execution terminated without acceptance, for the stated
     reason, with whatever partial evidence the run had gathered. For \demoref{error}, the record
     that follows names the exception. \\
-    No terminal event & Termination has not been established by this record. The run may still be
-    active, or its process may have been killed without running any handler, as a
-    \texttt{SIGKILL} or a power loss would leave it. \\
+    No terminal event & This record does not establish that the run ended. The run may still be
+    active. Its process may also have stopped without running a handler, as would happen after
+    \texttt{SIGKILL} or a power loss. \\
     \bottomrule
   \end{tabularx}\end{adjustbox}
   \caption{Three interpretations of a trace. The absence of a terminal event limits what the
-  record establishes. Classifying that absence as \demoref{error} assigns a cause without evidence.}
+  record establishes. Calling that absence an \demoref{error} assigns a cause without evidence.}
   \label{tab:control-outcomes}
 \end{table}
 
@@ -251,8 +259,8 @@ These interpretations depend on three distinctions.
 still end \demoref{accepted}, while a process killed between two events leaves a run with no status
 at all.
 
-\item \textbf{Findings and status.} An assessment that reports insufficient information is a
-completed assessment, while a declared stop can carry partial evidence and no finding.
+\item \textbf{Findings and status.} An assessment can finish with a report that the information is
+insufficient. A run can also stop with some evidence collected but no finding made.
 
 \item \textbf{Reaching the end and the reason.} Reaching \demoref{END} establishes only that the
 graph stopped. The reason is in the status, which the runtime sets.
@@ -265,33 +273,34 @@ proposal. The runtime applies completion rules and sets the status; the trace re
 \subsection{The demo: recorded endings and repairs}
 \label{sec:control-demo}
 
-Our planning agent implements these routing rules and limits. Its router after submission,
-\demoref{after\_submit}, has three exits: \demoref{END} if the status has changed,
-\demoref{validate} if all three checks passed, and \demoref{controller} otherwise. The stall check
-fires on three consecutive identical observations, none of which is a successful edit. The first
-stall returns control to the plan node, which records \demoref{replanned\_at}. A second stall,
-measured using only observations since that point, ends the run with \demoref{no\_progress}.
-Neither recorded run revises its plan.
+Our planning agent implements these routing rules and limits. After submission,
+\demoref{after\_submit} chooses among three destinations. It returns \demoref{END} if the status
+has changed, \demoref{validate} if all three checks passed, and \demoref{controller} otherwise.
+The stall check looks for three consecutive identical observations, none of which is a
+successful edit. The first stall returns control to the plan node, which records
+\demoref{replanned\_at}. The next stall check uses only observations since that point. If it
+detects a second stall, the run ends with \demoref{no\_progress}. Neither recorded run revises
+its plan.
 
-Remaining calls is a variant for the whole graph. Every cycle passes through the controller,
-which either makes a call or ends the run. The recursion limit cannot fire first: every step
-without a model call is followed by a step that makes a call or ends the run. A run therefore
-takes at most about twice the call budget in supersteps. The requirement that steps return or
-time out (\cref{sec:control-bounds}) holds only in part. Rescanning and patch application have
-timeouts. Model calls and file tools depend on limits imposed by the client library and operating
-system; our configuration sets none.
+The number of remaining calls is a variant for the whole graph. Every cycle passes through the
+controller, which either makes a call or ends the run. The recursion limit cannot be reached
+first. Every step without a model call is followed by a step that makes a call or ends the run,
+so a run takes at most about twice the call budget in supersteps. We can only partly establish
+that steps return or time out, as required in \cref{sec:control-bounds}. Rescanning and patch
+application have timeouts. For model calls and file tools, we depend on any limits imposed by
+the client library and operating system. Our configuration sets none.
 
-The two recorded runs of the planning agent have different endings. One includes two repairs. The code also
-defines a third ending, budget exhaustion. The step numbers below are the trace files'
-\demoref{step} fields.
+The two recorded runs of the planning agent have different endings. One includes two repairs.
+The code also defines a third ending, budget exhaustion. The numbers below come from the
+\demoref{step} fields in the trace files.
 
 \bi
 
 \item \textbf{Accepted.} Run \demoref{bc284c6b} ends \demoref{accepted} after one submission;
 \cref{sec:efsm-demo} walks through its events.
 
-\item \textbf{Returned twice.} Run \demoref{28e37a00} submits at step 24. At step 25 the patch
-applies, but the edit does not touch the flagged line and the rescan still reports the finding. Step
+\item \textbf{Returned for repair twice.} Run \demoref{28e37a00} submits at step 24. At step 25 the
+patch applies, but the edit does not touch the flagged line and the rescan still reports the finding. Step
 26 routes back to \demoref{controller}, recording \demoref{by="runtime"} and the two reasons.
 The controller receives those reasons as a conversation message. After three tool rounds
 (steps 27--38), it submits again. At step 41 the rescan is clean, but the flagged-line check still
@@ -311,22 +320,23 @@ without terminal or exception records. No code would run to raise \demoref{NoTer
 The first 50 records would be identical. \textbf{The two files would differ only in the records
 written after the work stopped.}
 
-Neither recorded run ends with \demoref{budget\_exhausted}. The following description comes from
-the code. The configuration accepts smaller budgets, such as ten calls. A run that reached this
+Neither recorded run ends with \demoref{budget\_exhausted}, so we use the code to describe that
+ending. The configuration accepts smaller budgets, such as ten calls. A run that reached this
 budget would record a routing event with decision
 \demoref{budget\_exhausted}, \demoref{by="runtime"}, and the call count and budget, followed by the
-terminal record. No model call would occur between them because admission precedes the call.
+terminal record. No model call would occur between them because the runtime checks whether it
+can admit the call before making it.
 The gathered evidence would remain in \demoref{observations}.
 
 \subsection{Reading}
 
-\citet{langgraph-graph-api}, the sections on conditional edges, \demoref{END} and the
-recursion limit; and \citet{cornell-cs2112-loopinv}, the argument for loop correctness through its
-Termination step. \S3.3 of \citet{yao2023react} describes the repeated-action failure mode that
+Read the sections on conditional edges, \demoref{END} and the recursion limit in
+\citet{langgraph-graph-api}, and the argument for loop correctness through the Termination step in
+\citet{cornell-cs2112-loopinv}. \S3.3 of \citet{yao2023react} describes the repeated-action failure mode that
 stall checks detect.
 
-For reference while writing HW1: the terminal statuses and trace events of \demoref{trace.py},
-which define the vocabulary used in \cref{tab:control-outcomes}.
+When writing HW1, consult the terminal statuses and trace events in \demoref{trace.py}. These
+define the vocabulary used in \cref{tab:control-outcomes}.
 
 \paragraph{Looking ahead.} After routing selects a location, the runtime schedules its computation.
 The next section examines scheduling and tool execution: what a tool contract specifies beyond
