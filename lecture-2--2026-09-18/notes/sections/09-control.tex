@@ -1,20 +1,6 @@
 \section{Routing, feedback loops, and termination}
 \label{sec:control}
 
-\begin{upshot}
-\item \textbf{A routing decision is executable code over state.} A model proposes values, the
-  runtime records them, and a routing function applies the transition rules, so a router that reads
-  the model's prose has handed the control decision back to the model.
-\item \textbf{A back edge needs an exit predicate and a bound.} An acceptance condition states when
-  a loop may stop and does not establish that it will, so what terminates a loop is a limit the
-  runtime owns and checks.
-\item \textbf{A dynamic path does not require a dynamic graph.} The compiled graph is fixed for the
-  run, and different values in state select different paths through it.
-\item \textbf{Termination is a predicate the runtime evaluates and records.} A trace establishes a
-  completed assessment, a declared stop, or no observed ending, and the third of these is not an
-  error until other evidence says so.
-\end{upshot}
-
 \subsection{Routing is code, not prose}
 \label{sec:control-routing}
 
@@ -70,7 +56,7 @@ that the routers select.
 
 \begin{figure}[htbp]
   \centering
-  \input{figures/graph-v4.tikz}
+  \begin{adjustbox}{width=\linewidth}\input{figures/graph-v4.tikz}\end{adjustbox}
   \caption{The complete serial graph, with both back edges. The upper edge revises a plan inside an
   attempt; the lower path runs the reflection step and begins a new attempt. Every edge in the
   drawing is a line of wiring code, and every label on one is a predicate over state.}
@@ -92,7 +78,7 @@ retries a whole investigation over one failed edit.
 
 \begin{table}[htbp]
   \centering
-  \begin{tabularx}{\linewidth}{@{}p{0.155\linewidth}p{0.235\linewidth}XX@{}}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{@{}L{0.155\linewidth}L{0.235\linewidth}XX@{}}
     \toprule
     \textbf{Back edge} & \textbf{Trigger} & \textbf{Retained} & \textbf{Reset} \\
     \midrule
@@ -103,7 +89,7 @@ retries a whole investigation over one failed edit.
       permits another try. & Reflections, identity, the counters and the usage ledger. &
       Observations, plan, candidate patch and validation, all set explicitly. \\
     \bottomrule
-  \end{tabularx}
+  \end{tabularx}\end{adjustbox}
   \caption{The two back edges of \cref{fig:control-graph}. The retry that precedes the upper edge
   costs no model call, which is what makes it the runtime's decision rather than the model's.}
   \label{tab:control-backedges}
@@ -162,7 +148,7 @@ three answers rather than five.
 
 \begin{table}[htbp]
   \centering
-  \begin{tabularx}{\linewidth}{@{}p{0.31\linewidth}X@{}}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{@{}L{0.31\linewidth}X@{}}
     \toprule
     \textbf{What the trace records} & \textbf{What it supports} \\
     \midrule
@@ -173,7 +159,7 @@ three answers rather than five.
     No terminal event & Completion has not been established by this record. The run may still be
     active, may have been interrupted, or may have written an incomplete trace. \\
     \bottomrule
-  \end{tabularx}
+  \end{tabularx}\end{adjustbox}
   \caption{Three readings of a trace. The third is a statement about the evidence and not about the
   run, and treating it as \demoref{error} attributes a cause the record does not carry.}
   \label{tab:control-outcomes}

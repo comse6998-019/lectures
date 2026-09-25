@@ -1,0 +1,19 @@
+\documentclass[border=8pt]{standalone}
+\usepackage[T1]{fontenc}
+\IfFileExists{plex-sans.sty}{\usepackage[sfdefault]{plex-sans}}{}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\definecolor{ibmblue}{HTML}{0F62FE}
+\definecolor{ibmfg}{HTML}{161616}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,fit}
+\tikzset{
+  gnode/.style={draw=ibmfg!60, rounded corners=2pt, fill=white, font=\sffamily\footnotesize,
+                minimum height=7mm, inner sep=4pt, align=center},
+  mnode/.style={gnode, fill=ibmblue!15},
+  rnode/.style={gnode, fill=black!6},
+  tnode/.style={draw=ibmfg!60, ellipse, font=\sffamily\footnotesize, inner sep=3pt},
+  flow/.style={-{Stealth[length=2mm]}, thick, draw=ibmfg!80},
+  back/.style={flow, dashed},
+  lab/.style={font=\sffamily\scriptsize, fill=white, inner sep=1pt, align=center},
+}

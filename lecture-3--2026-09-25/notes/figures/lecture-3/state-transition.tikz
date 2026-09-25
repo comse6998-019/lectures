@@ -1,0 +1,17 @@
+% One transition: a node reads state and an external result, returns a partial update, and the
+% runtime merges that update key by key. The dashed edge is the reducer's left argument, which
+% comes from the current state and never from the node.
+\begin{tikzpicture}[node distance=6mm and 5mm]
+  \node[rnode] (s0) {state $s_t$};
+  \node[mnode, right=of s0] (node) {node};
+  \node[gnode, right=of node] (upd) {partial\\update $u_t$};
+  \node[rnode, right=15mm of upd] (red) {reducer,\\one per key};
+  \node[rnode, right=of red] (s1) {state $s_{t+1}$};
+  \node[tnode, align=center, below=8mm of node] (ext) {model reply or\\tool observation $e_t$};
+  \draw[flow] (s0) -- (node);
+  \draw[flow] (node) -- (upd);
+  \draw[flow] (upd) -- node[lab, below] {right\\argument} (red);
+  \draw[flow] (red) -- (s1);
+  \draw[flow] (ext) -- (node);
+  \draw[back] (s0.north) to[out=35, in=145] node[lab, above] {left argument} (red.north);
+\end{tikzpicture}

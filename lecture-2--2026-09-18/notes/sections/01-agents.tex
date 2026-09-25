@@ -1,33 +1,6 @@
 \section{Intelligent agents}
 \label{sec:agents}
 
-\begin{upshot}
-\item \textbf{The agent} is characterized by a mapping from percept sequences to actions.
-  The agent function specifies this mapping; the agent program implements it and embodies
-  the relevant design choices. \msa{} serves as the running example: its percepts comprise
-  a single alert and subsequent tool outputs, and its actions are \demoref{read\_file},
-  \demoref{search}, \demoref{edit}, and \demoref{submit}.
-\item \textbf{The environment} is specified through a PEAS description before the program
-  is designed and classified according to seven properties that constrain the suitability
-  of agent programs. The environment considered here is partially observable, single-agent,
-  deterministic, sequential within a single alert, static, discrete, and known. Partial
-  observability is particularly consequential: rational action in this setting requires
-  actions that acquire information.
-\item \textbf{The performance measure} specifies which sequences of environment states
-  constitute desirable outcomes. Defined by the task designer, it evaluates the environment
-  rather than the agent's beliefs. Rationality is defined relative to this measure: the agent
-  selects the action expected to maximize performance, given its percept sequence and built-in
-  knowledge. For \msa{}, the objective is a patch that eliminates the reported weakness while
-  preserving the endpoint's intended behavior, at bounded cost.
-\item \textbf{The organizing question} concerns the extent to which the percept-to-action
-  mapping is fixed at design time rather than computed from percepts at run time. A fixed
-  workflow prespecifies nearly the entire mapping and remains rational only insofar as the
-  designer's prior knowledge remains applicable. A reactive loop computes the next action
-  from the percept sequence available thus far. Planning, validation, and reflection each
-  transfer an additional decision to run time; the design patterns combine these mechanisms.
-  Successive versions of \msa{} illustrate this progression.
-\end{upshot}
-
 \subsection{Rational agents}
 \label{sec:agents-rational}
 
@@ -54,7 +27,7 @@ specify the task, and the program is where our design choices live.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.5\linewidth]{figures/aima-fig2-1.png}
+  \includegraphics[width=\linewidth]{figures/aima-fig2-1.png}
   \caption{An agent and its environment. Figure~2.1 of \citet{russell2020aima}, reproduced from
   the Global Edition (\copyright~Pearson Education Limited 2022).}
   \label{fig:agents-fig21}
@@ -89,7 +62,7 @@ component deciding. Nothing else about the agent changes.
 
 \begin{figure}[htbp]
   \centering
-  \resizebox{\linewidth}{!}{\input{figures/agent-state-graph.tikz}}
+  \begin{adjustbox}{width=\linewidth}\input{figures/agent-state-graph.tikz}\end{adjustbox}
   \caption{\msa{} as a state machine. Blue is the state where a model call decides, grey is
   runtime-owned. The run ends only when a submission is accepted.}
   \label{fig:agents-state}
@@ -118,7 +91,7 @@ A full tabulation of it would be unbounded unless the budget bounds the percept 
 
 \begin{figure}[htbp]
   \centering
-  \resizebox{\linewidth}{!}{\input{figures/seq-mini-swe-agent.tikz}}
+  \begin{adjustbox}{width=\linewidth}\input{figures/seq-mini-swe-agent.tikz}\end{adjustbox}
   \caption{One run on the worked alert. Blue arrows are actions the controller requests; red
   arrows are percepts the runtime returns.}
   \label{fig:agents-sequence}
@@ -194,18 +167,17 @@ Task environments are the problems to which rational agents are the solutions, a
 the task environment decides the appropriate design for the agent program
 \citep[\S2.3]{russell2020aima}. \Cref{tab:agents-peas} is the PEAS description of \msa{}.
 
-\begin{table}[htbp]
+\begin{table*}[tbp]
   \caption{PEAS description of the task environment for \msa{}.}
   \label{tab:agents-peas}
-  \small
-  \begin{tabularx}{\linewidth}{XXXX}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{XXXX}
     \toprule
     Performance measure & Environment & Actuators & Sensors \\
     \midrule
     The weakness the alert reports is gone and the endpoint still returns what it returned before; bounded cost in tool calls and tokens & OWASP BenchmarkPython at a pinned commit; one alert from a static scanner, read as an issue report; the working tree the agent edits & \demoref{read\_file(path, range)}, \demoref{search(pattern)}, \demoref{edit(path, old, new)}, \demoref{submit(patch)} & The alert; file excerpts; search hits; edit confirmations; the validation result; tool errors \\
     \bottomrule
-  \end{tabularx}
-\end{table}
+  \end{tabularx}\end{adjustbox}
+\end{table*}
 
 The environment is not the whole world but the part whose state we care about when we design
 the agent: what affects what it perceives, and what its actions affect
@@ -222,87 +194,87 @@ Each table below gives one pair: the defining sentence and the standard examples
 \citep[Fig.~2.6]{russell2020aima}.
 
 \subsubsection{Fully observable vs.\ partially observable}
-\begin{center}\small
-\begin{tabularx}{\linewidth}{>{\RaggedRight}p{1.9cm}XX}
+\begin{center}
+\begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{L{0.18\linewidth}XX}
   \toprule
   & Fully observable & Partially observable \\
   \midrule
   Definition & ``If an agent's sensors give it access to the complete state of the environment at each point in time, then we say the task environment is fully observable.'' Effectively fully observable if the sensors detect every aspect relevant to the choice of action. & Sensors are noisy or inaccurate, or parts of the state are missing from the sensor data. With no sensors at all, unobservable. \\
   Examples & Crossword, chess with a clock, backgammon, image analysis & Poker, taxi driving, medical diagnosis, part-picking robot, refinery controller \\
   \bottomrule
-\end{tabularx}
+\end{tabularx}\end{adjustbox}
 \end{center}
 
 \subsubsection{Single-agent vs.\ multiagent}
-\begin{center}\small
-\begin{tabularx}{\linewidth}{>{\RaggedRight}p{1.9cm}XX}
+\begin{center}
+\begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{L{0.18\linewidth}XX}
   \toprule
   & Single-agent & Multiagent \\
   \midrule
   Definition & No other entity's behavior is best described as maximizing a performance measure whose value depends on this agent's behavior. & ``The key distinction is whether B's behavior is best described as maximizing a performance measure whose value depends on agent A's behavior.'' Competitive (chess) or partially cooperative (taxi driving). \\
   Examples & Crossword, medical diagnosis, image analysis, part-picking robot, refinery controller & Chess with a clock, poker, backgammon, taxi driving, English tutor \\
   \bottomrule
-\end{tabularx}
+\end{tabularx}\end{adjustbox}
 \end{center}
 
 \subsubsection{Deterministic vs.\ nondeterministic}
-\begin{center}\small
-\begin{tabularx}{\linewidth}{>{\RaggedRight}p{1.9cm}XX}
+\begin{center}
+\begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{L{0.18\linewidth}XX}
   \toprule
   & Deterministic & Nondeterministic \\
   \midrule
   Definition & ``If the next state of the environment is completely determined by the current state and the action executed by the agent(s), then we say the environment is deterministic.'' & Otherwise. A partially observable environment can appear nondeterministic. \emph{Stochastic} is reserved for models that quantify the possibilities with probabilities. \\
   Examples & Crossword, chess with a clock, image analysis & Poker, backgammon, taxi driving, medical diagnosis, refinery controller (listed as stochastic) \\
   \bottomrule
-\end{tabularx}
+\end{tabularx}\end{adjustbox}
 \end{center}
 
 \subsubsection{Episodic vs.\ sequential}
-\begin{center}\small
-\begin{tabularx}{\linewidth}{>{\RaggedRight}p{1.9cm}XX}
+\begin{center}
+\begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{L{0.18\linewidth}XX}
   \toprule
   & Episodic & Sequential \\
   \midrule
   Definition & ``In an episodic task environment, the agent's experience is divided into atomic episodes. In each episode the agent receives a percept and then performs a single action. Crucially, the next episode does not depend on the actions taken in previous episodes.'' & ``In sequential environments, on the other hand, the current decision could affect all future decisions.'' \\
   Examples & Image analysis, part-picking robot & Crossword, chess, poker, backgammon, taxi driving, medical diagnosis, refinery controller, English tutor \\
   \bottomrule
-\end{tabularx}
+\end{tabularx}\end{adjustbox}
 \end{center}
 
 \subsubsection{Static vs.\ dynamic}
-\begin{center}\small
-\begin{tabularx}{\linewidth}{>{\RaggedRight}p{1.9cm}XX}
+\begin{center}
+\begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{L{0.18\linewidth}XX}
   \toprule
   & Static & Dynamic \\
   \midrule
   Definition & The environment cannot change while the agent is deliberating. The agent need not keep looking at the world while deciding, nor worry about the passage of time. & ``If the environment can change while an agent is deliberating, then we say the environment is dynamic for that agent.'' \emph{Semidynamic} if the environment does not change with time but the performance score does. \\
   Examples & Crossword, poker, backgammon; chess with a clock and image analysis are semidynamic & Taxi driving, medical diagnosis, part-picking robot, refinery controller, English tutor \\
   \bottomrule
-\end{tabularx}
+\end{tabularx}\end{adjustbox}
 \end{center}
 
 \subsubsection{Discrete vs.\ continuous}
-\begin{center}\small
-\begin{tabularx}{\linewidth}{>{\RaggedRight}p{1.9cm}XX}
+\begin{center}
+\begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{L{0.18\linewidth}XX}
   \toprule
   & Discrete & Continuous \\
   \midrule
   Definition & ``The discrete/continuous distinction applies to the state of the environment, to the way time is handled, and to the percepts and actions of the agent.'' A finite number of distinct states, percepts, and actions. & State, time, percepts, or actions sweep through a range of values. \\
   Examples & Crossword, chess with a clock, poker, backgammon, English tutor & Taxi driving, medical diagnosis, image analysis, part-picking robot, refinery controller \\
   \bottomrule
-\end{tabularx}
+\end{tabularx}\end{adjustbox}
 \end{center}
 
 \subsubsection{Known vs.\ unknown}
-\begin{center}\small
-\begin{tabularx}{\linewidth}{>{\RaggedRight}p{1.9cm}XX}
+\begin{center}
+\begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{L{0.18\linewidth}XX}
   \toprule
   & Known & Unknown \\
   \midrule
   Definition & ``In a known environment, the outcomes (or outcome probabilities if the environment is nondeterministic) for all actions are given.'' The distinction concerns the agent's knowledge of the laws of the environment, not the environment itself. & The agent has to learn how the environment works before it can decide well. A new video game may show the whole screen and still not say what the buttons do. \\
   Examples & Chess and poker: the rules can be supplied in full & Driving a rented car in a new country \\
   \bottomrule
-\end{tabularx}
+\end{tabularx}\end{adjustbox}
 \end{center}
 
 The hardest case \citep[\S2.3.2]{russell2020aima} is partially observable, multiagent,
@@ -333,7 +305,7 @@ updated is taken up in Part~B.
 % Not a float: this figure and the table below it are read against each other, so they must not
 % drift apart.
 \begin{center}
-  \resizebox{\linewidth}{!}{\input{figures/agent-state-graph-annotated.tikz}}
+  \begin{adjustbox}{width=\linewidth}\input{figures/agent-state-graph-annotated.tikz}\end{adjustbox}
   \captionof{figure}{The same machine as \cref{fig:agents-state}, with the vocabulary named on it.
   The dashed box is the environment, the solid box is the agent program, and the three tools are the
   only path between them. Each blue label names a row of \cref{tab:agents-mapping}.}
@@ -343,8 +315,7 @@ updated is taken up in Part~B.
 \begin{table}[htbp]
   \caption{The vocabulary mapped onto the components every version shares.}
   \label{tab:agents-mapping}
-  \small
-  \begin{tabularx}{\linewidth}{>{\RaggedRight}p{2.6cm}XX}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{L{0.25\linewidth}XX}
     \toprule
     Concept & In \msa{} & Where it appears in the demo source \\
     \midrule
@@ -356,7 +327,7 @@ updated is taken up in Part~B.
     Agent program & Controller: decides the next action. The runtime's control loop: executes it, updates state, routes, and stops & The controller node; the dispatcher, the reducers, the routing predicate, the terminal statuses \\
     Architecture & The process the run lives in, the model client, and the tool implementations & The process the demo starts, the client behind the controller node, and the code behind the tool layer \\
     \bottomrule
-  \end{tabularx}
+  \end{tabularx}\end{adjustbox}
 \end{table}
 
 \begin{demostub}

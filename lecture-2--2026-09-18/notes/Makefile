@@ -6,12 +6,9 @@ DOC := lecture-2
 .PHONY: all clean
 
 # Build the lecture notes and fail on unresolved references.
-# tectonic does not honor TEXINPUTS, so ibm.cls must sit beside the document. It used to be a
-# symlink to ../../ibm.cls; that shared copy is gone and this is now a real file.
 all:
 	@set -euo pipefail; \
 	cd "$(NOTES_DIR)"; \
-	[ -e ibm.cls ] || { echo "BUILD FAILED: ibm.cls is missing from $$(pwd)"; exit 1; }; \
 	tectonic --keep-logs --keep-intermediates --synctex $(DOC).tex; \
 	if grep -qE "Citation .* undefined|Reference .* undefined|There were undefined" $(DOC).log; then \
 	  echo "BUILD FAILED: undefined references or citations"; \

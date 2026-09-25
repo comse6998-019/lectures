@@ -1,21 +1,6 @@
 \section{The investigation record}
 \label{sec:state}
 
-\begin{upshot}
-\item \textbf{Runtime state and model context are separate records whose contents overlap.} The
-  runtime keeps the first between steps and assembles the second for each model call, and the
-  fields that never enter a model call are what make accounting and control possible.
-\item \textbf{A transition consumes a result that arrives from outside the program.} The next
-  state is a function of the current state together with a model reply or a tool observation, so
-  two runs from identical states can diverge without any node behaving differently.
-\item \textbf{The reducer attached to a field fixes what every later step can see.} Appending
-  retains a field's history, replacement installs the latest value and discards what it stood on,
-  and the choice is made per field when the schema is written.
-\item \textbf{A declared schema is not a runtime check.} Annotations describe the record for a type
-  checker and validate nothing that enters it during a run, so every guarantee about the contents
-  of state rests on code we write.
-\end{upshot}
-
 \subsection{What connects one step to the next}
 \label{sec:state-transition}
 
@@ -40,7 +25,7 @@ update $u_t$. The runtime then merges that update into the record, key by key:
 
 \begin{figure}[htbp]
   \centering
-  \input{figures/state-transition.tikz}
+  \begin{adjustbox}{width=\linewidth}\input{figures/state-transition.tikz}\end{adjustbox}
   \caption{One transition. The node proposes an update; the runtime merges it. Each key is merged
   by its own reducer, whose left argument is the value already in state and whose right argument is
   the value the node returned.}
@@ -74,7 +59,7 @@ makes it durable.
 
 \begin{table}[htbp]
   \centering
-  \begin{tabularx}{\linewidth}{@{}p{0.19\linewidth}X@{}}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{@{}L{0.19\linewidth}X@{}}
     \toprule
     \textbf{Record} & \textbf{What it holds, and who reads it} \\
     \midrule
@@ -85,7 +70,7 @@ makes it durable.
     Durable state & State written somewhere that survives the end of the process, in a form that
     supports resuming a run rather than restarting it. \\
     \bottomrule
-  \end{tabularx}
+  \end{tabularx}\end{adjustbox}
   \caption{Three records, kept apart. Model context is derived from runtime state at each call;
   durable state is runtime state that has been written down.}
   \label{tab:state-three}
@@ -124,7 +109,7 @@ other objects.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.72\linewidth]{figures/aima-fig2-16.png}
+  \includegraphics[width=\linewidth]{figures/aima-fig2-16.png}
   \caption{Three ways to represent states and the transitions between them. Figure~2.16 of
   \citet{russell2020aima}, reproduced from the Global Edition (\copyright~Pearson Education
   Limited 2022).}
@@ -159,9 +144,9 @@ the model both \citep[\S2.4.7]{russell2020aima}.
 run-local, carried across the whole run, and iii) attempt-local, cleared when the reflection step
 starts a new attempt.
 
-\begin{table}[htbp]
+\begin{table*}[tbp]
   \centering
-  \begin{tabularx}{\linewidth}{@{}p{0.20\linewidth}p{0.155\linewidth}p{0.155\linewidth}X@{}}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{@{}L{0.20\linewidth}L{0.155\linewidth}L{0.155\linewidth}X@{}}
     \toprule
     \textbf{Field} & \textbf{Lifetime} & \textbf{Reducer} & \textbf{What it holds} \\
     \midrule
@@ -184,13 +169,13 @@ starts a new attempt.
       spent, kept across attempt resets. \\
     \demoref{status} & run-local & replace & Running, or the terminal status that ended the run. \\
     \bottomrule
-  \end{tabularx}
+  \end{tabularx}\end{adjustbox}
   \caption{The state schema of \demoref{state.py}. The loop populates the identity fields,
   \demoref{messages}, \demoref{observations}, \demoref{candidate\_patch}, the counters and
   \demoref{status}; each later version adds the field its new node fills, so a version's diff shows
   one change rather than a field that was always waiting.}
   \label{tab:state-fields}
-\end{table}
+\end{table*}
 
 Nothing in that declaration checks anything. A \demoref{TypedDict} is a description for a type
 checker, not a gate: its types cannot be used in \demoref{isinstance} tests, and an instance

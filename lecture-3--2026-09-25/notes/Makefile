@@ -5,11 +5,9 @@ NOTES_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 .PHONY: all clean
 
 # Build the lecture notes and fail on unresolved references.
-# tectonic does not honor TEXINPUTS; ibm.cls is linked from lectures/ibm.cls.
 all:
 	@set -euo pipefail; \
 	cd "$(NOTES_DIR)"; \
-	[ -e ibm.cls ] || ln -s ../../ibm.cls ibm.cls; \
 	tectonic --keep-logs --keep-intermediates lecture_notes.tex; \
 	if grep -qE "Citation .* undefined|Reference .* undefined|There were undefined" lecture_notes.log; then \
 	  echo "BUILD FAILED: undefined references or citations"; \

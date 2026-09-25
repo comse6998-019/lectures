@@ -1,86 +1,130 @@
-\section{The tool boundary}
+\section{Scheduling, tools, and execution authority}
 \label{sec:boundary}
 
-\begin{upshot}
-\item \textbf{A tool contract spans the model-facing definition and the runtime's enforcement.} The
-  provider's schema carries the name, the description and the argument types; the result type, the
-  effect class and the execution constraints live in code we write and are enforced there.
-\item \textbf{A model response establishes that a tool was requested, not that one ran.} The
-  evidence that a function was entered is the runtime's own record of entering it.
-\item \textbf{A refused request and a permitted call that fails are different events with the same
-  shape.} Both become observations the model can read, and only one of them reached the
-  implementation.
-\item \textbf{Interface design changes outcomes with the model held fixed.} The action set, the
-  feedback format and the guardrails have measurable consequences, which puts them in the
-  architecture rather than in the plumbing.
-\end{upshot}
+\subsection{Scheduling: when an update becomes visible}
+\label{sec:boundary-scheduling}
+
+Routing selects the next location; scheduling determines when its computation runs. The scheduler
+also determines which record the computation reads and when later computations can read its update.
+
+\begin{definition}[Superstep]
+\label{def:superstep}
+``Pregel computations consist of a sequence of iterations, called supersteps.'' By design, the model
+``doesn't expose any mechanism for detecting order of execution within a superstep, and all
+communication is from superstep $S$ to superstep $S + 1$''~\citep[\S1]{malewicz2010pregel}.
+\end{definition}
+
+A runtime using this model divides each superstep into three phases: i) \emph{planning} selects
+computations whose inputs were written in the previous superstep; ii) \emph{execution} runs those
+computations, whose writes remain invisible to other computations during this phase;
+iii) \emph{update} applies the writes through the reducers of \cref{sec:state-reducers}. The next
+superstep plans from the updated record. In the notation of \cref{sec:state-transition}, execution
+computes $u_t$, and the update phase computes $\mathrm{merge}(s_t, u_t)$.
+
+This sequence guarantees update order. The runtime applies a node's writes after the node returns,
+then plans its successor. \textbf{A later node never reads a partly applied update.} Nodes in the
+same superstep cannot see one another's writes. The runtime combines their writes in the update
+phase. If two nodes write the same field, that field needs a reducer that combines their values;
+otherwise, the runtime must reject the competing writes.
+
+This guarantee applies only to the record. A tool can change a file during execution, before the
+superstep ends. If the node then fails, the file remains changed, but the record lacks the update
+that would describe the change. \textbf{Superstep visibility orders record updates. It does not
+order external effects.} The tool boundary must control those effects.
 
 \subsection{The tool contract}
 \label{sec:boundary-contract}
 
-A tool has two faces, and only one of them is visible to the model. The model reads a name, a
-description and an argument schema; the runtime holds the function, the constraints on where it may
-operate, and the decision about what happens when an argument is wrong. Calling the first face the
-tool is the mistake this section is built to prevent.
+The model receives a tool's name, description, and argument schema. The runtime holds its
+implementation, enforces its operating constraints, and handles invalid arguments. The description
+alone does not provide these controls.
 
 \begin{definition}[Tool contract]
 \label{def:tool-contract}
-We use \emph{tool contract} for the complete specification of one tool. It has five parts: i) the
-name and purpose, ii) the typed arguments and their constraints, iii) the typed success result and
-the error representation, iv) the side-effect class, and v) the execution constraints. The
-side-effect class is read-only inspection of source for two of our three tools, and the execution
-constraint on all three is the directory they may touch. The model-facing definition covers the
-first two parts. The other three are properties of the implementation and its dispatcher, and a
-model that has read the description knows nothing about them.
+A \emph{tool contract} specifies five parts of a tool: i) its name and purpose, ii) typed arguments
+and their constraints, iii) the typed success result and error representation, iv) its side-effect
+class, and v) execution constraints, such as the directories it may access. The definition supplied
+to the model covers the first two parts. The implementation and dispatcher determine the other
+three, which the model cannot establish from the description.
 \end{definition}
 
-Our three tools make the contract concrete. \demoref{read\_file} takes a path and an optional line
-range and returns text; \demoref{search} takes a pattern and an optional glob and returns matching
-lines with their locations; \demoref{edit} replaces an exact string in a file. All three take the
-workspace root as their first parameter and resolve every path through it, and none of them can
-write outside that root.
+A method specification assigns obligations to the caller and the implementer
+(\citealp[Specification structure]{mit6031-specs}).
 
-The signature is the contract, which decides where configuration goes. Tools read the run's
-configuration from the module rather than accepting it as a parameter, because the dispatcher
-validates the model's arguments by binding them against the signature, so \textbf{every parameter
-in a tool's signature is a value the model is permitted to supply}. A \demoref{config} parameter
-would be bindable, and a bindable parameter is one the model can set. The workspace root is a
-parameter, and it is the dispatcher that supplies it; the model never sees it in the schema and
-cannot pass it.
+\begin{definition}[Precondition]
+\label{def:precondition}
+``The precondition is an obligation on the client (the caller of the method). It is a condition over
+the state in which the method is invoked.''
+\end{definition}
+
+\begin{definition}[Postcondition]
+\label{def:postcondition}
+``The postcondition is an obligation on the implementer of the method.'' ``In general, the
+postcondition is a condition on the state of the program after the method is invoked, assuming the
+precondition was true before.''
+\end{definition}
+
+For a tool, the precondition covers typed arguments and their constraints, including execution
+constraints on the request. For example, a path may have to resolve inside the workspace. The
+postcondition covers the result, error representation, and side effects. The precondition defines
+when the tool's promises apply; the postcondition defines those promises.
+
+A method specification may make no promises when the caller violates a precondition. An agent's
+tool contract needs stricter rejection rules because the model can supply invalid arguments during
+normal operation. The contract must state which violations the runtime detects, how it reports
+refusal, and that a refused request has no side effects. \textbf{A tool contract must define how
+the runtime handles violated preconditions.}
+
+Our three tools illustrate this contract. \demoref{read\_file} takes a path and an optional line
+range and returns text; \demoref{search} takes a regular expression and an optional glob and
+returns matching lines with their locations; \demoref{edit} replaces one exact occurrence of a
+string in a file. Only \demoref{edit} writes. All three take the workspace root as their first
+parameter. Before opening a file, \demoref{read\_file} and \demoref{edit} resolve its path through
+that root. \demoref{search} matches its glob against the root without resolving paths
+(\cref{sec:boundary-demo}).
+
+The function signature determines which arguments the dispatcher accepts, so it also determines
+where configuration can be supplied. Tools read the run's configuration from the module. They do
+not accept it as a parameter. The dispatcher binds model arguments against the signature, so
+\textbf{a parameter the dispatcher has not already supplied can receive a value from the model}.
+Adding a \demoref{config} parameter would let the model set it. The dispatcher itself supplies
+the workspace-root parameter, which is absent from the model's schema. If a request names that
+parameter anyway, binding fails because the dispatcher has already supplied the argument.
 
 \subsection{The dispatch cycle}
 \label{sec:boundary-dispatch}
 
-Between a model's request and a result there are five operations, and each of them can end the
-cycle. \Cref{fig:dispatch-cycle} follows one request through all of them.
+The dispatch cycle has five operations, each of which can end the cycle.
+\Cref{fig:dispatch-cycle} follows one request through them.
 
 \begin{figure}[htbp]
   \centering
-  \input{figures/dispatch-cycle.tikz}
-  \caption{One dispatch. The name is resolved against the registry and the arguments are bound
-  against the signature; the path is resolved inside the workspace root; the function runs. Every
-  path in the drawing produces an observation, which is what allows a run to continue after a
-  request the runtime would not carry out.}
+  \begin{adjustbox}{width=\linewidth}\input{figures/lecture-3/dispatch-cycle.tikz}\end{adjustbox}
+  \caption{The logical stages of one dispatch. Ellipses show the incoming request and the records
+  that receive the observation; grey boxes show runtime work. Solid arrows follow successful
+  checks. Dashed arrows show refusals, which also produce observations. A policy check may run
+  inside the tool, as in our implementation, if it precedes the protected effect.}
   \label{fig:dispatch-cycle}
 \end{figure}
 
 \bi
 
-\item \textbf{Resolve the name.} A request naming a tool that is not in the registry is refused, and
-the refusal names the tools that do exist. The registry is built from the tool enumeration, so
-there is one list and no way for a tool to be advertised to the model without being registered.
+\item \textbf{Resolve the name.} The dispatcher refuses requests for unregistered tools and lists
+the available tools in its response. It builds the registry from the tool enumeration. A tool
+absent from that registry cannot run, regardless of the definitions supplied to the model.
 
 \item \textbf{Bind the arguments.} The dispatcher binds the model's arguments against the function's
-signature before calling it, which turns a wrong argument name into a readable refusal instead of a
-\demoref{TypeError} raised from somewhere inside the tool. Binding checks names and arity and not
-types, so unambiguous type mismatches are coerced rather than spending a model call to complain
-about a string where an integer was wanted.
+signature before calling it. A wrong argument name therefore produces a readable refusal rather
+than a \demoref{TypeError} from inside the tool. Binding checks names and arity. It does not check
+types. The dispatcher coerces unambiguous type mismatches, avoiding an extra model call to correct,
+for example, a string supplied where an integer was required.
 
-\item \textbf{Check the policy.} Every path argument is resolved inside the workspace root, and a
-path that resolves outside it is refused before any file is opened.
+\item \textbf{Check the policy.} Before opening a file, the tool resolves its path and refuses it
+if it lies outside the workspace root. This check is the first operation in \demoref{read\_file}
+and \demoref{edit}. The dispatcher converts any exception from this check into a refusal.
 
-\item \textbf{Execute.} The function runs with the validated arguments and the dispatcher's
-workspace root.
+\item \textbf{Perform the permitted operation.} The function runs with the bound arguments and the
+dispatcher's workspace root.
 
 \item \textbf{Observe.} Success and failure alike become an \demoref{Observation} carrying the tool,
 the arguments, an \demoref{ok} flag and a string result, and the dispatcher writes a
@@ -88,224 +132,203 @@ the arguments, an \demoref{ok} flag and a string result, and the dispatcher writ
 
 \ei
 
-A refusal is an observation and not an exception, and the difference is what keeps the loop of
-\cref{sec:reactive} alive. An exception ends the run; an observation goes back to the model, which
-reads what went wrong and chooses again. When \demoref{edit} refuses an ambiguous target the model
-retries with more context, and a run that raised instead would die on its first imprecise edit.
-Exceptions stay for the genuinely unrecoverable, such as a trace that cannot be written.
+A refusal returns an observation to the model, allowing the reactive loop to continue. An
+exception ends the run. If \demoref{edit} refuses an ambiguous target, the model can use the
+observation to retry with more context. Raising an exception would end the run at that first
+imprecise edit. Exceptions are reserved for unrecoverable failures, such as an unwritable trace.
 
-\subsection{What the model saw, and what ran}
+The tools node dispatches multiple calls from one response sequentially within one superstep.
+Each call receives an observation, including failed calls. Omitting a response to any call makes
+the next model message malformed.
+
+\subsection{Evidence of a request and its execution}
 \label{sec:boundary-artifacts}
 
-The same tool call leaves traces in six places, and they support different claims.
-\Cref{tab:boundary-artifacts} follows the \demoref{read\_file} call of the recorded run through all
-of them.
+One tool call appears in six places, each of which supports different claims.
+\Cref{tab:boundary-artifacts} follows the first \demoref{read\_file} call of the planning agent's accepted
+run, \demoref{bc284c6b}, through these records and processing stages.
 
 \begin{table}[htbp]
   \centering
-  \begin{tabularx}{\linewidth}{@{}p{0.21\linewidth}p{0.30\linewidth}X@{}}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{@{}L{0.25\linewidth}L{0.36\linewidth}X@{}}
     \toprule
     \textbf{Artifact} & \textbf{What it contains} & \textbf{What it establishes} \\
     \midrule
-    Model input & The tool definitions and the conversation so far. & Which operations were
-      offered, and on what description. \\
-    Model response & A tool call with an identifier, a name and arguments. & That the model
-      requested an operation. Nothing more. \\
-    \demoref{tool\_request} event & The tool name and the arguments as the dispatcher received
-      them. & That the request reached the dispatcher and the cycle began. \\
-    Dispatcher & Registry lookup, argument binding, path resolution. & That the request satisfied
-      the contract, or the reason it did not. \\
-    \demoref{tool\_result} event & \demoref{ok=true}, 1,665 characters. & That the function ran and
-      returned, and how much text came back. \\
+    Model input & The tool definitions and the conversation so far. The trace does not record
+      it. & Which operations and descriptions were supplied to the model. \\
+    Model response, and the \demoref{model\_call} event (step 3) & A tool call with an identifier, a
+      name and arguments. The event keeps only the name, \demoref{read\_file}. & That the model
+      requested an operation. It does not establish execution. \\
+    \demoref{tool\_request} event (step 5) & The tool name and the arguments as the dispatcher
+      received them. & That the request reached the dispatcher and began the cycle. \\
+    Dispatcher & Registry lookup, argument binding, path resolution. No event of its own; a failed
+      check would appear as the reason in the result event. & That the request satisfied the
+      contract, or why it failed a check. \\
+    \demoref{tool\_result} event (step 6) & \demoref{ok=true}, 1,665 characters, which is the length
+      of the file. & That the function ran and returned, and how much text came back. \\
     State and next input & One record appended to \demoref{observations}, one tool message appended
-      to \demoref{messages}. & What the next model call was allowed to see. \\
+      to \demoref{messages}. & What the next model call, at step 7, was allowed to see. \\
     \bottomrule
-  \end{tabularx}
-  \caption{One \demoref{read\_file} call on \demoref{testcode/BenchmarkTest00283.py} through the
-  artifacts it leaves, from \demoref{runs/v1-bc284c6b.jsonl}, steps 3 and 4. The provider's raw
-  request stays in the message history; the trace records the dispatcher's view of it.}
+  \end{tabularx}\end{adjustbox}
+  \caption{Records and processing stages for one \demoref{read\_file} call on
+  \demoref{testcode/BenchmarkTest00283.py}, from run \demoref{bc284c6b}, steps 3 to 7. Step numbers
+  count trace events rather than supersteps. The message history retains the provider's raw
+  request; the trace records the request received by the dispatcher.}
   \label{tab:boundary-artifacts}
 \end{table}
 
-The second and fifth rows are the pair worth separating. A model response containing a tool call is
-evidence about the model and not about the file system, and a transcript that shows a request
-followed by a plausible-looking result establishes nothing on its own, because both were produced by
-the model. The runtime's \demoref{tool\_result} event is what establishes that the function was
-entered, and it is our record rather than the model's.
+Step 4, between the response and the request, is the routing event: decision \demoref{tools},
+\demoref{by="model"}, because the reply carried a tool call (\cref{sec:control-routing}). It records
+the selected control location. It does not describe tool execution.
 
-The demonstration is sequential on purpose. When a model returns several tool calls in one
-response, the dispatcher runs them one at a time and returns one observation for each, including
-the ones that failed, because a tool call left without an answer makes the next model message
-malformed.
-
-\subsection{The interface is a design decision}
-\label{sec:boundary-aci}
-
-The action set and the shape of the feedback are not conveniences around the real system; they move
-outcomes. SWE-agent is the clearest evidence for that, because it holds the model fixed and varies
-the interface.
-
-\begin{definition}[Agent-computer interface]
-\label{def:aci}
-An agent-computer interface is ``an abstraction layer between the LM agent and
-computer''~\citep{yang2024sweagent}, which ``specifies both the commands available to the LM and how
-the environment state is communicated back to the LM''~\citep[\S2]{yang2024sweagent}.
-\end{definition}
-
-Four principles come out of that work, and each has a counterpart in our dispatcher. Actions are
-simple and few; important operations are consolidated so that one action makes real progress;
-feedback is informative and concise; and guardrails catch the mistakes models make, so that an error
-does not propagate through the turns that follow \citep[\S2]{yang2024sweagent}. With GPT-4 Turbo, the resulting system resolves 12.47\%
-of the 2,294 SWE-bench test instances, against 3.8\% for the previous best non-interactive
-retrieval-augmented system, and the same interface carries to another model, with Claude 3 Opus
-resolving 10.5\% \citep[\S1]{yang2024sweagent}.
-
-The ablations of the interface bear on design decisions rather than on leaderboards
-(\cref{tab:boundary-aci}).
-
-\begin{table}[htbp]
-  \centering
-  \begin{tabularx}{\linewidth}{@{}p{0.17\linewidth}p{0.27\linewidth}rX@{}}
-    \toprule
-    \textbf{Component} & \textbf{Variant} & \textbf{Resolved} & \textbf{Change} \\
-    \midrule
-    \multicolumn{2}{@{}l}{SWE-agent, as configured} & 18.0 & \\
-    Editor & edit action without linting & 15.0 & $-3.0$ \\
-           & no edit action at all & 10.3 & $-7.7$ \\
-    Search & iterative search & 12.0 & $-6.0$ \\
-           & no search tools & 15.7 & $-2.3$ \\
-    File viewer & 30-line window & 14.3 & $-3.7$ \\
-                & whole file & 12.7 & $-5.3$ \\
-    Context & full history & 15.0 & $-3.0$ \\
-            & no demonstration & 16.3 & $-1.7$ \\
-    \bottomrule
-  \end{tabularx}
-  \caption{Percentage of SWE-bench Lite instances resolved under ablations of the interface, with
-  the base model held fixed. Table~3 of \citet{yang2024sweagent}.}
-  \label{tab:boundary-aci}
-\end{table}
-
-Two readings of that table are worth separating. It supports the claim that interface choices move
-outcomes by several points each, and the largest gap, 7.7 points between having an edit action and
-not having one, is larger than the gap between many published systems. It does not support a
-general ranking of interfaces, because every row varies one component of one system, evaluated on a
-300-instance subset with a single base model; a variant that helps this agent with this model on
-these instances may not transfer. The row worth dwelling on is the search comparison, where an
-interface that returns results one at a time scores below having no search tool at all, 12.0 against
-15.7: a well-intentioned interface can be worse than nothing when it invites the model to work
-through every match in turn.
+The model response and the \demoref{tool\_result} event support different claims. A tool call in
+a model response establishes what the model requested. It does not establish a file-system
+operation. If the model produces both a request and a plausible result in a transcript, neither
+establishes execution. In this example, the runtime's \demoref{tool\_result} event has
+\demoref{ok=true}, establishing that the function ran and returned. A result event can also report
+a refusal before function entry. The successful event does not establish the returned text's
+contents, because it stores only the result's length.
 
 \subsection{Execution authority}
 \label{sec:boundary-authority}
 
-Everything in Part~B converges on one sentence, and it is worth stating plainly: the model proposes,
-the runtime executes, and the runtime may refuse. What makes that more than a slogan is that each
-clause names a component we can point at, and each component sits on the path the request has to
-travel.
+The model proposes actions; the runtime executes or refuses them. Each responsibility belongs to
+an identifiable component on the request's execution path. Establishing that the checks cover
+\emph{every} execution path requires a separate argument.
 
-Two different distinctions hide inside the word ``control'', and they come apart under pressure.
+\begin{definition}[Complete mediation]
+\label{def:complete-mediation}
+``To attempt to secure this resource, server needs to check all accesses to the resource.
+`Complete mediation.' '' ``Server will put a `guard' in place to mediate every request for this
+particular resource. Only way to access the resource is to use the guard.''~\citep[\S5]{mit6033-lec20}
+\end{definition}
+
+For an agent, a resource is anything a tool can affect, including files, processes, or the network.
+The request is a tool call, and the guard consists of the checks performed before its effect.
+Complete mediation requires coverage of all execution routes. A correct check on one tested route
+says nothing about a route that bypasses it. We must therefore enumerate the routes to each
+protected operation. Coverage is most easily lost through an overlooked route, such as a new tool
+or an argument that identifies a file without being named a path. Complete mediation
+ensures that the runtime consults the policy. It does not establish that the policy is correct.
+
+The term ``control'' involves two separate distinctions.
 
 \bi
 
 \item \textbf{Decision timing and ownership.} Some choices are fixed when we write the program and
-others are computed while it runs, which is the question of \cref{sec:agents-mapping}. Timing does
-not tell us who owns a choice: a routing function that runs at run time is still code we wrote, and
-a limit evaluated mid-run is still our limit.
+others are computed during execution. Timing alone does not identify who controls the choice.
+A routing function and a limit check both run during execution, but both apply rules the
+programmer wrote.
 
 \item \textbf{Proposal and execution.} A requested action, a claimed result, or a declaration that
-the work is finished becomes effective only by passing through the runtime's execution path. A
-model that writes that it has already run the tests has produced a sentence.
+the work is finished takes effect only through the runtime's execution path. A model's statement
+that it ran the tests does not establish that tests executed.
 
 \ei
 
 \begin{table}[htbp]
   \centering
-  \begin{tabularx}{\linewidth}{@{}Xp{0.42\linewidth}@{}}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{@{}XL{0.5\linewidth}@{}}
     \toprule
     \textbf{Guarantee} & \textbf{Where it is enforced} \\
     \midrule
     Only registered tools run & The registry built from the tool enumeration, consulted before
       anything is called. \\
-    Arguments satisfy the contract & Signature binding and coercion in the dispatcher, before the
-      call. \\
-    No file outside the workspace is read or written & \demoref{workspace.resolve}, called by every
-      tool on every path argument. \\
-    Source inspection does not modify the fixture & The tool implementations, which open files for
-      reading, and the pinned commit the diff is taken against. \\
-    An exhausted budget prevents another model call & The controller's check, made before the call
-      is issued. \\
-    A back edge obeys the attempt limit & The routing function and the attempt counter of
-      \cref{sec:control-backedges}. \\
+    Arguments bind to the tool's signature & Signature binding and coercion in the dispatcher,
+      before the call. \\
+    No file outside the workspace is written & \demoref{workspace.resolve}, called by
+      \demoref{edit}, the one tool that writes, on its path argument. \\
+    No file outside the workspace is read & Not enforced. \demoref{read\_file} resolves its path,
+      but the glob of \demoref{search} never reaches \demoref{workspace.resolve}. \\
+    The pinned fixture is not modified & Every tool works on a disposable copy of the fixture, and
+      the diff compares that copy with the pinned fixture. \\
+    An exhausted budget prevents another model call & The check each model node makes before it
+      issues its call. \\
+    A plan is revised at most once per run & The tools node, which records a stall for revision
+      only while \demoref{replanned\_at} is unset, and the routing function after tools, which reads
+      that record (\cref{tab:control-backedges}). \\
     \bottomrule
-  \end{tabularx}
-  \caption{Each guarantee of the demo, and the component that enforces it. No row is enforced by a
-  sentence in a prompt.}
+  \end{tabularx}\end{adjustbox}
+  \caption{Desired guarantees and the components that enforce them. The implementation does not
+  enforce one of these guarantees. Prompt instructions enforce none of them.}
   \label{tab:boundary-authority}
 \end{table}
 
-\demoref{workspace.resolve} is where an ordinary-looking shortcut fails. It resolves both the root
-and the candidate path fully before comparing them, so that \demoref{..} segments collapse and
-symlinks are followed and neither can be used to step outside. Comparing the two resolved paths as strings would look
-equivalent and would not be, because \demoref{/tmp/ws} is a prefix of the unrelated directory
-\demoref{/tmp/ws-evil}. An absolute path in the request lands outside the root when it is joined to
-it, and is refused for that reason rather than honoured.
+\demoref{workspace.resolve} fully resolves both the root and the candidate path before comparing
+them. Resolution collapses \demoref{..} segments and follows symlinks, preventing either from
+escaping the root. A string-prefix comparison would not provide the same check:
+\demoref{/tmp/ws} is also a prefix of the unrelated directory \demoref{/tmp/ws-evil}. Joining an
+absolute path to the root yields the absolute path itself. The check refuses it if its resolved
+destination lies outside the root.
 
-\subsection{The demo: a refused request}
+\subsection{The demo: scheduling and request refusal}
 \label{sec:boundary-demo}
 
-Waiting for a model to produce a forbidden request is a poor way to demonstrate a boundary, so we
-construct one. Two requests go to the same dispatcher, one after the other: a permitted
-\demoref{read\_file} on the file the alert names, and a \demoref{read\_file} whose path climbs out
-of the workspace. Only the arguments differ.
+Our planning agent runs on LangGraph's runtime, which organizes execution ``into multiple steps, following
+the Pregel Algorithm/Bulk Synchronous Parallel model'', and whose execution phase is specified so
+that ``channel updates are invisible to actors until the next step''~\citep{langgraph-pregel}. Our
+graph has no parallel branches, so each superstep runs one node. In run \demoref{bc284c6b}, steps
+3 and 4 belong to the controller's superstep: first the model call, then the routing event. The
+routing function reads the record after the controller's reply has been merged. Steps 5 and 6
+belong to the next superstep, when the tools node reads that reply and dispatches its call. The
+dispatcher writes both trace events during execution. The observation enters
+\demoref{observations} only after the node returns, at the update boundary.
+
+No recorded run contains a refused request. We therefore construct this demonstration by sending
+requests directly to the dispatcher, outside a graph, using a fresh workspace for the worked
+alert. We report the dispatcher's responses. The first request calls \demoref{read\_file} on
+\demoref{testcode/BenchmarkTest00283.py}. The dispatcher permits it and returns the same 1,665
+characters as step 6 of the recorded run. The second request changes only the argument.
 
 \bi
 
 \item \textbf{The request.} \demoref{\{"name": "read\_file", "args": \{"path":
-"../../etc/passwd"\}\}}, presented as a constructed request rather than one the model made.
+"../../etc/passwd"\}\}}, which no model produced.
 
-\item \textbf{The check that refuses it.} \demoref{workspace.resolve} raises
-\demoref{PathEscapeException}, the dispatcher catches it, and no file is opened.
+\item \textbf{The refusing check.} \demoref{workspace.resolve}, the first operation of
+\demoref{read\_file}, raises \demoref{PathEscapeException}, and the dispatcher catches it.
 
-\item \textbf{The record.} An observation with \demoref{ok=false} whose result is the refusal
-message, and a \demoref{tool\_result} event carrying the same reason.
+\item \textbf{The record.} An observation with \demoref{ok=false} whose result is the refusal,
+\demoref{refused: \textquotesingle../../etc/passwd\textquotesingle{} resolves outside the workspace root}, and a
+\demoref{tool\_result} event carrying the same reason.
 
-\item \textbf{The evidence that nothing ran.} The trace holds a \demoref{tool\_request} event and a
-failed \demoref{tool\_result} event with no successful result between them, and the instrumented
-implementation records no entry.
+\item \textbf{Evidence that no file was opened.} The trace holds a \demoref{tool\_request} event and a
+failed \demoref{tool\_result} event with a reason and no character count. That shows the request was
+refused. The code establishes that no file was opened: the check precedes the first file operation.
+The trace does not record file operations and cannot establish this on its own.
 
 \ei
 
-Set beside the permitted request, the pair shows the branch: identical tool, identical dispatcher,
-and the argument decides whether execution happens. That is the whole of the ownership question, and
-it is answered in code rather than in a prompt.
+The two requests use the same tool and dispatcher. Their arguments determine which execution
+branch the runtime selects. This identifies the enforcing component described in
+\cref{sec:boundary-authority}.
 
-\subsection{Exercises}
-
-\begin{enumerate}
-\item Take the six artifacts of \cref{tab:boundary-artifacts} and mark the smallest set that would
-  convince you a file was read. Say what each of the others would still allow to be true.
-\item A tool is added whose signature is \verb|def rescan(ws, path, config)|. Name what the model
-  gains that it did not have before, and give the change that removes it.
-\item In \cref{tab:boundary-aci}, an iterative search interface scores below having no search tool.
-  Name the agent behaviour reported behind that result, and say which of the four design principles
-  it violates.
-\item Our dispatcher refuses a path outside the workspace root. Write the request you would send to
-  test that the check is on the execution path rather than in the prompt, and say which trace event
-  would tell you the check was skipped.
-\end{enumerate}
+The same exercise exposes a route that bypasses the check. The dispatcher permits a
+\demoref{search} whose glob reaches outside the workspace. With the glob
+\demoref{../*-withheld/testcode/*.py} it returns lines from the benchmark cases the workspace
+withholds in a sibling directory. With enough \demoref{../} segments, it returns the matching line
+of \demoref{/etc/passwd}. Both results have \demoref{ok=true}.
+\textbf{The path check guards \demoref{read\_file} and \demoref{edit}; it does not guard
+\demoref{search}, whose glob never passes through \demoref{workspace.resolve}.} Our boundary against
+writing outside the workspace is complete because \demoref{edit} is the only tool that writes.
+The implementation does not completely mediate reads. The repair is to resolve every file
+\demoref{search} matches through \demoref{workspace.resolve} before reading it.
 
 \subsection{Reading}
 
-Before class: \S\S2--3 and Figure~3 of \citet{yang2024sweagent}, for the interface design principles
-and what the agent actually sees, and Table~3 for the ablations of \cref{tab:boundary-aci}.
+\S1 and \S2 of \citet{malewicz2010pregel}, for supersteps and the rule that
+communication crosses superstep boundaries in one direction only; the section ``Specification
+structure'' of \citet{mit6031-specs}, for preconditions and postconditions; and \S5 and \S6 of
+\citet{mit6033-lec20}, the guard model and the ways complete mediation is bypassed.
 
-For reference while writing HW1: \citet{anthropic-tooluse} for the exact request and result
-representation a provider emits and expects, and \demoref{dispatch.py} and \demoref{workspace.py}
-for the checks that stand between the two.
+For reference while writing HW1: \citet{langgraph-pregel} for the plan, execution and update
+phases as our runtime implements them; \citet{anthropic-tooluse} for the exact request and result
+representation a provider emits and expects; and \demoref{dispatch.py} and \demoref{workspace.py}
+for the checks between a request and its result.
 
-\paragraph{Looking ahead.} Part~A asked which decisions we fix at design time, and Part~B has given
-the machinery that carries them: a record with one reducer per field, routers and limits that read
-that record, and a dispatcher that decides what a request is allowed to do. HW1 uses the same
-fixture and the same tools for triage rather than repair. The question it puts to you is the one
-these notes have been working toward: for every decision your agent makes, name the component that
-made it and the artifact that proves it.
+\paragraph{Looking ahead.} In the execution model described here, a routing function selects a
+node and the scheduler runs it in the next superstep. The next section keeps the same machine
+and changes this scheduling mechanism: a computation emits an event, which the runtime dispatches
+to a registered handler. We then examine which component invokes the handler and when. The tool
+contract and dispatcher remain the same. The new scheduling mechanism requires corresponding
+evidence that each transition occurred once.

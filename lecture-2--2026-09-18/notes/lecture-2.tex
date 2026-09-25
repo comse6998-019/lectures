@@ -1,45 +1,49 @@
 % Week 2 lecture notes: COMS E6998-019, Design of Production Agentic Systems.
 % Part A: agent architectures. Part B is appended to this file later.
-% Build: ./build.sh (tectonic; ibm.cls is reached through the symlink ibm.cls -> ../../ibm.cls). VS Code: LaTeX Workshop recipe "tectonic" in .vscode/settings.json.
+% Build: make (tectonic). VS Code: LaTeX Workshop recipe "tectonic" in .vscode/settings.json.
 
-% ---- Engine compatibility for ibm.cls under XeTeX (tectonic) ----------------
-% The class calls \DisableLigatures, which microtype implements only for pdfTeX.
-\RequirePackage{iftex}
-\ifXeTeX
-  \AddToHook{package/microtype/after}{\renewcommand{\DisableLigatures}[2][]{}}
-\fi
-\documentclass[10pt]{ibm}
-% ---- Denser setting: smaller body and tighter spacing, in the spirit of savetrees -----------
-% The class is article-based, so it only honours 10/11/12pt; the fontsize package sets the real
-% base size and recomputes every size command from it. Kept here rather than in ibm.cls so the
-% class stays neutral for any other document.
-\usepackage[fontsize=9pt]{fontsize}
-% DISABLED \linespread{0.99}
-\setlength{\parskip}{3pt plus 1pt minus 0.5pt}
-\setlength{\parindent}{0pt}   % the fontsize package recomputes it; parskip separates paragraphs
-\titlespacing*{\section}{0pt}{1.7ex plus .3ex minus .2ex}{0.9ex}
-\titlespacing*{\subsection}{0pt}{1.3ex plus .3ex minus .2ex}{0.5ex}
-\titlespacing*{\subsubsection}{0pt}{1.0ex plus .2ex minus .2ex}{0.4ex}
-\setlength{\textfloatsep}{7pt plus 2pt minus 2pt}
-\setlength{\intextsep}{7pt plus 2pt minus 2pt}
-\setlength{\floatsep}{7pt plus 2pt minus 2pt}
-\setlength{\abovecaptionskip}{4pt}
-\setlength{\belowcaptionskip}{2pt}
-\setlength{\abovedisplayskip}{4pt plus 2pt minus 2pt}
-\setlength{\belowdisplayskip}{4pt plus 2pt minus 2pt}
-\renewcommand{\arraystretch}{0.96}
+% ---- Base class: plain article at 9pt, packed with savetrees in extreme mode --------------
+\documentclass[9pt,twocolumn]{extarticle}
+\usepackage[numbers,sort&compress,square]{natbib}   % before savetrees, which tightens its spacing
+% savetrees takes a defined \bibfont to mean biblatex and sets \bibitemsep; give it a dummy length.
+\newlength{\bibitemsep}
+\usepackage[extreme]{savetrees}
+\setlength{\bibsep}{0pt plus 1pt}
+\setlength{\columnsep}{10pt}
+
+\usepackage[T1]{fontenc}
+\usepackage{microtype,etoolbox,ragged2e,parskip}
+\usepackage{graphicx,subcaption,caption,booktabs,multirow,amsmath,amssymb,amsthm}
+\usepackage[most]{tcolorbox}
+\usepackage[colorlinks,linkcolor=violet,citecolor=violet,urlcolor=violet]{hyperref}
+\usepackage[noabbrev,nameinlink,capitalise]{cleveref}
 \captionsetup{font=footnotesize}
 
-% ibm.cls ends by pointing tabularx's X column at an undefined command; restore a ragged-right column.
-\renewcommand\tabularxcolumn[1]{>{\RaggedRight\arraybackslash}p{#1}}
-% The class's title box includes assets/IBM_logo.pdf; build without the logo when the asset is absent.
-\IfFileExists{assets/IBM_logo.pdf}{}{%
-  \patchcmd{\mymaketitle}{\includegraphics[width=2cm]{assets/IBM_logo.pdf}}{\phantom{IBM}}{}{}%
-  \ClassWarning{ibm}{assets/IBM_logo.pdf not found; the title box is built without the logo}}
+% Colours the figures and boxes are drawn in.
+\definecolor{ibmblue}{HTML}{0F62FE}
+\definecolor{ibmfg}{HTML}{161616}
 
-% ---- Packages beyond the class -------------------------------------------------
+% \bi ... \ei for itemize, \be ... \ee for enumerate (optional argument passed through to enumitem).
+\makeatletter
+\newcommand{\bi}{\@ifnextchar[{\notes@bi@opt}{\begin{itemize}}}
+\def\notes@bi@opt[#1]{\begin{itemize}[#1]}
+\newcommand{\ei}{\end{itemize}}
+\newcommand{\be}{\@ifnextchar[{\notes@be@opt}{\begin{enumerate}}}
+\def\notes@be@opt[#1]{\begin{enumerate}[#1]}
+\newcommand{\ee}{\end{enumerate}}
+\makeatother
+
+% Definitions, numbered within sections.
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+% ---- Further packages --------------------------------------------------------
 \usepackage{tabularx,array,enumitem,listings}
-\usepackage{tikz}
+% Narrow column cells read better ragged-right: X columns and the L{} type used by the tables.
+\renewcommand\tabularxcolumn[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\setlength{\tabcolsep}{3pt}
+\usepackage{tikz,adjustbox}
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,fit}
 
 % ---- Graph styles: one look for all five agent graphs ---------------------------
@@ -62,7 +66,7 @@
 \newtcolorbox{figneeded}[1]{enhanced, colback=black!4, colframe=black!50, title={FIGURE NEEDED: #1},
   fonttitle=\sffamily\bfseries, breakable}
 
-% Definitions are boxed; the class's amsthm environment keeps their numbering and labels.
+% Definitions are boxed; amsthm keeps their numbering and labels.
 \tcolorboxenvironment{definition}{enhanced, breakable, colback=ibmblue!4, colframe=ibmblue!70!black,
   boxrule=0.5pt, arc=2pt, left=6pt, right=6pt, top=4pt, bottom=4pt, before skip=8pt, after skip=8pt}
 
@@ -71,50 +75,33 @@
 \newtcolorbox{foodforthought}{enhanced, colback=orange!6, colframe=orange!75!black,
   title={Food for thought for HW1}, fonttitle=\sffamily\bfseries, breakable}
 \lstset{basicstyle=\ttfamily\small, columns=fullflexible, keepspaces=true, breaklines=true,
-  frame=single, framerule=0.3pt,
+  frame=single, framerule=0.3pt, xleftmargin=3.5pt, xrightmargin=3.5pt,
   literate={'}{{\textquotesingle}}1 {`}{{\textasciigrave}}1}
 \usepackage{wrapfig}
 \setlist{nosep, leftmargin=*}
 \newcommand{\demoref}[1]{\texttt{#1}}   % names of demo artifacts: files, tools, statuses
-\setlength{\headheight}{14pt}           % fancyhdr needs more than the class default
 \setlist[enumerate]{label=\arabic*.}
 
-% ---- Running header: the class prints an IBM lab name; these are course notes ------------
-\fancyhead[L]{\sffamily COMS E6998-019 \textbullet\ Lecture 2 \textbullet\ Notes}
-
-% ---- Numbered definitions, remarks, and examples per section (the class defines the environments)
-\numberwithin{theorem}{section}
-% The class builds `definition` on the shared theorem counter, so cleveref calls it "Theorem".
-% No theorem, lemma or remark environment appears in these notes, so the counter is renamed.
-\crefname{theorem}{definition}{definitions}
-\Crefname{theorem}{Definition}{Definitions}
-
-% ---- The upshot: the numbered claims a section defends, before its first subsection ------------
-\newenvironment{upshot}
-  {\subsection*{The upshot}\begin{enumerate}[label=\arabic*.,leftmargin=2em,itemsep=3pt]}
-  {\end{enumerate}}
-
-% ---- Title box ---------------------------------------------------------------------
+% ---- Title -------------------------------------------------------------------------
 \title{Design of Production Agentic Systems\\Lecture 2: Agent architectures and execution machinery}
-\author{Rahul Krishna}
-\affiliation{Columbia University, COMS E6998-019, Fall 2026}
+\author{Rahul Krishna\\Columbia University, COMS E6998-019, Fall 2026}
 \date{Draft of September 16, 2026, for the meeting of September 18, 2026}
-\abstract{These notes cover the first fifty-minute block of the Week 2 meeting: agent
+\begin{document}
+\maketitle
+\begin{abstract}
+These notes cover the first fifty-minute block of the Week 2 meeting: agent
 architectures. We build one patch-generation agent, \msa{}, through five preserved
 versions, from a fixed workflow to a reflective attempt loop, and we ask the same question of
 each version: which decisions did we make at design time, and which are deferred to the model
 at run time? The vocabulary is AIMA's; the mechanisms are those of the assigned papers, quoted
-from the versions each section's reading list names. Every section opens with the numbered
-claims it defends and closes with exercises and the reading it rests on. Listings and traces that
+from the versions each section's reading list names. Every section closes with exercises and
+the reading it rests on. Listings and traces that
 depend on demo code not yet built are marked as stubs naming the artifact expected there. Part~B
 turns to the machinery that carries a decision from one step to the next: the record the runtime
 keeps, the code that reads it to choose the next node or to stop, and the boundary at which a
-requested action becomes an executed one.}
-
-\begin{document}
-\maketitle
+requested action becomes an executed one.
+\end{abstract}
 \tableofcontents
-\clearpage
 
 \part*{Part A: Agent architectures}
 
@@ -139,7 +126,6 @@ requested action becomes an executed one.}
 % =====================================================================================
 \input{sections/07-patterns.tex}
 
-\clearpage
 \part*{Part B: Execution machinery}
 
 % =====================================================================================
@@ -151,7 +137,6 @@ requested action becomes an executed one.}
 % =====================================================================================
 \input{sections/10-boundary.tex}
 
-\clearpage
 \bibliographystyle{plainnat}
 \bibliography{references}
 \end{document}

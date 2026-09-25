@@ -1,24 +1,6 @@
 \section{Planning, validation and reflection}
 \label{sec:planning}
 
-\begin{upshot}
-\item \textbf{Intent held in state makes progress checkable. Reader judgement becomes a runtime
-  predicate.} A plan records what the run is for, and a completion condition attached to a step
-  converts progress from a judgement a reader makes into a predicate the runtime evaluates.
-\item \textbf{Feedback changes a run at two levels.} An observation that agrees with the plan
-  changes the next action alone; an observation that contradicts it changes the remaining plan.
-  Rewriting the remaining plan is the event a planner exists for, and counting ordinary progress as
-  one makes a planner expensive without making it useful.
-\item \textbf{Independent acceptance requires both a separate check and a trustworthy signal.}
-  Asking a model to ``check its work'' supplies neither independent control over acceptance nor
-  external evidence of correctness. Without an external signal, self-assessment can lower accuracy
-  while adding calls. The workflow therefore gives mechanical checks control over acceptance and
-  confines the model-based validator to rejection.
-\item \textbf{A refused attempt leaves behind guidance, not its context.} Reflection turns a
-  refusal into text that outlives the attempt reset, and the reset is what separates a second
-  attempt from a longer first one.
-\end{upshot}
-
 \subsection{The plan as a field of state}
 \label{sec:planning-plan}
 
@@ -108,8 +90,7 @@ whether it can be released. Planning, revision, and validation require additiona
   \cref{tab:reactive-decisions}. The first row shows how the choice of the next operation changes;
   the remaining rows compare goal tracking, completion checks, revision, acceptance, and cost.}
   \label{tab:planning-decisions}
-  \small
-  \begin{tabularx}{\linewidth}{Xll}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{XXX}
     \toprule
     Decision & Reactive loop & With a planner and a validator \\
     \midrule
@@ -121,7 +102,7 @@ whether it can be released. Planning, revision, and validation require additiona
     Who decides whether to accept a candidate? & The runtime applies fixed checks & The runtime; a model can also reject \\
     What limits model calls? & The call budget & The budget must also cover planning and validation \\
     \bottomrule
-  \end{tabularx}
+  \end{tabularx}\end{adjustbox}
 \end{table}
 
 Acceptance is the row where a validator gains least. A validator that can refuse a candidate is a
@@ -271,13 +252,12 @@ revise early decisions'' \citep[\S4.2]{wang2026reasoningplan}.
 \Cref{tab:planning-failure} is a more illustrative view because it measures the failure rather than
 the success.
 
-\begin{table}[htbp]
+\begin{table*}[tbp]
   \caption{How four ways of choosing the next action fail, aggregated over three benchmarks. The
   last row is the paper's \textsc{Flare}. Lower is better in the first column, higher in the other
   two \citep[Table~3]{wang2026reasoningplan}.}
   \label{tab:planning-failure}
-  \small
-  \begin{tabularx}{\linewidth}{Xlll}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{XXXX}
     \toprule
     How the next action is chosen & Dead end on move one & Step of first error & Recovers after it \\
     \midrule
@@ -286,8 +266,8 @@ the success.
     Lookahead & 23.6\% & 2.8 & 22.4\% \\
     Lookahead with value propagation & 17.8\% & 3.2 & 29.7\% \\
     \bottomrule
-  \end{tabularx}
-\end{table}
+  \end{tabularx}\end{adjustbox}
+\end{table*}
 
 Read the top row against \cref{sec:reactive-react}. A run that chooses one step at a time walks into
 a branch it cannot come back from on its very first move more than half the time, makes its first
@@ -633,7 +613,7 @@ graph, with every node named by the code that implements it.
 
 \begin{figure}[htbp]
   \centering
-  \resizebox{\linewidth}{!}{\input{figures/graph-plan-validate.tikz}}
+  \begin{adjustbox}{width=\linewidth}\input{figures/graph-plan-validate.tikz}\end{adjustbox}
   \caption{The DAG of the planning and validation demo, each node labelled with its method and line
   range in \demoref{graph.py}. Blue nodes are the three places where a model decides. The four
   routing predicates are \demoref{after\_plan} (414--417), \demoref{after\_controller} (404--413),
