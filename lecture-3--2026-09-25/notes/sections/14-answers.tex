@@ -12,9 +12,9 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:1]{1.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: A, C.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Correct.} The step reads saved information, so a new observation can lead it down a different route.
+\item \textbf{Correct.} The decision step reads stored data, so a new observation can change the route it selects.
 \item \textbf{Incorrect.} Revisiting a step does not undo updates made by earlier steps.
-\item \textbf{Correct.} The step name identifies the work to do; the saved values identify the particular situation.
+\item \textbf{Correct.} The step name identifies the operation; the stored values distinguish configurations at that step.
 \item \textbf{Incorrect.} The existing step can choose among its existing routes using changed information.
 \end{enumerate}
 \end{minipage}
@@ -23,9 +23,9 @@ options and explains every choice. Question numbers link back to the exercises.
 \textbf{Correct: B.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} The program's routing rule does not produce or control the external reply.
-\item \textbf{Correct.} Different replies can satisfy different checks; each specific reply still has a definite route.
+\item \textbf{Correct.} Different replies can satisfy different routing conditions. The rule still selects one route for each state and reply.
 \item \textbf{Incorrect.} The difference can come entirely from different replies, without any random choice in the rule.
-\item \textbf{Incorrect.} A routing rule selects an action after a reply arrives; it does not by itself model reply likelihood.
+\item \textbf{Incorrect.} A routing rule selects an action after a reply arrives. The rule alone does not specify how likely a reply is.
 \end{enumerate}
 \end{minipage}
 
@@ -34,7 +34,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} Tool results can enter saved information and change later decisions.
 \item \textbf{Incorrect.} Model replies can request different tools or request submission.
-\item \textbf{Incorrect.} Allowed routes show possibilities, but they do not identify which one occurred.
+\item \textbf{Incorrect.} The set of allowed routes does not show which route a run took.
 \item \textbf{Correct.} With the same starting information and the same inputs at each step, the fixed rules select the same routes.
 \end{enumerate}
 \end{minipage}
@@ -42,8 +42,8 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:4]{4.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: A, B.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Correct.} The list changes the saved information, not the number of named steps.
-\item \textbf{Correct.} Lists of arbitrarily many results can distinguish arbitrarily many situations.
+\item \textbf{Correct.} Adding results changes the stored data while leaving the number of named steps unchanged.
+\item \textbf{Correct.} A result list with no length bound can distinguish an unbounded number of configurations.
 \item \textbf{Incorrect.} The existing tool and decision steps can process another result.
 \item \textbf{Incorrect.} An unbounded result list may make that table infinite.
 \end{enumerate}
@@ -55,7 +55,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \item \textbf{Incorrect.} The same result occurs in both runs, but the call limit permits another call in only one of them.
 \item \textbf{Correct.} The program needs that total to distinguish a run below the limit from one at the limit.
 \item \textbf{Incorrect.} An accurate running total is enough for this limit; individual replies may be retained for other purposes.
-\item \textbf{Correct.} The call count matters to the next admission check, while irrelevant details can be omitted from this decision.
+\item \textbf{Correct.} The next admission check needs the call count. Details that do not affect this decision can be omitted.
 \end{enumerate}
 \end{minipage}
 
@@ -65,7 +65,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \item \textbf{Correct.} The program could not derive the particular reply from its saved information alone.
 \item \textbf{Incorrect.} The check decides whether a route applies; the count changes through an update.
 \item \textbf{Correct.} This step issues a request for tool execution. Later handling may check the request before the tool runs.
-\item \textbf{Correct.} Those updates become part of the information retained between steps.
+\item \textbf{Correct.} Saving the reply and incrementing the count change the information available to later steps.
 \end{enumerate}
 \end{minipage}
 
@@ -75,7 +75,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \item \textbf{Incorrect.} A possible route is not evidence that it occurred.
 \item \textbf{Incorrect.} The diagram assigns no probabilities, and path length does not supply one.
 \item \textbf{Correct.} The diagram separates the route taken from other permitted continuations.
-\item \textbf{Incorrect.} They remain possible for other inputs or runs, even though this run took the blue route.
+\item \textbf{Incorrect.} The grey routes remain possible for other inputs or runs, even though this run took the blue route.
 \end{enumerate}
 \end{minipage}
 
@@ -85,7 +85,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \item \textbf{Incorrect.} Many different texts have the same length.
 \item \textbf{Correct.} Success is one of the facts the event explicitly records.
 \item \textbf{Incorrect.} The log omits the result text and much of the agent's saved information.
-\item \textbf{Correct.} The rules can explain which move connects recorded events, but that move was not logged directly.
+\item \textbf{Correct.} The rules can identify a transition between recorded events, but the log does not record that transition directly.
 \end{enumerate}
 \end{minipage}
 
@@ -94,7 +94,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Correct.} The plan is passed to the controller, whose replies can then change.
 \item \textbf{Incorrect.} Subgoals are stored task data; the workflow's step names stay fixed.
-\item \textbf{Correct.} Its input now includes a revised plan and possibly new observations.
+\item \textbf{Correct.} The controller's input now includes a revised plan and possibly new observations.
 \item \textbf{Incorrect.} In this agent, routing depends on replies and checks, not on which subgoal is current.
 \end{enumerate}
 \end{minipage}
@@ -105,7 +105,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \item \textbf{Incorrect.} The agent keeps the full history and checks only the results since revision.
 \item \textbf{Correct.} After one revision, the stall route ends the run instead of revising again.
 \item \textbf{Incorrect.} The workflow permits one revision; a later stall has a different outcome.
-\item \textbf{Correct.} That position marks the start of the post-revision observation window.
+\item \textbf{Correct.} The saved position marks where the observations collected after revision begin.
 \end{enumerate}
 \end{minipage}
 
@@ -141,7 +141,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} The log contains selected events rather than the full working information and pending work.
 \item \textbf{Correct.} Workspace artifacts can survive even when the agent's in-memory information is lost.
-\item \textbf{Correct.} It records selected actions and results, not a complete resumable state.
+\item \textbf{Correct.} The log records selected actions and results. It does not contain the complete state needed to resume the run.
 \item \textbf{Incorrect.} Files and in-memory information have different lifetimes.
 \end{enumerate}
 \end{minipage}
@@ -151,8 +151,8 @@ options and explains every choice. Question numbers link back to the exercises.
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Correct.} The repetition check needs earlier results, so replacing the list would discard needed evidence.
 \item \textbf{Correct.} The new plan supersedes the old one for later work.
-\item \textbf{Correct.} Each call contributes a delta to a total that lasts for the run.
-\item \textbf{Incorrect.} That would lose the calls made before the latest one.
+\item \textbf{Correct.} Each completed call adds one to the total retained for the run.
+\item \textbf{Incorrect.} Replacing the total with one would discard the count of earlier calls.
 \end{enumerate}
 \end{minipage}
 
@@ -170,19 +170,19 @@ options and explains every choice. Question numbers link back to the exercises.
 \textbf{Correct: B.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} A later route could treat the old reason as a new stall before the revised plan has been evaluated.
-\item \textbf{Correct.} The signal has served its intended reader and should not influence a later routing decision.
-\item \textbf{Incorrect.} The one-use signal should be cleared, but the tool-result history remains useful to later checks and validation.
-\item \textbf{Incorrect.} Adding an empty list would leave the old reason in place, so it would not clear the active signal.
+\item \textbf{Correct.} The planner has used the reason to revise the plan. Clearing the reason prevents it from affecting a later routing decision.
+\item \textbf{Incorrect.} The stall reason should be cleared after use. The tool-result history remains useful for later checks and validation.
+\item \textbf{Incorrect.} Appending an empty list would leave the old reason in place, so the signal would remain active.
 \end{enumerate}
 \end{minipage}
 
 \item[{\hyperref[exercise:17]{17.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: A, B.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Correct.} That boundary separates results from before and after the revision.
+\item \textbf{Correct.} The saved position separates results collected before and after the revision.
 \item \textbf{Correct.} Earlier repeated results should not count as new evidence of another stall.
-\item \textbf{Incorrect.} They were produced under the previous plan and would cause an immediate false stall.
-\item \textbf{Incorrect.} A saved boundary provides a fresh window while preserving history for other readers.
+\item \textbf{Incorrect.} Those results came from work under the previous plan. Counting them again would immediately indicate a stall without evidence from the revised plan.
+\item \textbf{Incorrect.} The saved position lets the stall check use new results while preserving the full history for other steps.
 \end{enumerate}
 \end{minipage}
 
@@ -201,8 +201,8 @@ options and explains every choice. Question numbers link back to the exercises.
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Correct.} The stored count must match the calls actually completed for the check to be sound.
 \item \textbf{Incorrect.} A call from another step could bypass the limit.
-\item \textbf{Correct.} Changing it without a call would break its meaning as the completed-call total.
-\item \textbf{Incorrect.} The reset would hide earlier calls and permit the run to exceed the whole-run limit.
+\item \textbf{Correct.} Changing the count without a completed call would make it inaccurate.
+\item \textbf{Incorrect.} Resetting the count would exclude earlier calls and could allow the run to exceed its overall limit.
 \end{enumerate}
 \end{minipage}
 
@@ -210,9 +210,9 @@ options and explains every choice. Question numbers link back to the exercises.
 \textbf{Correct: A, C.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Correct.} The declared field names give the static checker information to compare with the code.
-\item \textbf{Incorrect.} The editor's static check does not install run-time validation for returned values.
-\item \textbf{Correct.} A field marked optional in the declaration can still cause a missing-value problem if a running step expects it.
-\item \textbf{Incorrect.} Partial updates leave existing values alone; they do not create values needed by an early reader.
+\item \textbf{Incorrect.} The editor's static check does not add runtime validation of returned values.
+\item \textbf{Correct.} A running step may require a value even if the type declaration marks that field as optional.
+\item \textbf{Incorrect.} Partial updates preserve fields they omit. They do not supply missing values needed by an earlier step.
 \end{enumerate}
 \end{minipage}
 
@@ -226,9 +226,9 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:21]{21.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: B, C.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Incorrect.} The check receives saved information; seeing a result earlier does not make its discarded contents available later.
-\item \textbf{Correct.} That is the only fact this step saved for the later check.
-\item \textbf{Correct.} A check can use a relevant detail when an earlier step preserves it in the run's state; in this scenario, that detail was discarded.
+\item \textbf{Incorrect.} The routing check receives the saved state. It cannot read result contents that the earlier step discarded.
+\item \textbf{Correct.} Search completion is the only fact the earlier step saved for the routing check.
+\item \textbf{Correct.} The routing check could use that detail if the earlier step had preserved it in the run's state. In this scenario, the detail was discarded.
 \item \textbf{Incorrect.} Completion says the search ran; it does not say what the search found.
 \end{enumerate}
 \end{minipage}
@@ -237,9 +237,9 @@ options and explains every choice. Question numbers link back to the exercises.
 \textbf{Correct: B.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} A first-match rule selects one next step, even when several tests are true.
-\item \textbf{Correct.} The program's test order resolves the overlap for this state.
-\item \textbf{Incorrect.} The fallback is reached only when none of the earlier tests selects a step.
-\item \textbf{Incorrect.} The priority is written into the program's test order, not inferred from the model's prose.
+\item \textbf{Correct.} The program takes the first matching route because the tests have a fixed order.
+\item \textbf{Incorrect.} The program uses the fallback only when none of the earlier conditions holds.
+\item \textbf{Incorrect.} The program's test order determines priority. The model's wording does not change that order.
 \end{enumerate}
 \end{minipage}
 
@@ -247,7 +247,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \textbf{Correct: A, D.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Correct.} The program examines whether the reply contains a request and uses that saved fact to choose a route.
-\item \textbf{Incorrect.} The rule reads the request, not the persuasive wording of the reply.
+\item \textbf{Incorrect.} The rule checks for a tool request. The sentence about submission does not change that check.
 \item \textbf{Incorrect.} A model reply supplies data to the rule; it does not rewrite the program's routing logic.
 \item \textbf{Correct.} The rule sends an active reply containing a tool request to the tools step.
 \end{enumerate}
@@ -258,8 +258,8 @@ options and explains every choice. Question numbers link back to the exercises.
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} A cycle can revisit a step within one compiled workflow.
 \item \textbf{Correct.} The rule is fixed, while the values it reads can differ across runs.
-\item \textbf{Correct.} A repeated location still has its own state and place in the run's sequence of decisions.
-\item \textbf{Incorrect.} Compilation fixes possible routes; run-time values select one route at each decision.
+\item \textbf{Correct.} Each visit to the controller occurs with the state at that point in the run and has its own position in the sequence.
+\item \textbf{Incorrect.} Compilation fixes the possible routes. Values available at runtime determine which route is selected at each decision.
 \end{enumerate}
 \end{minipage}
 
@@ -277,8 +277,8 @@ options and explains every choice. Question numbers link back to the exercises.
 \textbf{Correct: B, D.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} Without the recorded reason, the planner loses evidence of what failed and may repeat the same approach.
-\item \textbf{Correct.} The planner can respond to the failure, and later checks then judge the new plan on its own evidence.
-\item \textbf{Incorrect.} The workflow keeps observations; it changes the point from which the stall window is measured.
+\item \textbf{Correct.} The stall reason lets the planner respond to the failure. Later stall checks assess observations collected under the revised plan.
+\item \textbf{Incorrect.} The workflow retains all observations and changes the starting position of the results used by the stall check.
 \item \textbf{Correct.} Only one revision is allowed, so a second stall ends the run instead of starting another revision.
 \end{enumerate}
 \end{minipage}
@@ -288,7 +288,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} A fresh attempt must clear the old patch so it is not mistaken for the new candidate.
 \item \textbf{Incorrect.} Plans are run data; replacing one does not change the workflow's structure.
-\item \textbf{Correct.} Resetting either count would make used attempts or calls available again and could defeat their limits.
+\item \textbf{Correct.} Resetting either count would exclude earlier attempts or calls and could allow the run to exceed the corresponding limit.
 \item \textbf{Incorrect.} A reflection explains the failure but does not measure how many attempts have already been used.
 \end{enumerate}
 \end{minipage}
@@ -296,9 +296,9 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:28]{28.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: A, C.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Correct.} The model-call count does not change during that retry cycle.
+\item \textbf{Correct.} The tool retry loop does not make model calls, so it does not increase the model-call count.
 \item \textbf{Incorrect.} A limit on the number of calls says nothing about the duration of one call or tool operation.
-\item \textbf{Correct.} A decreasing count only bounds repeated cycles if each step between decreases finishes.
+\item \textbf{Correct.} A decreasing count bounds repeated cycles only if each operation between decreases finishes.
 \item \textbf{Incorrect.} The check recognizes success when it occurs; it cannot force a future patch to pass.
 \end{enumerate}
 \end{minipage}
@@ -306,7 +306,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:29]{29.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: A, D.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Correct.} The observed failure pattern is irrelevant but varied, so it does not meet the identical-result condition.
+\item \textbf{Correct.} The search results are irrelevant but differ from one another, so they do not satisfy the identical-result condition.
 \item \textbf{Incorrect.} Difference alone says nothing about relevance to the task.
 \item \textbf{Incorrect.} A detector for one failure pattern supplies no success or termination guarantee for other patterns.
 \item \textbf{Correct.} The budget applies to calls regardless of whether a stall pattern is detected.
@@ -316,10 +316,10 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:30]{30.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: B, C, D.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Incorrect.} It shows that the acceptance procedure passed, which can still miss a defect in the patch.
-\item \textbf{Correct.} Those are the two claims recorded by an accepting terminal event.
-\item \textbf{Correct.} It could reflect an active run or a process stopped before recording a terminal event.
-\item \textbf{Correct.} The terminal status and exception record carry different parts of the explanation.
+\item \textbf{Incorrect.} The accepted status shows that the acceptance procedure passed. That procedure can still miss a defect in the patch.
+\item \textbf{Correct.} An accepting terminal event records both termination and acceptance by the procedure.
+\item \textbf{Correct.} The incomplete trace could come from an active run or from a process that stopped before recording a terminal event.
+\item \textbf{Correct.} The terminal status identifies the outcome, while the following record identifies the exception.
 \end{enumerate}
 \end{minipage}
 
@@ -333,7 +333,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:31]{31.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: A, C.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Correct.} Writes from this batch are applied after the workers finish, so finish order does not expose a partial update.
+\item \textbf{Correct.} The other worker reads the state from the start of the batch. The runtime applies updates only after all workers in that batch finish.
 \item \textbf{Incorrect.} Updates remain invisible to other workers in the same batch until the batch's update phase.
 \item \textbf{Correct.} The runtime applies the batch's writes before planning later work.
 \item \textbf{Incorrect.} Competing writes need a specified way to combine them or must be rejected.
@@ -343,7 +343,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:32]{32.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: B.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Incorrect.} The batch ordering rule governs saved state, not changes a tool already made to a file.
+\item \textbf{Incorrect.} The rule for applying state updates does not undo file changes already made by a tool.
 \item \textbf{Correct.} The external edit can happen during execution before the worker returns a state update.
 \item \textbf{Incorrect.} A worker's writes become visible only when the runtime applies its completed update.
 \item \textbf{Incorrect.} A file edit is an external effect and can occur before any update to saved run state is applied.
@@ -355,17 +355,17 @@ options and explains every choice. Question numbers link back to the exercises.
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Correct.} Text shown to the model may influence its requests, but the execution path needs an access check to enforce the boundary.
 \item \textbf{Incorrect.} A boundary must handle any request that reaches the tool, including a mistaken or hostile one.
-\item \textbf{Incorrect.} Permission belongs to the runtime's policy, not to the model's account of why it wants a file.
-\item \textbf{Correct.} Checking each file at the point of access closes the route that the description left open.
+\item \textbf{Incorrect.} The runtime's policy determines access permission. The model's explanation does not grant permission.
+\item \textbf{Correct.} Checking each file before reading it enforces the boundary that the description alone cannot enforce.
 \end{enumerate}
 \end{minipage}
 
 \item[{\hyperref[exercise:34]{34.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: C.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Incorrect.} A request can still supply the argument; an instruction does not remove that route.
-\item \textbf{Incorrect.} A caller can override a default whenever the argument remains bindable.
-\item \textbf{Correct.} Then the model has no open argument slot through which to replace the run setting.
+\item \textbf{Incorrect.} The model can still supply the argument despite an instruction to leave it unchanged.
+\item \textbf{Incorrect.} A caller can override a default if the dispatcher still accepts a value for that argument.
+\item \textbf{Correct.} The model then cannot replace the run setting through its arguments.
 \item \textbf{Incorrect.} A justification in the request does not transfer authority over trusted configuration.
 \end{enumerate}
 \end{minipage}
@@ -373,7 +373,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:35]{35.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: B, D.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Incorrect.} A correctly named path can still refer to a forbidden location.
+\item \textbf{Incorrect.} A path supplied under the correct argument name can still refer to a forbidden location.
 \item \textbf{Correct.} Name binding and file permission are separate checks at different stages of execution.
 \item \textbf{Incorrect.} Binding establishes that an argument fits the signature; the tool can still refuse it under the path policy.
 \item \textbf{Correct.} Type correction handles a representation mistake; it does not change the access policy.
@@ -385,7 +385,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Correct.} The reason tells the model why the request failed and what to clarify.
 \item \textbf{Incorrect.} The request did not identify which occurrence to change, so picking one risks an unintended edit.
-\item \textbf{Correct.} A refusal must happen before the protected effect, leaving the file unchanged for that request.
+\item \textbf{Correct.} The tool must refuse the request before making an edit, leaving the file unchanged.
 \item \textbf{Correct.} A recoverable refusal lets the model refine its request and continue the run.
 \end{enumerate}
 \end{minipage}
@@ -394,8 +394,8 @@ options and explains every choice. Question numbers link back to the exercises.
 \textbf{Correct: B, C.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} A request can be refused or fail before the tool executes.
-\item \textbf{Correct.} The result records success after dispatch rather than merely a proposed action.
-\item \textbf{Correct.} A length reports how much text came back, not which characters it contained.
+\item \textbf{Correct.} The successful result records that the dispatched read completed.
+\item \textbf{Correct.} The character count records the length of the returned text without revealing its contents.
 \item \textbf{Incorrect.} The request record precedes the checks; their outcome appears in the result.
 \end{enumerate}
 \end{minipage}
@@ -403,19 +403,19 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:38]{38.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: A, D.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Correct.} A tested check on one route leaves the new route able to bypass the boundary.
+\item \textbf{Correct.} The new route can bypass the boundary because it does not use the tested check.
 \item \textbf{Incorrect.} The new tool follows a different execution path and may skip the tested check.
 \item \textbf{Incorrect.} The instruction may influence requests but does not enforce access at execution time.
-\item \textbf{Correct.} Centralizing the check is effective when no alternate route reaches the file without it.
+\item \textbf{Correct.} A shared check enforces access only if no file-reading route bypasses it.
 \end{enumerate}
 \end{minipage}
 
 \item[{\hyperref[exercise:39]{39.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: B, C.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Incorrect.} That text also prefixes /tmp/ws-copy, and links or '..' can change the actual destination.
-\item \textbf{Correct.} Resolution accounts for parent segments and symbolic links before deciding containment.
-\item \textbf{Correct.} A link or parent segment can lead out even when the initial text appears local.
+\item \textbf{Incorrect.} The prefix /tmp/ws also matches /tmp/ws-copy, and links or '..' can change the actual destination.
+\item \textbf{Correct.} Resolving the paths accounts for parent-directory segments and symbolic links before the runtime checks containment.
+\item \textbf{Correct.} A link or parent-directory segment can resolve outside the workspace even when the path text appears to refer to a file inside it.
 \item \textbf{Incorrect.} Joining an absolute path can leave it absolute; its resolved destination still needs the containment check.
 \end{enumerate}
 \end{minipage}
@@ -424,9 +424,9 @@ options and explains every choice. Question numbers link back to the exercises.
 \textbf{Correct: B, C, D.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} Search reads matching files; the editing tool is the writer and checks its target.
-\item \textbf{Correct.} Search can return outside lines without checking each matched file against the workspace.
+\item \textbf{Correct.} Search can return lines from outside the workspace because it does not check the location of each matched file.
 \item \textbf{Correct.} The check would refuse a match whose real location is outside the workspace before its contents are read.
-\item \textbf{Correct.} The two tools reach files through different paths, so one passing test cannot establish the other's behavior.
+\item \textbf{Correct.} The two tools use different execution paths to access files. A passing test for one tool does not establish how the other behaves.
 \end{enumerate}
 \end{minipage}
 
@@ -441,9 +441,9 @@ options and explains every choice. Question numbers link back to the exercises.
 \textbf{Correct: B, D.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} A queued request records intended work. The worker has not yet executed it.
-\item \textbf{Correct.} Delivery to a worker registered for that kind of work is what starts the computation.
+\item \textbf{Correct.} The runtime starts the computation by delivering the request to a worker registered for that kind of work.
 \item \textbf{Incorrect.} Putting an item in a queue does not perform the worker's file operations.
-\item \textbf{Correct.} A record of execution or a successful result can show the checks ran; the queued request shows only intent. A refusal result would show that the checks did not run.
+\item \textbf{Correct.} An execution record or a successful result can show that the checks ran. The queued request records only the intended work. A refusal result would show that the checks did not run.
 \end{enumerate}
 \end{minipage}
 
@@ -461,18 +461,18 @@ options and explains every choice. Question numbers link back to the exercises.
 \textbf{Correct: B, C.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} An empty queue only says that no work is scheduled; it does not record a successful outcome.
-\item \textbf{Correct.} The completed plan was supposed to lead to another computation, but nothing can receive its message.
+\item \textbf{Correct.} The completed plan was supposed to trigger another computation, but no worker is registered to receive the message.
 \item \textbf{Correct.} Work can cease because delivery failed, without a worker making a stopping decision.
-\item \textbf{Incorrect.} Dispatch uses registered item kinds, and no registration exists for this one.
+\item \textbf{Incorrect.} The runtime dispatches each item according to its registered handler. No handler is registered for this kind of item.
 \end{enumerate}
 \end{minipage}
 
 \item[{\hyperref[exercise:44]{44.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: C.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Incorrect.} A quiet queue can result from missing work as well as intentional completion.
+\item \textbf{Incorrect.} A queue can be empty because the run finished intentionally or because a step failed to schedule further work.
 \item \textbf{Incorrect.} The last worker could have failed to schedule its continuation.
-\item \textbf{Correct.} A declared outcome is needed to distinguish success, a planned stop, and a lost continuation.
+\item \textbf{Correct.} A recorded outcome is needed to distinguish among success, an intentional stop, and a failure to schedule the next step.
 \item \textbf{Incorrect.} Queue state says nothing about the result of checks that may or may not have run.
 \end{enumerate}
 \end{minipage}
@@ -480,9 +480,9 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:45]{45.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: B, D.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Incorrect.} That message identifies the next kind of work but does not contain the full saved result.
+\item \textbf{Incorrect.} The notification identifies the next kind of work but does not contain the full file result.
 \item \textbf{Correct.} The controller then reads the updated information when it starts.
-\item \textbf{Incorrect.} The runtime may deliver the new item immediately, before the later save happens.
+\item \textbf{Incorrect.} The runtime may deliver the notification immediately, before the result is saved.
 \item \textbf{Correct.} Repeating the same update could make one tool result appear twice in the saved history.
 \end{enumerate}
 \end{minipage}
@@ -492,7 +492,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} Repeating a message is a delivery error and does not establish a second tool execution.
 \item \textbf{Incorrect.} A repeated message does not undo an append to history.
-\item \textbf{Correct.} Two deliveries can start duplicate handling of the same occurrence.
+\item \textbf{Correct.} Two deliveries can cause the controller to process the same result twice.
 \item \textbf{Incorrect.} Duplicate delivery does not explain when or why the run should end.
 \end{enumerate}
 \end{minipage}
@@ -500,8 +500,8 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:47]{47.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: B, D.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Incorrect.} Silence provides no item for this loop to deliver.
-\item \textbf{Correct.} That item gives the loop an event it can deliver to the timeout worker.
+\item \textbf{Incorrect.} Waiting without an arriving item does not trigger work in this event loop.
+\item \textbf{Correct.} The loop can deliver the timer event to the timeout worker.
 \item \textbf{Incorrect.} A log entry records an occurrence but is not necessarily an item submitted for dispatch.
 \item \textbf{Correct.} Without a reply or timer event, no input arrives to start the timeout transition.
 \end{enumerate}
@@ -513,14 +513,14 @@ options and explains every choice. Question numbers link back to the exercises.
 \item \textbf{Incorrect.} The decision to end the run should prevent further work from starting.
 \item \textbf{Incorrect.} An item requesting work does not determine the status of a run.
 \item \textbf{Incorrect.} A declared stop is the point after which no new worker should start.
-\item \textbf{Correct.} The terminal decision ends dispatch even if stray work remains.
+\item \textbf{Correct.} The terminal decision stops further dispatch even if items remain in the queue.
 \end{enumerate}
 \end{minipage}
 
 \item[{\hyperref[exercise:49]{49.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: A, D.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Correct.} There is only one active continuation, so it maps to one point in the original workflow.
+\item \textbf{Correct.} The single pending item or running worker identifies one step in the original workflow.
 \item \textbf{Incorrect.} The workers may be at different parts of the workflow at the same time.
 \item \textbf{Incorrect.} Both workers still read and update saved information, and their timing now matters more.
 \item \textbf{Correct.} A single current-step label cannot represent simultaneous computations at different locations.
@@ -530,10 +530,10 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:50]{50.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: A, C, D.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Correct.} These are the observable consequences of the transition rules at each comparison point.
+\item \textbf{Correct.} The observations, file effects, checks, and outcomes are observable results of the transition rules at each comparison point.
 \item \textbf{Incorrect.} The comparison fixes inputs and step boundaries, not scheduling overhead or timing.
 \item \textbf{Correct.} Different messages can lead a live model to give different replies even when the step rules match.
-\item \textbf{Correct.} The prepared comparison describes one continuation at a time, so concurrent cases require separate analysis.
+\item \textbf{Correct.} The comparison uses one worker at a time. Cases with concurrent workers require separate analysis.
 \end{enumerate}
 \end{minipage}
 
@@ -547,9 +547,9 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:51]{51.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: A, C.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Correct.} A limit can prevent a new charge only if the permission check happens before work begins.
-\item \textbf{Incorrect.} The bill does not exist yet, so it cannot be used for that call's starting decision.
-\item \textbf{Correct.} Later starting decisions need an accurate total of charges already incurred.
+\item \textbf{Correct.} To prevent a charge that would exceed the limit, the runtime must check admission before the call begins.
+\item \textbf{Incorrect.} The actual charge is not yet known, so it cannot determine whether that same call may start.
+\item \textbf{Correct.} Later admission decisions need an accurate total of charges already incurred.
 \item \textbf{Incorrect.} The input grows with the conversation, and outputs can have different lengths.
 \end{enumerate}
 \end{minipage}
@@ -557,10 +557,10 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:52]{52.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: B, D.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Incorrect.} The 4 units already set aside must also be counted while the earlier call is unfinished.
-\item \textbf{Correct.} Starting it would commit up to 11 units in total: 4 spent, 4 set aside, and 3 more.
-\item \textbf{Incorrect.} Ignoring it would let multiple calls claim the same remaining capacity.
-\item \textbf{Correct.} Releasing the unused 2 units would leave enough room to set aside 3 for a later call.
+\item \textbf{Incorrect.} The runtime must also count the 4 units reserved for the unfinished call.
+\item \textbf{Correct.} Starting the new call would commit up to 11 units in total: 4 spent, 4 reserved, and 3 more.
+\item \textbf{Incorrect.} Ignoring the unfinished call would let multiple calls use the same remaining allowance.
+\item \textbf{Correct.} Releasing the unused 2 units would leave enough budget to reserve 3 for a later call.
 \end{enumerate}
 \end{minipage}
 
@@ -568,9 +568,9 @@ options and explains every choice. Question numbers link back to the exercises.
 \textbf{Correct: B, C.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} The provider warns that actual input usage can differ from the estimate.
-\item \textbf{Correct.} If the final charge can exceed the set-aside amount, the run can overspend when the call finishes.
+\item \textbf{Correct.} If the final charge can exceed the reserved amount, the run can overspend when the call finishes.
 \item \textbf{Correct.} Generation stops at the requested maximum, so output use cannot exceed that limit.
-\item \textbf{Incorrect.} Past agreement can guide a forecast, but it does not establish a bound for every future request.
+\item \textbf{Incorrect.} Past accuracy can inform an estimate, but it does not establish an upper bound for every future request.
 \end{enumerate}
 \end{minipage}
 
@@ -579,8 +579,8 @@ options and explains every choice. Question numbers link back to the exercises.
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} Both may see the same available amount and each may decide that its call fits.
 \item \textbf{Incorrect.} The spending limit could already have been exceeded by then.
-\item \textbf{Correct.} The second worker then sees the first worker's commitment before deciding.
-\item \textbf{Incorrect.} Equal limits do not make their combined possible cost fit the remaining budget.
+\item \textbf{Correct.} The second worker then sees the first worker's reservation before deciding whether its own call fits the budget.
+\item \textbf{Incorrect.} Equal output limits do not ensure that the combined cost fits within the remaining budget.
 \end{enumerate}
 \end{minipage}
 
@@ -588,8 +588,8 @@ options and explains every choice. Question numbers link back to the exercises.
 \textbf{Correct: C.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} The provider may have processed part or all of the request before the timeout.
-\item \textbf{Incorrect.} A zero bill is an unsupported guess while the actual charge is unknown.
-\item \textbf{Correct.} The amount remains committed until the runtime can record or rule out the bill.
+\item \textbf{Incorrect.} Recording a zero charge is unjustified while the actual charge is unknown.
+\item \textbf{Correct.} The funds remain reserved until the runtime can establish the charge or confirm that there was none.
 \item \textbf{Incorrect.} A failed attempt can still incur a charge, and earlier charges also remain part of the run.
 \end{enumerate}
 \end{minipage}
@@ -598,7 +598,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \textbf{Correct: B, C.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Incorrect.} Output-only counting excludes the tokens sent into the model.
-\item \textbf{Correct.} Input and output token counts both contribute to this unit.
+\item \textbf{Correct.} Counting all processed tokens includes both input and output tokens.
 \item \textbf{Correct.} Fresh input, cache reads, and output can have different prices before being combined into one charge.
 \item \textbf{Incorrect.} One call can resend a much longer conversation than another.
 \end{enumerate}
@@ -607,20 +607,20 @@ options and explains every choice. Question numbers link back to the exercises.
 \item[{\hyperref[exercise:57]{57.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: B, D.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Incorrect.} Those checks do not show that the replacement text is complete enough to apply safely.
-\item \textbf{Correct.} The output-limit stop reason warns that a seemingly valid request may be cut off.
+\item \textbf{Incorrect.} Valid tool and argument names do not establish that the replacement text is complete enough to apply safely.
+\item \textbf{Correct.} A stop caused by the output limit indicates that a seemingly valid request may be incomplete.
 \item \textbf{Incorrect.} The model call still ran and consumed provider resources.
-\item \textbf{Correct.} A retry is another paid call whose larger possible output needs its own permission check.
+\item \textbf{Correct.} A retry is another paid call. The runtime must check whether the budget can cover its larger possible output.
 \end{enumerate}
 \end{minipage}
 
 \item[{\hyperref[exercise:58]{58.}}] \begin{minipage}[t]{\linewidth}
 \textbf{Correct: A.}
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
-\item \textbf{Correct.} Other roles then cannot spend the part reserved for the final decision.
+\item \textbf{Correct.} Other roles cannot use the allowance reserved for the final assessment.
 \item \textbf{Incorrect.} The assessment is a model call and incurs usage too.
 \item \textbf{Incorrect.} Earlier calls remain charged even after the patch reaches assessment.
-\item \textbf{Incorrect.} A late call still needs permission under the same run limit.
+\item \textbf{Incorrect.} The final call still needs an admission check under the same run limit.
 \end{enumerate}
 \end{minipage}
 
@@ -629,7 +629,7 @@ options and explains every choice. Question numbers link back to the exercises.
 \begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
 \item \textbf{Correct.} Clearing a failed candidate must not erase charges incurred while producing it.
 \item \textbf{Incorrect.} Repeated attempts could then exceed the stated limit for the run.
-\item \textbf{Correct.} Every model role can create a charge, so leaving one out understates run spending.
+\item \textbf{Correct.} Calls from every model role can incur charges. Omitting a role would understate the amount spent on the run.
 \item \textbf{Incorrect.} Failed calls and rejected attempts still consume resources.
 \end{enumerate}
 \end{minipage}

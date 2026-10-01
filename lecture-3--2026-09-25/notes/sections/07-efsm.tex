@@ -4,16 +4,16 @@
 \subsection{Why a state machine describes an agent}
 \label{sec:efsm-why}
 
-A state machine is a simplified description of an agent. It omits the prompts, the model and the
-tool code so that we can examine execution without describing the whole program.
+A state machine describes how an agent proceeds through a task. It leaves out the details of
+prompts, model internals and tool code so that we can study the rules governing execution.
 
-An agent runs in discrete steps, such as model calls, tool calls and checks. Between steps, it
-retains information and may receive new inputs. The program determines which data changes and
-continuations are permitted. We can therefore describe the agent as a state machine with i) a set
-of states, ii) inputs received during a step, iii) outputs emitted by a step, iv) an initial
-configuration, and v) a transition rule that maps the current state and an input to a next state
-and an output. A workflow intended to terminate also specifies terminal configurations, from
-which no further step is scheduled.
+An agent works in separate steps, such as calling a model, running a tool or checking a result.
+It retains information between steps and may receive new inputs. The program specifies how this
+information can change and which step can follow. These are the elements of a state machine:
+i) a set of states, ii) inputs received during a step, iii) outputs produced by a step, iv) an
+initial configuration, and v) a transition rule that specifies the next state and output from
+the current state and input. A workflow that is meant to end also defines terminal
+configurations. Once it reaches one, the runtime schedules no further step.
 
 \begin{definition}[State]
 \label{def:state}
@@ -21,17 +21,17 @@ State: ``condition of the system at a particular point in time''. It ``[e]ncodes
 the past that influences the system's reaction to current input''~\citep[slide~10]{seshia2015discrete}.
 \end{definition}
 
-Here, state contains the information the program retains between steps. It needs to include only
-the past information that affects the next step. A controller's next action depends on its
-instructions and earlier observations. The runtime's next decision may depend on how many model
-calls have been used. When the program retains both, two visits to the same controller can have
-different successors: the code is the same, but the data it reads differ.
+State is the information the program retains between steps. It must preserve the facts about
+earlier steps that can affect what happens next. For example, the controller reads its
+instructions and earlier observations, while the runtime may check how many model calls have
+already been made. Two visits to the same controller can therefore lead to different next
+steps. The code is unchanged, but the information it reads has changed.
 
-The system boundary determines what counts as an input. Model replies and tool results arrive
-during a step, and the program cannot compute them from its retained data. We can represent
-workspace contents in two ways: include the files in the modelled environment, or treat a tool's
-report about them as an input observation. Under either choice, \textbf{the record determines the
-permitted transitions. It does not determine which result arrives}.
+What counts as an input depends on where we draw the system boundary. In our description,
+model replies and tool results arrive during a step; the retained information alone does not
+determine them. We can include workspace files in the environment we model, or treat a tool's
+report about those files as an input. In either case, \textbf{the retained information constrains
+the permitted transitions. It does not determine which external result arrives}.
 
 \begin{definition}[Determinism]
 \label{def:determinism}
@@ -39,26 +39,28 @@ Determinism: ``In every state, for all input values, exactly one (possibly impli
 enabled''~\citep[slide~29]{seshia2015discrete}.
 \end{definition}
 
-Whether the agent is deterministic depends on the system boundary. If each model reply is an
-input, routing is deterministic whenever every routing rule is a function of the merged record.
-The record enables exactly one outgoing edge, so the same record and reply always select the same
-edge. If the model is inside the system and its reply is an unobserved internal choice, one record
-can lead to either a tool call or a submission. This description is nondeterministic. It uses
-nondeterminism in the standard way to represent unknown aspects of a system or its environment.
+The system boundary also determines whether we describe the agent as deterministic. If we treat
+each model reply as an input, routing is deterministic when the updated state selects exactly
+one outgoing edge. The same state and reply then select the same edge. If we instead include
+the model inside the system and leave its internal choice unspecified, the same retained
+information can lead to either a tool call or a submission. This is a nondeterministic
+description: it represents choices whose causes we have left out of the model.
 
-Neither reading assigns a probability to a reply. A probabilistic machine attaches a probability to
-each transition, whereas for a nondeterministic one ``no such probability is known. We just know that
+Neither description assigns probabilities to replies. A probabilistic machine assigns a probability to
+each transition. For a nondeterministic machine, ``no such probability is known. We just know that
 any of the enabled transitions from a state can be taken''~\citep[slides~33 and~37]{seshia2015discrete}.
-Our descriptions identify possible continuations without assigning their likelihoods.
-Deterministic routing alone does not make a run reproducible. Replay requires the same inputs,
-including model replies that we do not control.
+Our descriptions specify what can happen without estimating how likely it is.
+Deterministic routing alone does not make a run reproducible. Reproducing a run also requires the
+same inputs, including the model replies.
 
 \subsection{Extended state machines}
 \label{sec:efsm-extended}
 
-An agent has a small number of control locations and a large amount of data. In a plain state
-machine, each distinct conversation and counter value would require a separate state. Such a
-diagram would make the control structure difficult to see.
+An agent usually has a few named steps, called \emph{control locations}, but retains many possible
+values in its conversation, counters and other data. In a plain state machine, each combination
+of a location and those values would need a separate state. The resulting diagram would make
+the sequence of steps difficult to see. An \emph{extended finite state machine} (EFSM) separates
+the finite set of control locations from the values stored in variables.
 
 \begin{definition}[Extended state machine]
 \label{def:efsm}
@@ -68,44 +70,47 @@ written''~\citep[slide~4]{seshia2015extended}.
 
 \begin{definition}[Configuration]
 \label{def:configuration}
-A configuration of an extended state machine is a pair $(q, v)$: the current control location $q$,
-shown as a node in the diagram, and a valuation $v$ that assigns a value to every declared variable.
+A configuration of an extended state machine is a pair $(q, v)$. The control location $q$ identifies
+the current step and appears as a node in the diagram. The valuation $v$ gives the current value
+of every declared variable.
 \end{definition}
 
-An agent's control locations name its computations: plan, call the controller, run the tools,
-check a candidate, and end. Its variables hold the conversation, observations, plan, counters and
-status. In our agent, \demoref{(controller, model\_calls=2, \ldots)} and
-\demoref{(controller, model\_calls=5, \ldots)} are two configurations at one location. Both run the
-same code with different data. Drawing a separate node for each conversation would obscure this
-shared control structure.
+For our agent, the control locations include planning, calling the controller, running tools,
+checking a candidate and ending the run. Variables hold the conversation, observations, plan,
+counters and status. For example, \demoref{(controller, model\_calls=2, \ldots)} and
+\demoref{(controller, model\_calls=5, \ldots)} are different configurations at the same location.
+Both execute the controller code, using different data. The extended state machine shows this
+shared step once and records the differences in its variables.
 
-Finite control does not imply a finite configuration space. An extended state machine for a
-traffic light at a pedestrian crossing has four locations and one variable, \emph{count}, whose
-range is $\{0, \ldots, 60\}$. It therefore has at most $4 \times 61 = 244$ configurations. A message
-list without a length bound has no such limit. \textbf{The control locations are finite; the
-configurations need not be.} Enumerating reachable configurations, as in safety analysis of a
-finite machine, may then no longer terminate. The set of locations and the guards between
-them remains finite.
+A finite number of locations does not guarantee a finite number of configurations. Consider a
+traffic-light controller at a pedestrian crossing. It has four locations and one variable,
+\emph{count}, with values in $\{0, \ldots, 60\}$. The controller therefore has at most
+$4 \times 61 = 244$ configurations. A message list with no maximum length has no comparable
+limit. \textbf{The control locations are finite; the configurations need not be.} A procedure
+that checks safety by listing every reachable configuration may therefore never finish. The
+diagram can still have a finite number of locations and transition rules.
 
 \subsection{Transition notation}
 \label{sec:efsm-notation}
 
-An edge of an extended state machine can specify a guard, an output action and a set action. The
-guard determines whether the transition is enabled; the output action specifies what it emits;
-the set action updates the variables. We write \emph{guard / output action} above the edge and the
-set action below it. For example, the traffic-light controller's red-to-green edge has
+A transition can have three parts: a \emph{guard}, an \emph{output action} and a \emph{set action}.
+The guard is a condition that must be true for the transition to occur. The output action
+specifies what the transition produces, and the set action specifies how it updates the
+variables. We write \emph{guard / output action} above the edge and the set action below it.
+For example, the traffic-light controller's red-to-green edge has
 $\mathit{count} \geq 60 \,/\, \mathit{sigG}$ above $\mathit{count} := 0$.
-The initial arrow carries the set action that initializes the variables. We declare variables,
-inputs and outputs separately, following the notation's convention~\citep[slides~5--6]{seshia2015extended}: ``We make explicit declarations of variables, inputs,
+The initial arrow specifies the variables' starting values. We declare variables, inputs and
+outputs separately, following the notation in~\citet[slides~5--6]{seshia2015extended}: ``We make explicit declarations of variables, inputs,
 and outputs to help distinguish the three.''
 
-In prose, we use a one-line shorthand. A transition from configuration $(q, v)$ reads input $e$,
-tests guard $g$, emits output \emph{out} and applies set action \emph{set}:
+We also use a compact notation within the text. Starting from configuration $(q, v)$, a
+transition reads input $e$, tests guard $g$, produces output \emph{out} and applies the update
+\emph{set}:
 \[
   (q, v) \xrightarrow{\;e;\ g\ /\ \mathit{out};\ \mathit{set}\;} (q', v').
 \]
-The guard is a predicate over the variables and input, $g(v, e)$. The set action changes $v$ to
-$v'$. \Cref{tab:efsm-elements} explains each element for an agent.
+The guard $g(v, e)$ is a predicate: a condition that is true or false for the given variables and
+input. The set action changes $v$ to $v'$. \Cref{tab:efsm-elements} relates each element to an agent.
 
 \begin{table}[htbp]
   \centering
@@ -119,8 +124,8 @@ $v'$. \Cref{tab:efsm-elements} explains each element for an agent.
     counters, check results, a status. \\
     Input & $e$ & A result that arrives during a step: a model reply, a tool result, a check
     result. \\
-    Guard & $g(v, e)$ & A predicate over variables and input, such as \emph{the reply requests a tool} or
-    \emph{the call budget is spent}. \\
+    Guard & $g(v, e)$ & A condition on the variables and input, such as \emph{the reply requests a tool} or
+    \emph{the call budget is exhausted}. \\
     Output action & \emph{out} & A request to perform an operation, or a reported terminal
     outcome. \\
     Set action & \emph{set} & Store a reply, extend the observations, increment a counter, replace a
@@ -136,18 +141,19 @@ $v'$. \Cref{tab:efsm-elements} explains each element for an agent.
   \label{tab:efsm-elements}
 \end{table}
 
-Consider a transition from the controller. The call counter $c$ was below the call budget $B$, so
-the controller could issue a model call. Its reply $e$ contains a tool request. The reply is the
-input, the guard tests for tool calls, and the output action requests their execution. The set
-action appends the reply to the messages $H$ and increments $c$. The next location is \emph{tools}:
+Consider a controller step. The call count $c$ is below the budget $B$, so the controller is
+allowed to call the model. The reply $e$ contains a tool request. In the transition below, the
+reply is the input, the guard checks for tool calls, and the output action requests their
+execution. The set action adds the reply to the messages $H$ and increases $c$ by one. The next
+location is \emph{tools}:
 \[
   (\mathit{controller}, v) \xrightarrow{\;e;\ \mathit{calls}(e) \neq \emptyset\ /\ \mathit{request}(e);\
   H := H \cdot e,\ c := c + 1\;} (\mathit{tools}, v').
 \]
-When the tool results arrive, a transition from \emph{tools} appends them as observations and can
-return control to the controller. This is the same location as before, with a different
-configuration: $H$, $c$ and the observations have grown. Updating the variables allows the machine
-to make progress while revisiting a location.
+When the tools return their results, the next transition adds those results to the observations
+and can return to the controller. The controller now has more messages $H$, a larger call count
+$c$, and new observations. It is at the same location with a different configuration, so it can
+make progress while repeating the same step.
 
 \subsection{Behaviours, traces and computation trees}
 \label{sec:efsm-traces}
@@ -180,8 +186,9 @@ to make progress while revisiting a location.
   \label{fig:efsm-planner}
 \end{figure*}
 
-A transition specifies one permitted step. A run is a sequence of these steps. Three definitions
-describe what a run did or could have done~\citep[slide~8]{seshia2015extended}.
+A transition describes one permitted step; a run follows a sequence of steps. The following
+definitions distinguish a sequence from its recorded history and from the alternatives the
+machine permits~\citep[slide~8]{seshia2015extended}.
 
 \begin{definition}[Behaviour]
 \label{def:behaviour}
@@ -198,42 +205,46 @@ describe what a run did or could have done~\citep[slide~8]{seshia2015extended}.
 ``A computation tree is a graphical representation of all possible traces''.
 \end{definition}
 
-A stuttering step occurs when inputs are absent, changes no state and emits no output. A behaviour
-omits these steps. Determinism determines whether a system has one behaviour or many. For a fixed
+A stuttering step has no input, changes no state and produces no output. A behaviour leaves out
+these steps. For a fixed
 input sequence, ``A deterministic system exhibits a single
 behavior'', while ``A non-deterministic system exhibits a set of
-behaviors''~\citep[slides~29 and~36]{seshia2015discrete}. The computation tree represents that set,
-branching wherever more than one transition is enabled.
+behaviors''~\citep[slides~29 and~36]{seshia2015discrete}. A computation tree shows the possible
+sequences, branching when more than one transition can occur.
 
-A trajectory is one path through the computation tree, from the root to a terminal configuration
-or to the point where the run stopped. The tree unfolds the machine: each visit to a location
-appears as a new node. Four visits to the controller therefore produce four tree nodes, each with
-its own configuration and possible continuations. The machine diagram shows the permitted
-transitions. The tree shows the possible sequences of transitions from the initial configuration.
+A trajectory is one path through the computation tree. It starts at the root and follows the run
+to a terminal configuration or to the point where execution stopped. Each visit to a control
+location appears as a separate tree node. Four visits to the controller therefore appear as
+four nodes, each with its own configuration and possible next steps. The machine diagram shows which
+transitions are permitted. The tree shows how those transitions can follow one another from the
+initial configuration.
 
-An agent's event log is a practical trace that can survive the process. During execution,
-in-memory state holds the run's current information. When the process exits, unsaved state is
-lost, while saved logs and workspace artifacts can remain. \textbf{State records what the run currently knows; the trace
-records what the run did.} Our agent writes six kinds of event:
+An agent's event log provides a practical trace. During execution, the agent holds its current
+state in memory. When the process ends, unsaved state is lost, while logs and workspace files
+can remain. \textbf{State holds the information available at the current step; the trace records
+what happened during the run.} Our agent logs six kinds of event:
 \demoref{tool\_request}, \demoref{tool\_result}, \demoref{model\_call}, \demoref{routing},
 \demoref{state\_change} and \demoref{terminal}.
 
-An event log meets \cref{def:trace} only partly. It contains the inputs and outputs selected for
-logging and usually little state, because copying every variable at every step is expensive.
-Reconstructing a trajectory therefore combines logged facts with inferences from transition
-rules. A claim about a run needs to identify which of these supports it.
+An event log usually contains less information than the trace in \cref{def:trace}. It records
+selected inputs and outputs, with only some state values. Copying every variable at every step
+would be expensive. To reconstruct a trajectory, we therefore combine the recorded facts with
+what the transition rules imply. When describing a run, we must distinguish these two sources
+of evidence.
 
 \subsection{The planning agent as an extended state machine}
 \label{sec:efsm-demo}
 
-Our running example is the \emph{planning agent}, the complete workflow. The \emph{planner} is its
-plan node and model role. The agent receives one scanner alert and drafts a plan. A
-reactive loop of controller and tool calls carries out the work. The agent submits a candidate
-patch to three mechanical checks, then a validator decides whether to accept it. In
-\cref{fig:efsm-planner}, one transition represents completing a computation, applying its set
-action and selecting the next location. It omits the internal steps of model and tool calls. The
-figures and runs describe the planning agent when both runs were recorded. The current code adds two
-runtime nodes, \demoref{scan} and \demoref{normalize}, before \demoref{plan}.
+Our running example is the \emph{planning agent}. This name refers to the complete workflow;
+\emph{planner} refers to its plan node and the model role used there. The agent receives a scanner
+alert and drafts a plan. The controller then alternates between model calls and tool calls to
+carry out the work. It submits a candidate patch to three automatic checks, after which a
+validator decides whether to accept it.
+
+In \cref{fig:efsm-planner}, each transition includes completing a step, updating the variables
+and selecting the next location. The diagram leaves out the internal operations of model and
+tool calls. It describes the version used for the two recorded runs. The current code also has
+\demoref{scan} and \demoref{normalize} nodes before \demoref{plan}.
 
 The initial arrow enters \demoref{plan} with $\sigma := \mathsf{running}$, no model calls, no
 observations, no revision ($r = 0$, $f = \emptyset$), and the opening system and task messages
@@ -248,33 +259,36 @@ moves to \demoref{controller}.
 to \demoref{tools}, which appends the results to $O$. Unless the stall guard holds, control returns
 to \demoref{controller}.
 
-\item \textbf{Revising.} The stall guard is $r = 0 \wedge s$: the run has not revised its plan, and the
-last three observations are identical with no successful edit among them. When it holds,
-\demoref{tools} sets the handoff variable $f$ (\demoref{failed\_step}) and control returns to
-\demoref{plan}, which replaces $P$, clears $f$, and sets $r := |O|$ (\demoref{replanned\_at}). From
-then on, $s$ reads only the observations made since the revision.
+\item \textbf{Revising.} The stall guard $r = 0 \wedge s$ checks two conditions: the plan has not
+yet been revised, and the last three observations are identical with no successful edit among
+them. If both hold, \demoref{tools} stores the reason in $f$ (\demoref{failed\_step}) and returns
+to \demoref{plan}. That node replaces $P$, clears $f$, and sets $r := |O|$
+(\demoref{replanned\_at}). This records where the new plan's observations begin. Later checks of
+$s$ use only observations made after the revision.
 
-\item \textbf{Submitting.} A reply without tool calls, $\mathit{calls}(e) = \emptyset$, routes to
-\demoref{submit}, which runs the three checks: the patch applies, it touches the flagged line, and a
-rescan is clean. On $\neg\mathit{pass}(e)$ it appends feedback to $H$ and returns to
-\demoref{controller}; on $\mathit{pass}(e)$ it moves to \demoref{validate}.
+\item \textbf{Submitting.} A reply without tool calls, $\mathit{calls}(e) = \emptyset$, selects
+\demoref{submit}. This node checks that the patch applies, changes the flagged line, and leaves
+no alert on a rescan. If a check fails ($\neg\mathit{pass}(e)$), it adds feedback to $H$ and
+returns to \demoref{controller}. If all checks pass ($\mathit{pass}(e)$), it proceeds to
+\demoref{validate}.
 
-\item \textbf{Judging.} \demoref{validate} makes one model call and always moves to \demoref{END},
-with $\sigma := \mathit{verdict}(e)$, either \demoref{accepted} or \demoref{rejected}. A reply
-without a decision is recorded as a rejection made by the runtime.
+\item \textbf{Judging.} After its model call, \demoref{validate} moves to \demoref{END}. It sets
+$\sigma := \mathit{verdict}(e)$, either \demoref{accepted} or \demoref{rejected}. If the reply
+contains no decision, the runtime records a rejection and identifies itself as the source.
 
-\item \textbf{Exhaustion.} \demoref{plan}, \demoref{controller} and \demoref{validate} each test
-$c < B$ before calling a model, with $B = 40$; when the test fails, the edge to \demoref{END} sets
-$\sigma := \mathsf{budget\_exhausted}$. At the controller, $s$ can hold only after a revision, and
-it ends the run with $\sigma := \mathsf{no\_progress}$. The routing function after \demoref{submit}
-also checks the status, but no step on the way to \demoref{submit} can change it.
+\item \textbf{Exhaustion.} Before a model call, \demoref{plan}, \demoref{controller} and
+\demoref{validate} each test $c < B$, with $B = 40$. If the test fails, the run moves to
+\demoref{END} with $\sigma := \mathsf{budget\_exhausted}$. At the controller, $s$ can hold only
+after a plan revision. When it holds, the run ends with $\sigma := \mathsf{no\_progress}$.
+The routing function after \demoref{submit} also checks the status, although no step on the path
+to \demoref{submit} changes it.
 
 \ei
 
-The planner stores its list of subgoals in a variable. Adding a subgoal does not add a control
-location, and routing does not test which subgoal is current. \textbf{A plan is data in the machine;
-its subgoals do not define control locations.} The controller receives the plan as a message. The
-plan affects the machine's behaviour only through the controller's replies.
+The planner stores subgoals as a list in a variable. Adding a subgoal leaves the control
+locations unchanged, and routing does not check which subgoal is current. \textbf{The plan is
+data read by the controller; its subgoals are not control locations.} The controller receives
+the plan in a message, so the plan affects execution through the controller's replies.
 
 Our worked run, \demoref{bc284c6b}, repairs a Bandit B608 alert (SQL injection) at line 46 of
 \demoref{testcode/BenchmarkTest00283.py}. Its log records this trajectory, with the tool each
@@ -312,21 +326,20 @@ logged 12,693 input and 3,755 output tokens.
   \label{fig:efsm-trace-tree}
 \end{figure}
 
-\Cref{fig:efsm-trace-tree} unfolds the beginning and end of this trajectory into a tree. Each visit
-to \demoref{controller} creates a new node whose reply selects \demoref{tools} or \demoref{submit}.
-At \demoref{submit}, the check result selects the branch; at \demoref{validate}, the verdict does.
-An exhaustion branch appears only where its guard permits it. On the recorded path, $c$ never
-exceeds 7, so reaching \demoref{END} with \demoref{budget\_exhausted} would require further rounds.
-The figure shows branches selected by replies or check results. Tool results can also change the
-route through the stall guard; those branches are omitted.
+\Cref{fig:efsm-trace-tree} shows the beginning and end of this trajectory as a path through a
+tree. Each visit to \demoref{controller} appears as a new node. Its reply selects either
+\demoref{tools} or \demoref{submit}. At \demoref{submit}, the checks determine the branch; at
+\demoref{validate}, the verdict does. The tree includes a budget-exhaustion branch only where the
+guard allows it. In the recorded run, $c$ never exceeds 7, so ending with
+\demoref{budget\_exhausted} would require more rounds. For readability, the figure omits branches
+where tool results trigger the stall guard.
 
-The log contains selected facts. A successful \demoref{tool\_result} records success and result
-length, so the observations themselves are absent. The routes from \demoref{tools} to
-\demoref{controller} and from \demoref{plan} to \demoref{controller} produce no routing event. We
-infer these routes because the next event is a controller call and the transition rules allow no
-other successor. The counters are also absent from the log. Reconstructing this trajectory
-therefore requires both the log and the transition rules. Recovering every variable value at
-every step would require more detailed records.
+The log records only some facts about this run. A successful \demoref{tool\_result} reports
+success and the result's length, but leaves out the observation itself. The returns from
+\demoref{tools} and \demoref{plan} to \demoref{controller} have no routing events. We infer them
+from the next controller call and the permitted transitions. The log also omits the counters.
+Reconstructing the trajectory therefore requires the log and the transition rules together.
+Recovering every variable's value at every step would require a more detailed log.
 
 \subsection{Reading}
 

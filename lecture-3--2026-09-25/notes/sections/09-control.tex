@@ -119,8 +119,8 @@ lead to a reflection step that records what went wrong. A new attempt would then
 plan node. We would need to define which fields this transition resets. The failed attempt's
 plan, patch, and check results would mislead the next attempt if left in place. These fields have
 the attempt lifetime defined in \cref{sec:state-lifetimes}, so the transition must clear them.
-The reflection, attempt counter $a$, and call counter have the run lifetime: they must keep their
-values across attempts. \textbf{Resetting the attempt counter with each attempt prevents it from
+The reflection, attempt counter $a$, and call counter have the run lifetime: they must not be
+cleared when an attempt restarts. \textbf{Resetting the attempt counter with each attempt prevents it from
 reaching its limit.}
 
 \begin{table*}[tbp]
@@ -208,7 +208,8 @@ call budget.
 \label{sec:control-termination}
 
 When reading a trace, we must distinguish three claims: i) execution terminated; ii) the acceptance
-procedure passed; iii) the artifact satisfies the task's postcondition. Each claim is stronger
+procedure passed; iii) the artifact satisfies the task's postcondition, the property required of
+the result. Each claim is stronger
 than the previous one. A terminal event establishes the first. If its status is accepted, it also
 establishes the second. No event establishes the third. The acceptance procedure provides evidence
 about the artifact, but it does not prove that the artifact meets the postcondition.
@@ -224,7 +225,7 @@ the run, the writer records terminal status \demoref{error}, then writes a recor
 exception. The status identifies the kind of ending; the next record identifies its cause.
 
 If the process receives \texttt{SIGKILL}, no handler runs. The file ends at the last written event,
-without a terminal or exception record. A power loss may also erase that last event. The writer
+without a terminal or exception record. After a power loss, even that last event may be missing. The writer
 flushes events to the operating system, which may still be holding them in memory, but does not
 force them to disk
 (\cref{tab:control-outcomes}).
