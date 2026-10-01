@@ -1,0 +1,52 @@
+% The planner as an extended state machine, labelled in the notation of sec:efsm-notation.
+% Notes-owned copy (fig:efsm-planner); figures/lecture-3/plan-validate-efsm.tikz stays unchanged.
+% Each label is guard / set action; output actions are omitted. Source: plan_and_validation/graph.py.
+% The symbols are defined in a table set under the drawing in 07-efsm.tex (fig:efsm-planner).
+\begin{tikzpicture}[
+  ctl/.style={mnode, minimum width=21mm},
+  run/.style={rnode, minimum width=21mm},
+  el/.style={lab, font=\scriptsize, align=left},
+  every node/.append style={text=ibmfg}
+]
+  \node[ctl] (plan) at (0,0) {plan};
+  \node[ctl] (controller) at (6.4,0) {controller};
+  \node[run] (tools) at (12.8,0) {tools};
+  \node[run] (submit) at (6.4,-4.4) {submit};
+  \node[ctl] (validate) at (12.8,-4.4) {validate};
+  \node[tnode, minimum width=14mm] (end) at (0,-4.4) {END};
+
+  % initial arrow with the initial set action
+  \draw[flow] (-4.2,0) -- node[el, above, pos=.4]
+    {$\sigma := \mathsf{running},\ c := 0,\ r := 0$\\
+     $f := \emptyset,\ O := \langle\rangle,\ H := H_0$} (plan.west);
+
+  % plan
+  \draw[flow] (plan) -- node[el, above]
+    {$c < B$ /\\ $P := e,\ f := \emptyset,\ c := c + 1$\\ $r := |O|$ if $f \neq \emptyset$} (controller);
+  \draw[flow] (plan) -- node[el, left]
+    {$c \geq B$ /\\ $\sigma := \mathsf{budget\_exhausted}$} (end);
+
+  % controller
+  \draw[flow] (controller) -- node[el, below]
+    {$c < B \wedge \neg s \wedge \mathit{calls}(e) \neq \emptyset$ /\\ $H := H \cdot e,\ c := c + 1$} (tools);
+  \draw[flow] (controller) -- node[el, right, pos=.55]
+    {$c < B \wedge \neg s \wedge \mathit{calls}(e) = \emptyset$ /\\ $H := H \cdot e,\ c := c + 1$} (submit);
+  \draw[flow] (controller.south west) -- node[el, below right, pos=.85]
+    {$c \geq B$ / $\sigma := \mathsf{budget\_exhausted}$\\ $c < B \wedge s$ / $\sigma := \mathsf{no\_progress}$} (end.north east);
+
+  % tools
+  \draw[back] ([xshift=-3mm]tools.north) -- ++(0,1.3) -|
+    node[el, above, pos=.25] {$\neg(r = 0 \wedge s)$ / $O := O \cdot e$} ([xshift=3mm]controller.north);
+  \draw[back] ([xshift=3mm]tools.north) -- ++(0,2.5) -|
+    node[el, above, pos=.25] {$r = 0 \wedge s$ / $O := O \cdot e,\ f := $ reason} (plan.north);
+
+  % submit
+  \draw[flow] (submit) -- node[el, above] {$\mathit{pass}(e)$ /\\ $K := e$} (validate);
+  \draw[back] ([xshift=-5mm]submit.north) -- node[el, left, pos=.3]
+    {$\neg\mathit{pass}(e)$ /\\ $K := e,\ H := H \cdot$ feedback} ([xshift=-5mm]controller.south);
+
+  % validate
+  \draw[flow] (validate.south) -- ++(0,-.9) -| node[el, below, pos=.25]
+    {$c < B$ / $\sigma := \mathit{verdict}(e),\ c := c + 1$\\ $c \geq B$ / $\sigma := \mathsf{budget\_exhausted}$} (end.south);
+
+\end{tikzpicture}

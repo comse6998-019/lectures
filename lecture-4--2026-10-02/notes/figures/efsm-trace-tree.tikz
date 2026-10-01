@@ -1,0 +1,51 @@
+% A fragment of the planner's computation tree around run bc284c6b (fig:efsm-trace-tree).
+% Notes-owned; figures/lecture-3/plan-validate-trace-tree.tikz stays unchanged.
+% Branches are drawn where a reply or a check result selects the edge. Blue is the recorded path.
+\begin{tikzpicture}[
+  obs/.style={gnode, draw=ibmblue, fill=ibmblue!7, line width=.8pt, minimum width=19mm},
+  alt/.style={gnode, draw=black!40, text=black!60, fill=black!2, minimum width=19mm},
+  hit/.style={-{Stealth[length=2mm]}, line width=1.1pt, draw=ibmblue},
+  may/.style={-{Stealth[length=2mm]}, densely dotted, line width=.8pt, draw=black!50},
+  el/.style={lab, font=\scriptsize},
+  cnt/.style={font=\scriptsize, text=ibmblue, anchor=east}
+]
+  \node[obs] (plan) at (0,0) {plan};
+  \node[obs] (c1) at (0,-1.4) {controller};
+  \node[obs] (t1) at (0,-2.8) {tools\\\texttt{read\_file}};
+  \node[alt] (s1) at (3.6,-2.8) {submit};
+  \node[obs] (c2) at (0,-4.2) {controller};
+  \node[obs] (t2) at (0,-5.6) {tools\\\texttt{search}};
+  \node[alt] (s2) at (3.6,-5.6) {submit};
+  \node[obs, text width=30mm, align=center] (dots) at (0,-7.0) {$\cdots$\\two rounds:\\\texttt{read\_file}, \texttt{edit}};
+  \node[obs] (c5) at (0,-8.6) {controller};
+  \node[alt] (t5) at (-3.6,-10.0) {tools};
+  \node[alt] (more) at (-3.6,-11.4) {$\cdots$};
+  \node[alt, text width=24mm, align=center] (exh) at (-3.6,-12.8) {END\\\textsf{budget\_exhausted}};
+  \node[obs] (sub) at (0,-10.0) {submit};
+  \node[alt] (back) at (3.6,-10.0) {controller};
+  \node[obs] (val) at (0,-11.4) {validate};
+  \node[obs] (acc) at (0,-12.8) {END\\\textsf{accepted}};
+  \node[alt] (rej) at (3.6,-12.8) {END\\\textsf{rejected}};
+
+  \draw[hit] (plan) -- (c1);
+  \draw[hit] (c1) -- node[el, left] {$\mathit{calls}(e) \neq \emptyset$} (t1);
+  \draw[may] (c1) -- node[el, above right] {$\mathit{calls}(e) = \emptyset$} (s1);
+  \draw[hit] (t1) -- (c2);
+  \draw[hit] (c2) -- node[el, left] {$\mathit{calls}(e) \neq \emptyset$} (t2);
+  \draw[may] (c2) -- node[el, above right] {$\mathit{calls}(e) = \emptyset$} (s2);
+  \draw[hit] (t2) -- (dots);
+  \draw[hit] (dots) -- (c5);
+  \draw[may] (c5) -- node[el, above left] {$\mathit{calls}(e) \neq \emptyset$} (t5);
+  \draw[hit] (c5) -- node[el, left] {$\mathit{calls}(e) = \emptyset$} (sub);
+  \draw[may] (t5) -- (more);
+  \draw[may] (more) -- node[el, left] {$c \geq B$} (exh);
+  \draw[may] (sub) -- node[el, above] {$\neg\mathit{pass}(e)$} (back);
+  \draw[hit] (sub) -- node[el, left] {$\mathit{pass}(e)$} (val);
+  \draw[hit] (val) -- (acc);
+  \draw[may] (val) -- (rej);
+
+  \node[cnt] at (-1.2,-1.4) {$c = 1$};
+  \node[cnt] at (-1.2,-4.2) {$c = 2$};
+  \node[cnt] at (-1.2,-8.6) {$c = 5$};
+  \node[cnt] at (-1.2,-11.4) {$c = 6$};
+\end{tikzpicture}

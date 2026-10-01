@@ -1,0 +1,69 @@
+% One recorded path from plan-and-validation-bc284c6b.jsonl.
+% Grey branches may compress additional hypothetical rounds after the recorded
+% prefix. Counters on the blue path are derived from the trace and code.
+\begin{tikzpicture}[
+  observed/.style={gnode, draw=ibmblue, fill=ibmblue!7, line width=.8pt,
+    text width=68mm, minimum height=9mm},
+  alternative/.style={gnode, draw=black!40, text=black!65,
+    fill=black!2, text width=42mm, minimum height=9mm},
+  path/.style={-{Stealth[length=2mm]}, line width=1.15pt, draw=ibmblue},
+  possible/.style={-{Stealth[length=2mm]}, densely dotted,
+    line width=.9pt, draw=black!45},
+  count/.style={font=\sffamily\scriptsize, text=ibmblue, anchor=east},
+  line/.style={font=\sffamily\scriptsize, text=black!60, anchor=west}
+]
+  \node[font=\sffamily\bfseries\small, anchor=west] at (-5.0,1.4)
+    {Execution-tree fragment: one recorded path};
+  \draw[path] (-4.95,.88) -- (-4.05,.88);
+  \node[font=\sffamily\scriptsize, anchor=west] at (-3.9,.88) {observed};
+  \draw[possible] (-1.45,.88) -- (-.55,.88);
+  \node[font=\sffamily\scriptsize, anchor=west] at (-.4,.88) {schematic alternative continuation};
+
+  \node[observed] (plan) at (0,0) {\textbf{plan}\\propose subgoals};
+  \node[observed] (pair1) at (0,-1.2) {\textbf{controller $\to$ tools}\quad \texttt{read\_file}\\\texttt{testcode/BenchmarkTest00283.py}};
+  \node[observed] (pair2) at (0,-2.4) {\textbf{controller $\to$ tools}\quad \texttt{search}\\connection / results in \texttt{helpers/db\_sqlite.py}};
+  \node[observed] (pair3) at (0,-3.6) {\textbf{controller $\to$ tools}\quad \texttt{read\_file}\\\texttt{helpers/db\_sqlite.py}};
+  \node[observed] (pair4) at (0,-4.8) {\textbf{controller $\to$ tools}\quad \texttt{edit}\\parameterize SQL in \texttt{BenchmarkTest00283.py}};
+  \node[observed] (controller) at (0,-6.0) {\textbf{controller}\\reply contains no tool calls};
+  \node[observed] (submit) at (0,-7.2) {\textbf{submit}\\apply / flagged line / clean rescan checks};
+  \node[observed] (validate) at (0,-8.7) {\textbf{validate}\\assess candidate and recorded evidence};
+  \node[observed, text width=31mm] (end) at (0,-10.2) {\textbf{END}\quad accepted};
+
+  \foreach \a/\b in {plan/pair1,pair1/pair2,pair2/pair3,pair3/pair4,pair4/controller,controller/submit}
+    \draw[path] (\a) -- (\b);
+  \draw[path] (submit) -- node[lab, right, text=ibmblue] {checks pass} (validate);
+  \draw[path] (validate) -- node[lab, right, text=ibmblue] {accept} (end);
+
+  \node[count] at (-3.72,0) {$c=1,\ |O|=0$};
+  \node[count] at (-3.72,-1.2) {$c=2,\ |O|=1$};
+  \node[count] at (-3.72,-2.4) {$c=3,\ |O|=2$};
+  \node[count] at (-3.72,-3.6) {$c=4,\ |O|=3$};
+  \node[count] at (-3.72,-4.8) {$c=5,\ |O|=4$};
+  \node[count] at (-3.72,-6.0) {$c=6,\ |O|=4$};
+  \node[count] at (-3.72,-7.2) {$c=6,\ |O|=4$};
+  \node[count] at (-3.72,-8.7) {$c=7,\ |O|=4$};
+
+  \node[line] at (3.72,0) {events 1--2};
+  \node[line] at (3.72,-1.2) {events 3--6};
+  \node[line] at (3.72,-2.4) {events 7--10};
+  \node[line] at (3.72,-4.8) {events 15--18};
+  \node[line] at (3.72,-6.0) {events 19--20};
+  \node[line] at (2,-10.2) {event 25};
+
+  \node[alternative, text width=49mm] (replan) at (8.55,-3.6) {\textbf{controller $\to$ tools $\to\cdots\to$ plan}\\additional rounds, then revise};
+  \draw[possible] (pair3) -- node[lab, above, text=black!65] {later stalled\\window} (replan);
+  \node[line] at (3.72,-3.99) {events 11--14};
+
+  \node[alternative] (repair) at (8.2,-7.2) {\textbf{controller}\quad repair\\then continue $\ldots$};
+  \draw[possible] (submit) -- node[lab, above, text=black!65] {checks fail} (repair);
+  \node[line, anchor=north west] at (-3.45,-7.75) {events 21--22};
+
+  \node[alternative] (rejected) at (8.2,-8.7) {\textbf{END}\quad rejected};
+  \draw[possible] (validate) -- node[lab, above, text=black!65] {reject} (rejected);
+  \node[line, anchor=north west] at (-3.45,-9.25) {events 23--24};
+
+  \node[font=\sffamily\scriptsize, anchor=north west, text width=159mm, align=left]
+    at (-5.0,-11.15) {\textbf{Recorded totals:} 25 events; 7 model calls; 12,693 input and 3,755 output tokens.\\[3pt]
+      $c$ counts completed model calls; $|O|$ counts observations after each displayed block. Counts are derived from the trace and update rules.\\[3pt]
+      Each paired box compresses controller $\to$ tools. Grey branches may compress additional hypothetical rounds; this fragment does not reconstruct the full state or all permitted paths.};
+\end{tikzpicture}

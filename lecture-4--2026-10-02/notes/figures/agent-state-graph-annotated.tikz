@@ -1,0 +1,71 @@
+% The state machine of mini-swe-agent with the vocabulary named on it, so each label can be read
+% against the mapping table. Channels are kept apart: submit runs down the right, rejected up the left.
+\begin{tikzpicture}[x=1cm, y=1cm,
+  st/.style={gnode, align=center, minimum width=3.6cm, minimum height=1.3cm, inner sep=3pt},
+  ctrl/.style={st, fill=ibmblue!12},
+  rt/.style={st, fill=black!6},
+  tool/.style={draw=ibmfg!60, rounded corners=2pt, fill=white, align=center,
+               minimum width=4.1cm, minimum height=0.95cm, inner sep=3pt, font=\sffamily\footnotesize},
+  fl/.style={-{Stealth[length=2.4mm]}, thick, draw=ibmfg!85},
+  dotted/.style={-{Stealth[length=1.8mm]}, draw=ibmfg!50, densely dotted, line width=0.6pt},
+  ev/.style={font=\sffamily\scriptsize, align=center, inner sep=2pt, fill=white},
+  tag/.style={font=\sffamily\scriptsize\bfseries, text=ibmblue, inner sep=2pt},
+  sub/.style={font=\sffamily\scriptsize, text=ibmfg!65, align=left, inner sep=2pt}]
+
+  \def\cond#1{\\[-1pt]{\scriptsize\color{ibmfg!65}#1}}
+
+  % the environment encloses the agent and the tools that reach into it
+  \draw[draw=ibmfg!45, dashed, thick, rounded corners=8pt] (-1.6,3.15) rectangle (17.5,-7.5);
+  \node[tag, anchor=north west] at (-1.45,3.05) {Environment};
+  \node[sub, anchor=north west] at (-1.45,2.68) {the working tree at the pinned commit, and the alert};
+
+  % the agent program: the part that decides, and the part that executes
+  \draw[draw=ibmfg!80, thick, rounded corners=6pt] (-1.0,2.05) rectangle (7.9,-6.9);
+  \node[tag, anchor=north west] at (-0.85,1.95) {Agent program};
+
+  \node[circle, fill=ibmfg, inner sep=2.2pt] (start) at (3.4,1.45) {};
+  \node[font=\sffamily\scriptsize\bfseries, right=3pt of start] {Start};
+
+  \node[ctrl] (ctrl)  at (3.4,0.1)  {\textbf{Controller}\cond{decide the next action}};
+  \node[rt]   (state) at (3.4,-2.6) {\textbf{Working state}\cond{locations, excerpts, edits, cost}};
+  \node[rt]   (sub)   at (3.4,-5.4) {\textbf{Submit}\cond{validate the submission}};
+  \node[circle, draw=ibmfg, thick, inner sep=3.0pt] (end) at (10.4,-5.4)
+        {\tikz\node[circle, fill=ibmfg, inner sep=2.0pt]{};};
+  \node[font=\sffamily\scriptsize\bfseries, above=2pt of end] {End};
+
+  \draw[fl] (start) -- (ctrl);
+  \draw[{Stealth[length=2.4mm]}-{Stealth[length=2.4mm]}, thick, draw=ibmfg!85]
+        (ctrl) -- node[ev, right=1pt]{read, update} (state);
+  \node[tag, anchor=north] at (3.4,-3.42) {Working state};
+
+  % one node per tool, staggered, reached by dotted lines from the single request edge
+  \node[tool] (t1) at (13.0,1.75)  {\demoref{read\_file(path, range)}};
+  \node[tool] (t2) at (13.4,0.45)  {\demoref{search(pattern)}};
+  \node[tool] (t3) at (13.8,-0.85) {\demoref{edit(path, old, new)}};
+  \coordinate (hub) at (10.0,0.65);
+
+  \draw[fl] ([yshift=4.5mm]ctrl.east) -- node[ev, above=1pt]{action\cond{[tool\_name, args]}} (hub);
+  \node[tag, anchor=south] at (6.6,1.15) {Actions};
+  \draw[dotted] (hub) -- (t1.west);
+  \draw[dotted] (hub) -- (t2.west);
+  \draw[dotted] (hub) -- (t3.west);
+
+  \draw[fl] (t3.south) to[out=-90, in=-12, looseness=0.6]
+        node[ev, pos=0.62]{percept\cond{[observation]}} ([yshift=-3.5mm]ctrl.east);
+  \node[tag, anchor=north west] at (8.75,-0.5) {Percepts};
+
+  \node[tag, anchor=north west] at (11.2,-2.35) {Architecture};
+  \node[sub, anchor=north west] at (11.2,-2.75)
+        {the process, the model client,\\ and the code behind each tool};
+
+  % submit runs down the right of the column, rejected comes back up the left
+  \draw[fl] (ctrl.east) -- (6.6,0.1) -- (6.6,-4.3)
+        node[ev, pos=0.62]{submit\cond{[patch]}} -- (3.4,-4.3) -- (sub.north);
+  \draw[fl] (sub.west) -- ++(-1.9,0) coordinate (l1) |- (ctrl.west)
+        node[ev, pos=0.72, above]{rejected\cond{[feedback]}};
+  \draw[fl] (sub.east) -- node[ev, midway, above]{accepted} (end.west);
+
+  \node[tag, anchor=north west] at (8.6,-6.0) {Performance measure};
+  \node[sub, anchor=north west] at (8.6,-6.4)
+        {the Submit checks, and the four token counters};
+\end{tikzpicture}
