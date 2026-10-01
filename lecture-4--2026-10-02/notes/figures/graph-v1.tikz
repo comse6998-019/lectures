@@ -1,0 +1,15 @@
+% V1: reactive baseline. One model-call node, one dispatcher, one back edge; the model chooses the edge.
+\begin{tikzpicture}[node distance=9mm and 6mm]
+  \node[tnode] (in) {Input};
+  \node[mnode, right=of in] (decide) {model decision\\(one model call)};
+  \node[rnode, right=of decide] (exec) {tool execution\\(dispatcher)};
+  \node[rnode, right=of exec] (obs) {observation and\\state update};
+  \node[rnode, below=of decide] (submit) {submit\\finding};
+  \node[tnode, right=of submit] (out) {Output};
+  \draw[flow] (in) -- (decide);
+  \draw[flow] (decide) -- node[lab, above] {tool request} (exec);
+  \draw[flow] (exec) -- (obs);
+  \draw[back] (obs.north) -- ++(0,6mm) -| node[lab, pos=0.25, above] {next request; step count below the cap} (decide.north);
+  \draw[flow] (decide) -- node[lab, right] {candidate finding} (submit);
+  \draw[flow] (submit) -- (out);
+\end{tikzpicture}

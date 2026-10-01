@@ -1,0 +1,13 @@
+% V2: planning with in-run revision. A planning node before V1's loop; one edge back, taken
+% only when a planned step has failed after the runtime's single retry.
+\begin{tikzpicture}[node distance=5mm and 7mm]
+  \node[tnode] (in) {Input};
+  \node[mnode, right=of in] (plan) {plan agent\\(model call; re-entered with the\\failed subgoal and the tool error)};
+  \node[mnode, right=of plan] (exec) {reactive executor\\(V1's loop; the runtime retries\\a failed tool call once)};
+  \node[tnode, right=of exec] (out) {Output};
+  \draw[flow] (in) -- (plan);
+  \draw[flow] (plan) -- node[lab, above] {plan in state} (exec);
+  \draw[flow] (exec) -- node[lab, above] {finding\\submitted} (out);
+  \draw[back] (exec.south) -- ++(0,-7mm) -| (plan.south);
+  \node[lab] at ($(plan.south)!0.5!(exec.south)+(0,-7mm)$) {planned step failed after retry};
+\end{tikzpicture}

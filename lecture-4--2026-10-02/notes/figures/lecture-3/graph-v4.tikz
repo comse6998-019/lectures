@@ -1,0 +1,21 @@
+% V4: the complete serial graph. Plan, execute, validate; on rejection, reflect, retain guidance,
+% reset the attempt, and plan again. Two rows so the drawing stays inside the text width.
+\begin{tikzpicture}[node distance=15mm and 7mm]
+  \node[tnode] (in) {Input};
+  \node[mnode, right=of in] (plan) {Plan agent};
+  \node[mnode, right=of plan] (exec) {Reactive\\executor};
+  \node[mnode, right=of exec] (val) {Validator};
+  \node[tnode, right=20mm of val] (out) {Output};
+  \node[rnode, below=of plan] (reset) {Retain guidance;\\reset attempt};
+  \node[mnode, below=of val] (refl) {Reflection\\node};
+  \node[tnode, align=center, below=of out, xshift=11mm] (stop) {Stop with\\unresolved result};
+  \draw[flow] (in) -- (plan);
+  \draw[flow] (plan) -- (exec);
+  \draw[flow] (exec) -- (val);
+  \draw[flow] (val) -- node[lab, above] {Accept} (out);
+  \draw[back] (exec.north) to[out=120, in=60] node[lab, above] {planned step failed\\after retry} (plan.north);
+  \draw[flow] (val) -- node[lab, left] {Reject; another\\attempt allowed} (refl);
+  \draw[flow] (refl) -- (reset);
+  \draw[back] (reset) -- (plan);
+  \draw[flow] (val.south east) -- node[lab, pos=0.55, above, align=center] {Reject; attempt\\limit reached} (stop.west);
+\end{tikzpicture}

@@ -1,0 +1,21 @@
+% Current reactive V1 control flow. Guards read the state after the node update.
+% Terminal status has priority; both remaining controller branches require running.
+\begin{tikzpicture}
+  \node[tnode] (start) at (-3,0) {START};
+  \node[mnode, minimum width=24mm] (controller) at (0,0) {controller};
+  \node[rnode, minimum width=20mm] (tools) at (4.4,0) {tools};
+  \node[rnode, minimum width=24mm] (submit) at (0,-2.5) {submit};
+  \node[tnode] (end) at (4.4,-2.5) {END};
+
+  \draw[flow] (start) -- (controller);
+  \draw[flow] (controller) -- node[lab, above] {running; tool calls} (tools);
+  \draw[back] (tools.north) to[out=100, in=80]
+    node[lab, above] {observations merged} (controller.north);
+  \draw[flow] (controller.south) --
+    node[lab, right] {running;\\no tool calls} (submit.north);
+  \draw[flow] (controller.south east) --
+    node[lab, sloped, above, pos=0.62] {terminal status} (end.north west);
+  \draw[flow] (submit.east) -- node[lab, above] {checks pass} (end.west);
+  \draw[back] (submit.west) to[out=180, in=180, looseness=1.25]
+    node[lab, left] {checks fail} (controller.west);
+\end{tikzpicture}
