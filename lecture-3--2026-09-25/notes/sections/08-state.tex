@@ -1,65 +1,70 @@
 \section{What connects one step to the next}
 \label{sec:state}
 
-\subsection{From the EFSM variables to the state record}
+\subsection{Storing the state machine's variables}
 \label{sec:state-transition}
 
-A machine diagram shows the permitted control flow. A shared record supplies the information
-passed between steps. Routing and dispatch, described in later sections, both read this record.
+The machine diagram shows which step may follow another. A shared state record holds the
+information those steps pass to one another. Routing and dispatch, discussed later, also use
+this record.
 
-A configuration of an extended state machine pairs a control location with variable values
-(\cref{def:configuration}). An agent's runtime represents these separately. The application record
-holds the variables; the runtime tracks the control location, or which computation runs next. The
-\emph{state schema} declares each variable's name and type. Every step reads these variables and
-proposes updates to some of them. In our agent, the constructor call
-\demoref{StateGraph(AgentState)} constructs a graph with \demoref{AgentState} as its schema.
+A configuration has two parts: the control location and the values of the variables
+(\cref{def:configuration}). The runtime represents these parts separately. The state record
+holds the variable values, while the runtime tracks which step runs next. A \emph{state schema}
+specifies the name and type of each field in the record. Each step reads the record and returns
+updates for the fields it changes. In our code, \demoref{StateGraph(AgentState)} creates a graph
+that uses \demoref{AgentState} as its schema.
 
-We describe a step with two operations. A node reads the current state $s_t$ and obtains an
-external result $e_t$, then returns a partial update $u_t$. The runtime merges the update into the
-record, key by key:
+Updating state involves two operations. First, a node reads the current state $s_t$, obtains an
+external result $e_t$, and returns a partial update $u_t$. The runtime then combines that update
+with the stored state, one field at a time:
 \[
   u_t \;=\; \mathrm{node}(s_t,\, e_t), \qquad
   s_{t+1} \;=\; \mathrm{merge}(s_t,\, u_t).
 \]
-Here $e_t$ denotes a result obtained during the node's execution, such as a model reply or tool
-observation. The node's actual parameter is the state alone. A field omitted from the update keeps
-its value in $s_{t+1}$.
+Here $e_t$ represents a model reply or tool observation obtained while the node runs. In the
+code, the node receives state as its argument and obtains this external result itself. Any field
+missing from the update keeps its previous value in $s_{t+1}$.
 
 \begin{figure}[htbp]
   \centering
   \begin{adjustbox}{width=\linewidth}\input{figures/state-transition.tikz}\end{adjustbox}
-  \caption{One transition. The node proposes an update, and the runtime merges it. Each key has a
-  reducer whose left argument is the stored value and whose right argument is the value returned
-  by the node.}
+  \caption{A state update. The node returns changes, and the runtime combines them with the
+  stored state. For each updated field, the reducer takes the stored value as its left argument
+  and the node's contribution as its right argument.}
   \label{fig:state-transition}
 \end{figure}
 
-A node returns only the keys it updates, because ``the Node does not need to return the whole State
-schema - just an update''~\citep{langgraph-graph-api}. Our controller returns three of the loop's
-ten keys: \demoref{messages}, \demoref{model\_calls} and \demoref{usage}. On the two paths that stop
-the run before a model call, it returns only \demoref{status} (\cref{fig:controller-update}).
+A node can return just the fields it updates. As the LangGraph documentation states,
+``the Node does not need to return the whole State
+schema - just an update''~\citep{langgraph-graph-api}. After a model call, our controller returns
+three of the loop's ten fields: \demoref{messages}, \demoref{model\_calls} and \demoref{usage}.
+Either of its two early-stop paths returns only \demoref{status}
+(\cref{fig:controller-update}).
 
 \begin{figure*}[tbp]
   \centering
   \begin{adjustbox}{width=\textwidth}\input{figures/controller-update.tikz}\end{adjustbox}
-  \caption{The controller's three return sites against the loop's ten-key record. The guard on
-  each edge selects the path. The path that calls the model returns three keys, and each of the
-  two paths that stop the run returns one. An arrow into a key names the reducer the runtime
-  applies to it. \demoref{status} has no reducer, so the returned value replaces the stored one.
-  The six keys without an arrow are absent from every update and keep their values from $s_t$.}
+  \caption{The controller's three possible updates to the loop's ten-field state record. Guards
+  select the path. After a model call, the controller returns three fields; each early-stop path
+  returns one. Arrows name the reducers used for those fields. No reducer is specified for
+  \demoref{status}, so an update replaces its stored value. The six fields without arrows are
+  absent from all three updates and retain their values from $s_t$.}
   \label{fig:controller-update}
 \end{figure*}
 
-The runtime applies the merge rule. It calls one reducer per updated key and saves the result. A
-node can therefore return its contribution without implementing the choice between appending to a
-list and replacing its stored value.
+The runtime applies each field's merge rule and stores the result. The node therefore returns
+its contribution, while the merge rule determines whether to append it, add it to a total or
+replace the previous value.
 
 \subsection{Model context, runtime state, durable state}
 \label{sec:state-three}
 
-Model context and runtime state contain much of the same information. The model receives what it
-needs for the current call. The runtime also retains counters and other fields that control
-execution. Saving enough state to resume after the process ends makes that state durable.
+The information available to a model call overlaps with the information retained by the
+runtime. The model receives the instructions and data assembled for that call. The runtime also
+keeps counters and other fields used to control execution. State is \emph{durable} when it is
+saved beyond the life of the process; resuming a run requires enough saved information to
+continue from the stopping point.
 
 \begin{table}[htbp]
   \centering
@@ -67,15 +72,14 @@ execution. Saving enough state to resume after the process ends makes that state
     \toprule
     \textbf{Record} & \textbf{What it holds, and who reads it} \\
     \midrule
-    Model context & Instructions, selected history and observations assembled for one model call.
-    An agent with several model roles builds a separate context for each. In ours, the controller
-    receives the conversation; the plan node and validator receive inputs assembled for their
-    roles. \\
-    Runtime state & The record retained between steps, including fields excluded from model calls.
-    Nodes, routing functions and limit checks read it. \\
-    Durable state & State saved beyond the process lifetime in a form that supports resuming a
-    run. Resumption also requires the matching external state, such as the workspace, and a record
-    of pending work. \\
+    Model context & Instructions, selected history and observations sent in one model call.
+    Different model roles can receive different contexts. Our controller receives the
+    conversation; the plan node and validator receive inputs prepared for their roles. \\
+    Runtime state & The record available between steps. It includes fields that are never sent
+    to the model. Nodes, routing functions and limit checks read it. \\
+    Durable state & State saved so that it remains available after the process ends. To resume
+    a run, the saved record must also correspond to the external state, such as workspace
+    files, and identify pending work. \\
     \bottomrule
   \end{tabularx}\end{adjustbox}
   \caption{Three kinds of record. Each call's model context is derived from runtime state.
@@ -83,82 +87,79 @@ execution. Saving enough state to resume after the process ends makes that state
   \label{tab:state-three}
 \end{table}
 
-Counters illustrate runtime information excluded from model context. Our loop refuses a model
-call when \demoref{model\_calls} reaches forty. It also refuses a call when the last three
-observations are identical. Neither number is shown to the model. Enforcement depends on the
-runtime's comparison before the call, regardless of whether the model can see the limit in its
-prompt.
+Counters provide an example of information the runtime uses without sending it to the model.
+Our loop refuses a model call when \demoref{model\_calls} reaches forty, or when the last three
+observations are identical. The model receives neither limit. The runtime enforces them by
+checking the state before the call. Including a limit in a prompt would not replace this check.
 
-If our agent's process stops during a run, a new process cannot recover its in-memory state
-record. Both graphs are compiled without a checkpointer. Trace files and workspace artifacts may
-survive, but they do not provide a resumable runtime record. LangGraph supports compiling a graph
-with a checkpointer, which gives ``agents short-term
+If our agent's process stops during a run, a new process cannot recover the state held in its
+memory. Neither graph uses a checkpointer to save that state. Trace files and workspace files
+may remain, but they are insufficient to resume the run. LangGraph allows a graph to use a
+checkpointer, which gives ``agents short-term
 memory'' and ``lets LangGraph applications keep useful information beyond a single graph
 run''~\citep{langgraph-persistence}. Our JSONL trace contains selected events
 (\cref{sec:efsm-traces}). \textbf{The saved trace does not contain enough information to resume
 the run.}
 
-Here, \emph{durable} means that another process can read the saved record. Resuming can still
-repeat work. What must be repeated depends on checkpoint and task boundaries; an interrupted node
-may restart and repeat effects or paid calls not captured at a recoverable boundary. Later units
-examine persistence and recovery. This lecture concerns the record needed to execute a run;
-restart introduces further requirements.
+Saving state does not by itself prevent repeated work after a restart. The runtime may need to
+rerun an interrupted node from the last saved point. That node could repeat a file change or a
+paid call if its completion was not saved. The amount of repeated work depends on where the
+runtime places checkpoints and task boundaries. Later units examine these recovery requirements.
+Here we focus on the state needed while a run is executing.
 
-\subsection{Reducers and the information retained between steps}
+\subsection{Reducers: combining updates with stored state}
 \label{sec:state-reducers}
 
-A merge function determines whether a field accumulates a history or retains only its latest
-value. This choice determines which evidence later steps can read.
+A field can retain a history, a running total or just its latest value. Its \emph{merge function}
+determines how each update changes the stored value, and therefore what later steps can read.
 
-In an extended state machine, each transition carries a set action that assigns new values to
-variables (\citealp[slide~5]{seshia2015extended}). We implement that set action in two parts: a
-step proposes an update, then the runtime combines it with the stored value.
+In an extended state machine, a transition's set action assigns values to variables
+(\citealp[slide~5]{seshia2015extended}). Our implementation divides this action between the node
+and the runtime: the node returns an update, and the runtime combines it with the stored value.
 
 \begin{definition}[Partial update]
 \label{def:partial-update}
-A partial update is the result of one step: a mapping from some of the state's fields to new
-values. A field the update does not name keeps its stored value.
+A partial update is a step's returned contribution to state. It gives values for some fields
+and leaves the others unchanged.
 \end{definition}
 
 \begin{definition}[Merge function]
 \label{def:reducer}
-A merge function belongs to one field. It takes the stored value and the partial update's value
-as arguments, then returns the field's next value. Without a merge function, the update replaces
+A merge function combines a field's stored value with the value supplied in an update. Its
+result becomes the field's new value. If no merge function is specified, the update replaces
 the stored value.
 \end{definition}
 
-LangGraph calls this merge function a \emph{reducer}, the term used throughout these notes. A
-reducer has the form \demoref{(current, update) -> new} and is attached to a field with
-\demoref{Annotated[T, fn]}. The runtime calls it whenever a node returns that key. LangGraph's
-\demoref{add\_messages} reducer appends messages and replaces messages whose identifiers are
-already stored. Other binary functions can also serve as reducers, including the standard
-library's \demoref{operator.add} and functions we write ourselves.
+LangGraph calls the merge function a \emph{reducer}. We use that term from here on. A reducer
+takes two arguments, \demoref{(current, update) -> new}, and is attached to a field through
+\demoref{Annotated[T, fn]}. When a node returns that field, the runtime applies its reducer.
+For example, \demoref{add\_messages} appends new messages and replaces an existing message when
+an update uses the same identifier. Other functions of two arguments can also serve as
+reducers, including Python's \demoref{operator.add} and functions defined in our code.
 
-Three merge behaviours cover most fields. Each determines what later steps can read.
+Most fields use one of three merge rules.
 
 \bi
 
-\item \textbf{Append.} Add the update to the end of the stored list, keeping all earlier values.
-This is needed when a later step examines a sequence, for example, to check whether the same
-result occurred three times in a row. A field containing only the latest value cannot support
-that check.
+\item \textbf{Append.} Add the new entries to the end of the stored list. Keeping earlier entries
+allows later steps to examine a sequence, such as checking whether the same result appeared
+three times in a row. Keeping only the latest result would lose that information.
 
-\item \textbf{Replace.} Overwrite the stored value with the update. This default behaviour suits a
-current plan, decision or status, where the new value supersedes the previous one and determines
-what later steps can use as evidence.
+\item \textbf{Replace.} Store the new value in place of the previous one. This default rule suits
+fields such as the current plan, decision or status, where later steps need the latest value.
 
-\item \textbf{Accumulate.} Combine the update arithmetically with the stored value, usually by
-summing. Under this protocol, each node reports its own contribution, such as the cost of one
-call. The reducer maintains the running total from those deltas.
+\item \textbf{Accumulate.} Combine the new contribution with the stored value, usually by
+addition. Each node reports only its own contribution, such as the cost of its model call.
+The reducer adds that contribution to the running total.
 
 \ei
 
-The reducer also determines whether an update can clear a field. For a list that appends updates,
-an empty update adds nothing: merging \demoref{[]} into \demoref{[x, y]} produces
-\demoref{[x, y]}. \textbf{An empty update leaves an appended field unchanged.} Clearing it requires
-bypassing the reducer and writing the new value directly, which LangGraph supports through
-\demoref{Overwrite}. Such a reset should produce a separate trace event because it bypasses the
-field's ordinary merge rule.
+The merge rule also determines how to clear a field. Appending an empty list adds nothing:
+combining \demoref{[]} with \demoref{[x, y]} still gives \demoref{[x, y]}.
+\textbf{An empty update does not clear a list that uses an append reducer.} To clear it, we must
+bypass the reducer and replace the stored value. LangGraph provides \demoref{Overwrite} for
+this purpose. Recording the reset as a separate trace event makes this exception to the normal
+merge rule visible.
 
 \begin{figure*}[tbp]
   \centering\footnotesize
@@ -202,66 +203,69 @@ field's ordinary merge rule.
   {\sffamily\scriptsize Lifetime:\enspace
   \lfkey{lifeid}{identity}\enspace\lfkey{liferun}{run}\enspace\lfkey{lifecur}{current}\enspace
   \lfkey{lifehand}{handoff}\enspace\lfkey{lifewin}{window}\qquad \textbf{+}\,new in the planning agent}
-  \caption{The two \demoref{AgentState} classes, with comments omitted. Shading indicates field
-  lifetime (\cref{sec:state-lifetimes}); \textbf{+} marks the planning agent's five additional
-  fields. Three use the current lifetime already present in the loop. \demoref{failed\_step} and
-  \demoref{replanned\_at} introduce two further lifetimes. Neither class has an attempt-lifetime
-  field, because neither agent retries.}
+  \caption{The two \demoref{AgentState} classes, with comments omitted. Colours show how long
+  field values remain valid (\cref{sec:state-lifetimes}). The \textbf{+} marks five fields added
+  by the planning agent. Three hold a current value, as some fields in the loop already do.
+  \demoref{failed\_step} and \demoref{replanned\_at} add the handoff and window lifetimes.
+  Neither agent retries whole attempts, so neither schema has attempt-lifetime fields.}
   \label{fig:agentstate}
 \end{figure*}
 
 \subsection{Field lifetimes}
 \label{sec:state-lifetimes}
 
-A reducer defines how an update merges into a field. It does not define how long the resulting
-value remains valid. A stale value can mislead later steps.
+A reducer specifies how to combine an update with a stored value. We must also decide how long
+that value remains valid. Later steps can make wrong decisions if they rely on an outdated
+value.
 
-A field's \emph{lifetime} is the part of a run during which its value remains valid evidence for
-its readers. It begins when the value is written and ends when an event supersedes or clears it.
-We choose the lifetime when designing the field. The runtime enforces only the reducer, so the
-nodes that write the field must follow its lifetime rules.
+A field's \emph{lifetime} is the part of a run during which other steps can rely on its value.
+It begins when the value is written and ends when an event makes it outdated. The writer must
+then replace or clear it. We choose this lifetime when designing the field. The reducer alone
+cannot enforce it; the nodes that write the field must update or clear it at the appropriate time.
 
-To choose a lifetime, identify who writes the field and which event makes its value invalid.
-These answers distinguish six lifetimes.
+For each field, identify the step that writes it and the event that makes it outdated. The
+following six lifetimes describe common choices.
 
 \bi
 
-\item \textbf{Identity.} Set once in the initial state and never updated by a node, so it needs no
-reducer. Use it for the task, target and workspace that define what the run concerns and where it
-may act. Updating an identity field changes the task during the run.
+\item \textbf{Identity.} Set the field before the run and leave it unchanged. No custom reducer
+is needed. Task details, the target and the workspace usually have this lifetime because they
+define what the run is doing and where it may act. Changing them would change the task during
+execution.
 
-\item \textbf{Run.} Valid throughout the run and only grows. A history uses an append reducer; a
-ledger uses an accumulating reducer. Use it when later steps or limits need the complete history,
-such as the conversation, observations, or calls and tokens spent.
+\item \textbf{Run.} Keep the information throughout the run and add to it as work proceeds. A
+history uses an append reducer; a running total uses an accumulating reducer. Conversations,
+observations, and call or token totals have this lifetime when later steps need the full
+history or total.
 
-\item \textbf{Current.} Valid until its writer runs again, using the default replace rule. Use it
-for the latest plan, candidate, check result or status, when readers need the current value and
-the previous one is no longer valid evidence.
+\item \textbf{Current.} Keep the latest value until the step that writes it supplies a new one.
+The default replace rule suits a current plan, candidate, check result or status.
 
-\item \textbf{Handoff.} Written by one node for one reader, which clears it after acting. Use it
-when a step must explain why the next step was invoked, such as the reason for revising a plan.
-If the reader leaves it set, the next routing decision responds to the same signal again.
+\item \textbf{Handoff.} One node writes information for another node to read once and then clear.
+For example, it can record why the planner must revise a plan. Leaving the field set can cause
+a later routing decision to act on the same signal again.
 
-\item \textbf{Window.} A span of run-lifetime history whose start is stored in an index field. Use
-it when a check needs only the events since a given point, while other readers still need the
-full history. Replace the index to move the window; retain the history.
+\item \textbf{Window.} Keep the full history, but store an index marking where a particular
+check should start reading. This lets a check use only recent events while other steps retain
+access to earlier ones. Updating the index moves the window without deleting history.
 
-\item \textbf{Attempt.} Valid for one attempt and cleared before a retry. Its reducer must allow
-this reset: a replaced field can receive its empty value, while an appended field needs
-\demoref{Overwrite}. Use it for results from a failed attempt that would mislead the next one,
-such as the candidate and its check results.
+\item \textbf{Attempt.} Keep the value for one attempt and clear it before starting another.
+This applies to a failed attempt's candidate and check results when they would mislead the
+next attempt. The merge rule must allow clearing: a replacement field can receive an empty
+value, while a field with an append reducer needs \demoref{Overwrite}.
 
 \ei
 
-Counter lifetimes determine whether limits hold. A limit on attempts or model calls requires a
-run-lifetime counter that continues across attempts. \textbf{An attempt-lifetime counter resets
-after each failure, so it cannot enforce a limit across attempts.}
+The choice of lifetime matters for counters that enforce limits. A limit covering several
+attempts needs a counter that persists for the whole run. \textbf{Resetting a counter after each
+failure prevents it from enforcing a limit across attempts.}
 
 \subsection{Invariants}
 \label{sec:state-invariants}
 
-A reducer or lifetime concerns one field. A property such as a spending limit constrains the
-whole run. Proving it requires considering every transition the machine can take.
+A spending limit must hold throughout the run. To prove that it does, we must examine all
+transitions that could affect it. Specifying a reducer or lifetime for one field is only part
+of that argument.
 
 \begin{definition}[Invariant]
 \label{def:invariant}
@@ -269,58 +273,60 @@ whole run. Proving it requires considering every transition the machine can take
 of a state, $q$, and $q \to r$ for some state, $r$, then $P(r)$ holds''~\citep[p.~5]{mit6042-lec16}.
 \end{definition}
 
-For an extended state machine, the states in this definition are configurations $(q, v)$, and the
-arrow denotes one transition. To establish a property of every reachable configuration by
-induction, we prove two statements: i) it holds initially, and ii) every transition preserves it.
-The second proof obligation covers every configuration satisfying the predicate, including
-unreachable ones. A property that holds in every reachable configuration may therefore need a
-stronger predicate before we can prove preservation by every transition.
+For an extended state machine, each state in this definition is a configuration $(q, v)$, and
+the arrow represents one transition. The proof uses induction: show that the condition holds
+at the start, then show that any transition from a configuration satisfying it leads to
+another configuration satisfying it. It follows that the condition holds throughout the run.
 
-Consider the property \emph{model calls stay within the call budget}. Let $B$ be the budget, $c$
-the recorded call counter, and $k$ the number of completed model calls. The runtime can compare
-only $c$; $k$ describes the run's history and is not a program variable. We want $k \leq B$ and
-prove the stronger predicate $P \equiv (c = k \,\wedge\, c \leq B)$. Initially, no call has been made
-and $c = 0$, so $P$ holds. Transitions must then meet three conditions.
+The second step considers every configuration that satisfies the condition, even those the
+program never reaches. Sometimes the property we want is too weak to complete this step. We
+then prove a stronger condition that includes it. The following example shows why.
+
+We want to show that \emph{model calls stay within the call budget}. Let $B$ be the budget, $c$
+the call count stored by the program, and $k$ the actual number of completed calls. The runtime
+can read only $c$. We use $k$ in the proof to describe what actually happened. Our goal is
+$k \leq B$. We prove this by also showing that the stored count matches the actual count, using
+$P \equiv (c = k \,\wedge\, c \leq B)$. At the start, no call has been made and $c = 0$, so $P$
+holds. Each transition must then meet the following conditions.
 
 \bi
 
-\item \textbf{Admission} (\cref{def:admission}). Every transition that issues a model call has the
-guard $c < B$. Completing the call increases $k$ by one, keeping it at most $B$.
+\item \textbf{Admission} (\cref{def:admission}). Before a model call starts, the program checks
+$c < B$. Since the recorded count matches the actual count, completing one more call increases
+$k$ by one without exceeding $B$.
 
-\item \textbf{Counting.} The update recording a completed call adds exactly one to $c$. An
-unreported call leaves $c$ below $k$, allowing admission to exceed $B$. Reporting a call twice
-exhausts the budget early.
+\item \textbf{Counting.} Every completed call adds exactly one to $c$. If a call is omitted,
+$c$ falls below $k$, and later admission checks can permit too many calls. Counting a call twice
+uses up the recorded budget too early.
 
-\item \textbf{Preservation.} A transition without a call leaves $c$ unchanged. No transition,
-including plan revision, decreases it. This is the run-lifetime requirement from
-\cref{sec:state-lifetimes}. Resetting $c$ to zero preserves $c \leq B$ but breaks $c = k$, allowing
-later calls to exceed $B$.
+\item \textbf{Preservation.} A step that makes no call leaves $c$ unchanged. No step, including
+plan revision, decreases it. The count therefore needs the run lifetime described in
+\cref{sec:state-lifetimes}. Resetting $c$ after completed calls leaves $c \leq B$ true but makes
+$c = k$ false. Later checks can then allow the actual call count to exceed $B$.
 
 \ei
 
-The argument covers completed calls only. An interrupted call may incur cost without being
-counted, for example when an exception interrupts it. $P$ does not cover that cost.
+This proof covers completed calls. An exception may interrupt a call after it has incurred a
+cost but before it is counted. The condition $P$ does not account for that cost.
 
-An accumulating reducer on $c$ establishes part of the argument: merging adds the reported delta
-to the stored count. Nodes must still check the guard before calling and report exactly one call
-per completed call. \textbf{The reducer accumulates reported calls; each caller must report them
-correctly.} In our agent, $c$ is \demoref{model\_calls} and $B$ is forty.
+An accumulating reducer helps by adding each reported call to $c$. Each node must still check
+the budget before calling and report every completed call exactly once. \textbf{The reducer
+adds the reported counts; their accuracy depends on the callers.} In our agent, $c$ is
+\demoref{model\_calls} and $B$ is forty.
 
 \subsection{State schemas of the loop and the planning agent}
 \label{sec:state-demo}
 
-Our state schema is the Python class \demoref{AgentState}, declared as a \demoref{TypedDict}
-(\cref{fig:agentstate}). Each key names a record field, and its annotation specifies the value's
-type. An annotation of \demoref{Annotated[T, fn]} also attaches the reducer \demoref{fn}. Setting
-\demoref{total=False} marks every key as optional for type checking. This declaration accommodates
-the partial updates that nodes return.
-\demoref{TypedDict} supplies declarations for type checkers~\citep{pep589}; it does not check
-returned values at run time.
+The Python class \demoref{AgentState} defines our schema as a \demoref{TypedDict}
+(\cref{fig:agentstate}). Each key names a state field, and its type annotation specifies the
+kind of value it holds. Writing \demoref{Annotated[T, fn]} also assigns the reducer
+\demoref{fn}. The setting \demoref{total=False} makes every key optional for type checking,
+which allows the partial dictionaries returned by nodes. \demoref{TypedDict} supports static
+type checking~\citep{pep589}; it does not check values while the program runs.
 
-
-The graph uses the class when \demoref{StateGraph(AgentState)} reads it during construction. It
-creates one channel per key, using the annotated reducer or replacement when none is specified.
-The remaining graph operations use those channels:
+When we construct \demoref{StateGraph(AgentState)}, LangGraph reads the schema and creates a
+channel for each field. A channel stores the value and applies its update rule: the specified
+reducer, or replacement by default. We then build the graph using these operations:
 
 \bi
 
@@ -332,7 +338,7 @@ returns a partial update.
 \item \demoref{add\_conditional\_edges(a, route, \{...\})} registers a routing function to run after
 \demoref{a}. It reads the updated state and returns the next node's name without writing state.
 
-\item \demoref{compile()} checks the wiring and returns a runnable graph.
+\item \demoref{compile()} checks the graph's connections and returns a runnable graph.
 \demoref{invoke(initial\_state(\ldots))} starts the run with a value for every key, so nodes do not
 read missing keys.
 
@@ -349,21 +355,22 @@ graph.add_edge("validate", END)
 app = graph.compile()
 \end{lstlisting}
 
-The loop's schema (\cref{fig:agentstate}, left) uses three lifetimes. Identity fields name the
-scanner alert, fixture, pinned commit and workspace copy. Run-lifetime fields retain the
-information used by stall and budget checks: \demoref{messages} and \demoref{observations} append,
-while \demoref{model\_calls} and \demoref{usage} accumulate. Our \demoref{add\_usage} reducer sums
-four token counters separately, without a combined total. Cache reads cost a fraction of fresh
-input, and a combined total would hide an increase in cache reads alongside a decrease in fresh
-input. In both agents, the reply adapter populates only input and output counters. Both cache
-counters are zero in the planning agent's two recorded runs. The current-lifetime fields,
-\demoref{candidate\_patch} and \demoref{status}, hold the latest patch and execution status.
+The loop's schema (\cref{fig:agentstate}, left) uses three lifetimes. Identity fields identify the
+scanner alert, test repository, fixed commit and workspace copy. Fields retained for the whole
+run include the histories and totals used by stall and budget checks. Updates append to
+\demoref{messages} and \demoref{observations}, and add to \demoref{model\_calls} and
+\demoref{usage}. The current fields, \demoref{candidate\_patch} and \demoref{status}, hold the
+latest patch and execution status.
 
-The planning agent (\cref{fig:agentstate}, right) has five additional fields, each introduced with
-the node that writes it. The plan node writes \demoref{plan}, the submit node writes
-\demoref{checks}, and the validator writes \demoref{validation}. All three use the current
-lifetime because a new value supersedes the previous one. The other two fields use different
-lifetimes.
+Our \demoref{add\_usage} reducer keeps four separate token totals. Cached input costs less than
+fresh input, so a combined total could hide an increase in one alongside a decrease in the
+other. In both agents, however, the code that reads model replies fills only the input and
+output counters. The two cache counters are zero in both recorded runs of the planning agent.
+
+The planning agent (\cref{fig:agentstate}, right) adds five fields. The plan node writes
+\demoref{plan}, the submit node writes \demoref{checks}, and the validator writes
+\demoref{validation}. Each holds the latest value, so these three fields use the current
+lifetime. The remaining two fields use handoff and window lifetimes.
 
 \bi
 
@@ -372,16 +379,17 @@ lifetimes.
 reads the reason, revises the plan and clears \demoref{failed\_step} to \demoref{None}. If it left
 the field set, the next pass through \demoref{tools} would return to the plan node again.
 
-\item \textbf{Window.} The \demoref{observations} list appends and is never cleared. After a
-revision, its last three entries are still the identical results that triggered revision. The
-plan node records the current observation count in \demoref{replanned\_at}, and the stall check
-then reads only \demoref{observations[replanned\_at:]}. This field also enforces the revision
-budget: a nonzero value indicates that revision has occurred, so a second stall ends the run.
+\item \textbf{Window.} The \demoref{observations} list keeps growing and is never cleared.
+Immediately after a plan revision, its last three entries are still the repeated results that
+caused the revision. To avoid detecting the same stall again, the plan node stores the current
+observation count in \demoref{replanned\_at}. The stall check then reads only
+\demoref{observations[replanned\_at:]}. A nonzero value also records that the one permitted
+revision has been used. If the run stalls again, it ends.
 
 \ei
 
-Each field in the planning agent's schema exists because a later computation reads what an earlier one
-wrote (\cref{tab:state-flow}).
+Each field passes information from a step that writes it to a later step that reads it
+(\cref{tab:state-flow}).
 
 \begin{table}[htbp]
   \centering
@@ -396,7 +404,8 @@ wrote (\cref{tab:state-flow}).
     conversation. A revision reads the previous plan. \\
     \demoref{failed\_step}, \demoref{replanned\_at} & The tools node records a stall; routing sends
     the run to the plan node, which clears \demoref{failed\_step} and sets \demoref{replanned\_at}
-    to the revised plan's observation boundary. Stall checks read from that index onward. \\
+    to the index where observations under the revised plan begin. Stall checks read from that
+    index onward. \\
     \demoref{messages} & The opening instructions, plan messages, controller replies, tool replies
     and check feedback form the controller's conversation. This field excludes the replies of the
     plan node and validator. \\
@@ -412,16 +421,16 @@ wrote (\cref{tab:state-flow}).
     tokens. \\
     \bottomrule
   \end{tabularx}\end{adjustbox}
-  \caption{The planning agent's fields, grouped by the node that writes them and the
-  computations that read it.}
+  \caption{The planning agent's state fields, showing which nodes write them and which later
+  steps read them.}
   \label{tab:state-flow}
 \end{table}
 
-Two code excerpts show how the call counter separates model context from runtime state
-(\cref{sec:state-three}). The planning agent's controller receives the conversation as context.
-Before every model call, admission compares the counter with the configured call budget.
-\textbf{Admission reads the call budget. The controller's context does not contain it.} None of
-the planning agent's prompts mentions the budget.
+The following code shows the difference between model context and runtime state
+(\cref{sec:state-three}). The controller sends the conversation to the model. Before making
+that call, the runtime compares the call counter with the configured budget.
+\textbf{The runtime checks the budget before the call; the controller's context does not
+contain it.} The planning agent's other prompts also omit the budget.
 
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
@@ -444,17 +453,17 @@ We define a state graph in the following order.
 \item List the values that nodes and routing functions must read. These values define the schema.
 Omit fields that no computation reads.
 
-\item For each field, identify its writer and the event that invalidates its value. Choose its
-lifetime using \cref{sec:state-lifetimes}.
+\item For each field, identify which node writes it and when the value becomes outdated.
+Choose its lifetime using \cref{sec:state-lifetimes}.
 
-\item Choose the reducer from the lifetime: none for identity, append or accumulate for run, and
-default replace for current, handoff and window. An attempt field needs a reducer that permits
-clearing.
+\item Choose a merge rule that supports that lifetime: no custom reducer for identity, append
+or accumulate for run, and replacement for current, handoff and window. For an attempt field,
+make sure the rule allows the value to be cleared.
 
 \item Write the initial state so that every key has a value before the first node runs.
 
-\item Write each node to return only its own keys. Add each schema field with the node that
-populates it.
+\item Have each node return only the fields it is responsible for updating. When adding a
+field, also add the node code that supplies its value.
 
 \ee
 
@@ -468,7 +477,7 @@ For reference while writing HW1: \citet{pep589} on what a \demoref{TypedDict} do
 check at run time, and \citet{langgraph-persistence} on the checkpointers, threads and stores used
 for durability in \cref{tab:state-three}.
 
-\paragraph{Looking ahead.} A routing function reads the merged record, including the node's latest
-update and previously stored values. It selects the next node or ends execution. The next section
-examines conditional edges, feedback to the plan node or controller, and three interpretations of
-a trace: recorded acceptance, a declared stop, and no recorded ending.
+\paragraph{Looking ahead.} Once the runtime has applied an update, a routing function reads the
+resulting state and selects the next node or ends the run. We next examine the rules behind
+these choices, the loops that return to planning or the controller, and what a trace tells us
+about how a run ended.

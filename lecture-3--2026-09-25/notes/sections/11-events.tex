@@ -1,14 +1,14 @@
-\section{Event-triggered realization}
+\section{An event-triggered implementation}
 \label{sec:events}
 
 \subsection{Events, handlers and inversion of control}
 \label{sec:events-ioc}
 
-A graph and an event loop can run the same machine with different mechanisms for invoking
-application code. In the graph, a routing function selects the next node, and the scheduler runs it
-in the next superstep (\cref{sec:boundary-scheduling}). In an event loop, a computation emits an
-event, and the runtime invokes the code registered to handle it. The following four definitions
-describe this arrangement. Their wording comes from one source~\citep[Event Handling; Understanding the
+A graph and an event loop can run the same machine. They differ in how they call the application
+code. In the graph, a routing function selects the next node, and the scheduler runs it in the next
+superstep (\cref{sec:boundary-scheduling}). In an event loop, a computation emits an event, and the
+runtime calls the code registered to handle that event. The following four definitions describe
+this arrangement. All four come from the same source~\citep[Event Handling; Understanding the
 Event Loop]{cornell-cs2110-lec25}.
 
 \begin{definition}[Event]
@@ -34,93 +34,95 @@ dispatches any detected events to code that can handle them.''
 an external entity, such as a framework, to control when these subroutines are executed.''
 \end{definition}
 
-For an agent, an event represents either an occurrence, such as \emph{the plan is ready} or
-\emph{the checks failed}, or a request, such as \emph{run these tools}. Both are values. A tool
-request event records a request to a handler. It does not establish that the handler ran. The same
-distinction applies to a model's tool request in \cref{sec:boundary-artifacts}: requesting a file
-read does not establish that the read occurred.
+For an agent, an event can represent something that happened, such as \emph{the plan is ready} or
+\emph{the checks failed}. It can also represent a request, such as \emph{run these tools}. The
+program represents both kinds of event as values. A tool request event asks a handler to do work.
+The request alone provides no evidence that the handler ran. The same distinction applies to a
+model's tool request in \cref{sec:boundary-artifacts}: a request to read a file provides no evidence
+that the read occurred.
 
-Inversion of control separates two responsibilities. Application code defines what each handler
-does with its event, which fields of the record it writes, and which event it emits on completion.
-The framework determines which handler runs, when it runs, and the order in which it processes
-pending events. \textbf{Application code defines the response to an event; the framework controls
-its invocation.} The graph realization makes a similar division: we write node bodies and routing
-functions, and the scheduler runs them. The two realizations express the choice of the next
-computation in different places. A graph uses a routing function on an edge. An event handler
-chooses the type of event to emit, and the registrations map that type to a handler.
+Inversion of control separates two responsibilities. Application code defines how each handler
+responds to its event: what work it does, which fields of the record it writes, and which event it
+emits when it finishes. The framework determines which handler runs, when it runs, and the order
+in which it processes pending events. \textbf{Application code defines the response to an event;
+the framework controls when the handler runs.} The graph implementation divides these
+responsibilities in a similar way: we write node bodies and routing functions, and the scheduler
+runs them. The two implementations choose the next computation in different places. A graph uses
+a routing function on an edge. An event handler chooses the type of event to emit, and the
+registrations associate that type with a handler.
 
-The registrations determine which event types have handlers. If the loop does not check its
-registrations, it can remove an event from the queue even though no handler accepts its type.
-Nothing then runs, although no component has decided to stop. Whether the framework reports this
-as an error depends on its implementation. We treat it as a defect rather than a terminal
-outcome.
+The registrations determine which event types have handlers. A loop that does not check its
+registrations can remove an event from the queue even though no handler accepts that event's
+type. No handler then runs, although no component has decided to stop. The framework's
+implementation determines whether it reports this as an error. We classify this case as a defect.
 
 \subsection{An event-triggered version of the machine}
 \label{sec:events-machine}
 
-Changing the realization changes when the runtime takes a transition. The set of transitions stays
-the same. A state-machine diagram does not specify when a reaction occurs. In an event-triggered
-model, a reaction occurs when an input is present; in a time-triggered model, it occurs on the tick of an
-external clock~\citep[slides~23--25]{seshia2015discrete}. The planning agent's machine
-(\cref{fig:efsm-planner}) retains its locations, guards and set actions under either choice.
-Our graph realization uses no clock: each superstep begins when the preceding one finishes. The
-event realization reacts when an event is present and is therefore event-triggered under this
-definition.
+Changing the implementation changes when the runtime takes a transition while preserving the
+set of transitions. A state-machine diagram alone does not specify when a reaction occurs. In an
+event-triggered model, a reaction occurs when an input is present. In a time-triggered model, it
+occurs on the tick of an external clock~\citep[slides~23--25]{seshia2015discrete}. Either model can
+use the locations, guards and set actions of the planning agent's machine
+(\cref{fig:efsm-planner}). Our graph implementation uses no clock: each superstep begins when the
+preceding one finishes. The event implementation reacts when an event is present, so it is
+event-triggered under this definition.
 
-The choice can still make a transition unreachable. A guard requiring every triggering input to be
-\emph{absent} cannot fire when reactions require a triggering input to be present. Each transition
-of the planning agent becomes enabled when the preceding computation completes, so each can wait
-for a completion event. A transition such as \emph{no reply
-arrived within thirty seconds} needs a timer to emit an event when the interval ends. Without the
-timer, the runtime never takes this transition even though it appears in the diagram.
+The choice of trigger can still make a transition unreachable. A guard requiring every triggering
+input to be \emph{absent} cannot fire when a reaction requires a triggering input to be present.
+Each transition of the planning agent becomes enabled when the preceding computation completes,
+so it can wait for an event reporting that completion. A transition such as \emph{no reply arrived
+within thirty seconds} needs a timer to emit an event when the thirty seconds end. Without that
+timer, the runtime never takes the transition even though it appears in the diagram.
 
-The event realization requires a larger configuration. In the graph realization, a configuration
-contains a control location and a valuation of the variables, $(q, v)$ (\cref{def:configuration}).
-In the event realization it is a triple
+The event implementation needs a larger configuration to describe its execution. In the graph
+implementation, a configuration is $(q, v)$: a control location $q$ and a valuation $v$, which
+assigns a current value to each variable (\cref{def:configuration}). In the event implementation,
+the configuration is a triple
 \[
   (E,\ \mathcal{H},\ v),
 \]
 where $E$ is the sequence of pending events, $\mathcal{H}$ is the set of running handlers, and $v$
-is the record. The runtime maintains $E$ and $\mathcal{H}$. The record retains the steps' data and
-contains neither the queue nor the set of running handlers. In a serial realization, at most one
-event is in flight. During active execution, either one event is pending and no handler runs, or
-one handler runs and no event is pending. We can then recover the location $q$ from the handler
-registered for the pending event or from the running handler. A realization that permits two
-handlers to run at once can have configurations with no single location, and the machine in
-\cref{fig:efsm-planner} no longer describes such configurations. Our demo's validation step is
-such a case (\cref{sec:events-demo}).
+is the record. The runtime maintains the event queue $E$ and the running handlers $\mathcal{H}$
+separately from the record, which stores the steps' data. In a serial implementation, at most one
+event is pending or being handled. During active execution, either one event is pending and no
+handler runs, or one handler runs and no event is pending. We can then recover the location $q$
+by identifying the handler registered for the pending event or the handler already running. An
+implementation that permits two handlers to run at once can reach a configuration with no single
+location $q$. The machine in \cref{fig:efsm-planner} cannot describe such a configuration. Our
+demo's validation step provides an example (\cref{sec:events-demo}).
 
-Four rules preserve the machine's behaviour when an event loop realizes it.
+Four rules preserve the machine's behaviour when an event loop implements it.
 
 \bi
 
 \item \textbf{Apply once, then enable.} Merge a handler's contribution into the record exactly
-once before making its emitted event available for dispatch. The graph's superstep model provides
-this ordering (\cref{def:superstep}). An event loop provides it only if the handler writes before
-it emits and the runtime does not deliver the same event twice. If a handler emits first, its successor can
-read the record before the contribution appears. Delivering an event twice appends the same
-observations twice.
+once. Complete this update before making its emitted event available for dispatch. The graph's
+superstep model provides this ordering (\cref{def:superstep}). An event loop provides it only if
+the handler writes before it emits and the runtime delivers the event only once. If a handler
+emits first, the next handler can read the record before the update appears. If the runtime
+delivers an event twice, the handler appends the same observations twice.
 
 \item \textbf{Distinguish idle from success.} An empty queue with no running handler means that
-nothing is scheduled. It does not establish how the run ended or whether termination was
-intentional. Only a terminal event carrying a status establishes termination, as a terminal record
-does in the trace (\cref{sec:control-termination}).
+nothing is scheduled. This alone does not explain how the run ended or whether it ended
+intentionally. Establishing termination requires a terminal event carrying a status, just as it
+requires a terminal record in the trace (\cref{sec:control-termination}).
 
 \item \textbf{Stop dispatch at termination.} After dispatching the terminal event, the runtime
-must start no further handler, even if an event remains pending. In a serial realization, no event
-can be pending at that point. A realization with concurrent handlers must discard or refuse
-the remaining events.
+must start no further handler, even if an event remains pending. In a serial implementation, no
+event can be pending at that point. An implementation with concurrent handlers must discard or
+refuse the remaining events.
 
-\item \textbf{Separate triggering events from log events.} A triggering event is an input to the
-dispatcher that causes a handler to run. A log event records an occurrence in the trace and
-triggers no computation. An event that requests tools triggers the tools handler; a trace
-record of the same request documents that the handler was invoked, and triggers nothing.
+\item \textbf{Separate triggering events from log events.} A triggering event causes the
+dispatcher to run a handler. A log event records something that happened and starts no
+computation. For example, an event requesting tools starts the tools handler. A trace record of
+the same request documents that the handler was called; it starts no further computation.
 
 \ei
 
-The third and fourth rules both apply at termination. The terminal event ends dispatch, and a
-terminal record in the trace records its status. If the process fails before writing that record,
-dispatch can end without a terminal record. The interpretations in \cref{tab:control-outcomes}
+The third and fourth rules both apply when a run ends. The terminal event ends dispatch, and the
+terminal record in the trace stores the status. If the process fails before writing that record,
+dispatch can end without a recorded status. The interpretations in \cref{tab:control-outcomes}
 still apply.
 
 \subsection{Two frameworks}
@@ -130,68 +132,71 @@ Two frameworks provide event dispatch through different APIs.
 
 \bi
 
-\item \textbf{LlamaIndex Workflows.} Dispatch is by event type. A step is a method decorated with
+\item \textbf{LlamaIndex Workflows.} The framework selects a step by event type. A step is a method decorated with
 \texttt{@step}, and ``A step receives an event, does some work, and returns another event. That
 returned event triggers the next step whose type annotation accepts it''~\citep{llamaindex-workflows}.
-Events are user-defined Pydantic classes, and the framework supplies two of its own:
+Users define event types as Pydantic classes. The framework also supplies two event types:
 \texttt{StartEvent}, whose fields are the keyword arguments passed to \texttt{run()}, and
 \texttt{StopEvent}, whose return ends the workflow with the value passed as its \texttt{result}.
-The step signatures declare the event types each step consumes and produces. Before a run, the
-framework validates the event graph, checking, among other conditions, that it contains a start
-and a stop event and that every produced event has a consumer. A store on the workflow's
-\texttt{Context} holds per-run state. Steps read and write it through \texttt{ctx.store}, using
-\texttt{edit\_state()} for updates that must not interleave with another step's
-updates~\citep{llamaindex-workflows-state}. Our demo is written in this
-framework (\cref{sec:events-demo}).
+Each step's signature declares the event types it accepts and emits. Before a run, the framework
+checks the event graph described by these signatures. Among other conditions, it checks that the
+graph contains a start event and a stop event and that every emitted event has a step that accepts
+it. The workflow's \texttt{Context} includes a store for state that belongs to the run. Steps
+read and write this state through \texttt{ctx.store}. They use \texttt{edit\_state()} when an
+update must finish before another step can update the same store~\citep{llamaindex-workflows-state}.
+Our demo uses this framework (\cref{sec:events-demo}).
 
-\item \textbf{CrewAI Flows.} Dispatch uses method completion and route labels. A method decorated
-with \texttt{@start()} is an entry point. A method decorated with \texttt{@listen(m)} runs when
+\item \textbf{CrewAI Flows.} The framework selects methods using completion events and route
+labels. A method decorated with \texttt{@start()} is an entry point. A method decorated with \texttt{@listen(m)} runs when
 method \texttt{m} completes and receives its output. A method decorated with \texttt{@router(m)}
 runs after \texttt{m} and returns a string label. Methods decorated with \texttt{@listen("label")}
 run when the router returns that label. The operators \texttt{or\_} and \texttt{and\_} combine
-triggers: a listener runs when any or all of several methods have produced output, respectively.
-The flow's \texttt{state} attribute holds shared state as a dictionary or a Pydantic model. There is
+triggers. With \texttt{or\_}, the listener runs when any of the specified methods produces output;
+with \texttt{and\_}, it waits for all of them. The flow's \texttt{state} attribute holds shared
+state as a dictionary or a Pydantic model. There is
 no stop event: ``the final output is determined by the last method that completes''~\citep{crewai-flows}.
-Translated to CrewAI, each of our event types would become a router label, and the outcome
-$\sigma$ would have to be written to \texttt{state} by our code, because the end of the flow does
-not carry it.
+To translate our implementation to CrewAI, we would turn each event type into a router label.
+Our code would also have to write the outcome $\sigma$ to \texttt{state}, because the end of the
+flow does not carry that outcome.
 
 \ei
 
-This difference affects how we distinguish idle from success. LlamaIndex has an explicit terminal
-event. Its pre-run validation checks the event graph declared by step signatures for start and
-stop events and missing event connections. These checks do not establish that a particular run
-will reach \texttt{StopEvent}. CrewAI defines no terminal event. Our reading of its documentation
-is that a flow ends when no method remains to run, corresponding to an empty queue. The outcome
-must therefore be in the record before the last method completes.
+The frameworks therefore distinguish idle from success in different ways. LlamaIndex provides an
+explicit terminal event. Its checks before execution inspect the event graph declared by step
+signatures for start and stop events and missing connections. Passing these checks does not
+establish that a particular run will reach \texttt{StopEvent}. CrewAI defines no terminal event.
+Our reading of its documentation is that a flow ends when no method remains to run, corresponding
+to an empty queue. The application must therefore record the outcome before the last method
+completes.
 
-Neither framework establishes that an event realization preserves the machine's behaviour. Comparing it
-with the graph realization requires a controlled design. We compare the realizations after each
-computation completes and its contribution is applied. These logical boundaries define the points
-of comparison; internal handler steps and wall-clock ordering do not. We script the model's replies
-and control the tool results so that both realizations receive the same inputs in the same order.
-A faithful translation preserves four properties at each boundary: i) the observations appended
-to the record, ii) the effects on the workspace, iii) the results of the acceptance checks, and
-iv) the terminal status and its meaning. The comparison is designed to isolate the scheduling
-mechanism: a graph superstep or an event dispatch.
+Using either framework leaves a further question: does the event implementation preserve the
+machine's behaviour? To compare it with the graph implementation, we need a controlled design.
+In this design, we compare the implementations after each computation finishes and its
+contribution has been applied to the record. These points let us compare the effects of completed
+computations without depending on a handler's internal steps or their wall-clock timing. We
+script the model's replies and control the tool results so that both implementations receive the
+same inputs in the same order. A faithful translation preserves four properties at each point:
+i) the observations appended to the record, ii) the effects on the workspace, iii) the results of
+the acceptance checks, and iv) the terminal status and its meaning. This comparison is designed
+to isolate the scheduling mechanism: a graph superstep or an event dispatch.
 
-Agreement under scripted inputs supports a limited conclusion: the two realizations implement the
-same transition rules for the scripted replies. It does not establish equivalent behaviour with a
-live model. Model replies depend on the messages each realization constructs, so changing how a
-handler formats messages changes the input distribution even when the transition rules stay the
-same. The comparison also excludes concurrency.
+If the implementations agree under these scripted inputs, we can conclude that they follow the
+same transition rules for those replies. This does not establish that they behave alike with a
+live model. The model's replies depend on the messages each implementation constructs. Changing
+how a handler formats a message changes the model's input even when the transition rules stay the
+same. This comparison also excludes concurrent execution.
 
 \subsection{The demo: the planning agent as a LlamaIndex workflow}
 \label{sec:events-demo}
 
-Our event-driven agent, \demoref{cyberbird/event\_driven}, runs the planning agent's machine as a
-LlamaIndex workflow. It keeps the machine's locations, guards and limits: a budget of forty model
-calls per alert, checked before each call; a stall after three identical results; and one plan
-revision. The run's data sit in a store on the workflow's context. A \demoref{RunState} holds the
-run's bookkeeping, and one \demoref{AlertState} per alert holds that alert's plan, messages,
-observations, calls and usage. Two of its steps are still stubs: \demoref{submit} runs no
-mechanical checks yet, and each validator accepts after a fixed delay without calling a model. No
-run of this agent has been recorded.
+The event implementation, \demoref{cyberbird/event\_driven}, runs the planning agent's machine as a
+LlamaIndex workflow. It preserves the machine's locations, guards and limits. Each alert has a
+budget of forty model calls, checked before each call. Three identical results count as a stall,
+and the agent may revise its plan once. The workflow stores the run's data in its context.
+\demoref{RunState} holds bookkeeping for the whole run. Each alert has an \demoref{AlertState}
+that holds its plan, messages, observations, calls and usage. Two steps are still stubs:
+\demoref{submit} runs no mechanical checks, and each validator accepts after a fixed delay
+without calling a model. No run of this agent has been recorded.
 
 \begin{table*}[tbp]
   \centering
@@ -211,105 +216,113 @@ run of this agent has been recorded.
     $V$ $\times$ \texttt{Verdict} & \demoref{judge} & \texttt{AlertDone} & runtime \\
     \bottomrule
   \end{tabularx}\end{adjustbox}
-  \caption{The steps of the event-driven agent, from the wiring table in its \demoref{workflow.py}.
-  Each step's signature names the events it accepts, and its return annotation names the events it
-  emits. The rows below the rule are the machine of \cref{fig:efsm-planner}; the rows above it are
-  new. $V$ is the number of validators, three by default.}
+  \caption{The event implementation's steps, as listed in the connection table in
+  \demoref{workflow.py}. Each step's signature names the events it accepts, and its return
+  annotation names the events it emits. The rows below the horizontal rule implement the machine
+  in \cref{fig:efsm-planner}; the rows above it are additions. $V$ is the number of validators,
+  three by default.}
   \label{tab:events-steps}
 \end{table*}
 
-The six rows below the rule in \cref{tab:events-steps} are the machine's locations. No step names
-another: the wiring is the set of step signatures, and the framework dispatches each event to the
-step whose signature accepts its type. The guards that the graph evaluated in routing functions
-now sit inside the steps and choose which event to return.
+The six rows below the horizontal rule in \cref{tab:events-steps} correspond to the machine's
+locations. Step signatures define the connections between steps. The framework sends each event
+to the step whose signature accepts its type, so each step can run without naming the next step.
+The graph's routing functions evaluated the guards. Here, the steps evaluate those guards to
+choose which event to return.
 
 \bi
 
-\item \textbf{Admission.} \demoref{plan} and \demoref{controller} first reserve one model call for
-the alert. When the alert has spent its budget, the step returns \texttt{AlertDone} with status
-\demoref{budget\_exhausted} and makes no call.
+\item \textbf{Admission.} Before calling the model, \demoref{plan} and \demoref{controller} reserve
+one call from the alert's budget. If the budget is exhausted, the step returns \texttt{AlertDone}
+with status \demoref{budget\_exhausted}. It makes no model call in that case.
 
 \item \textbf{Acting.} The controller returns \texttt{ToolsRequested} when the model's reply
 contains tool calls, and \texttt{Submitted} when it contains none.
 
-\item \textbf{Revising.} \demoref{tools} returns \texttt{Observed} while the work moves. On the
-first stall it returns \texttt{Stalled}, which the plan step accepts; that step writes a new plan
-and moves \demoref{replanned\_at}, the handoff and window of \cref{sec:state-lifetimes}. A second
-stall returns \texttt{AlertDone} with status \demoref{no\_progress}.
+\item \textbf{Revising.} While the agent has not stalled, \demoref{tools} returns
+\texttt{Observed}. At the first stall, it returns \texttt{Stalled}, which starts the plan step.
+That step writes a new plan and updates \demoref{replanned\_at}. These updates provide the
+handoff and the start of the observation window described in \cref{sec:state-lifetimes}. At a
+second stall, the tools step returns \texttt{AlertDone} with status \demoref{no\_progress}.
 
 \ei
 
-The event realization also does three things the graph agent does not. First, one run handles
-many alerts. \demoref{scan} runs Bandit once and emits one \texttt{AlertFound} per alert, and
-\demoref{gate} releases one alert at a time: it queues each alert it receives and starts the next
-one only after the current alert's \texttt{AlertDone} arrives. Every event about an alert carries
-its \demoref{alert\_id}, which correlates the event with that alert's entry in the store.
+The event implementation also adds three behaviours to the graph implementation. First, one run
+can handle many alerts. \demoref{scan} runs Bandit once and emits one \texttt{AlertFound} for each
+alert. The \demoref{gate} step queues the alerts it receives and starts one at a time. It starts
+the next alert only after receiving \texttt{AlertDone} for the current alert. Every event about
+an alert carries an \demoref{alert\_id} that links the event to that alert's entry in the store.
 
-Second, validation fans out and back in. \demoref{submit} sends one \texttt{ValidateRequested} per
-validation lens (correctness, behaviour and scope) with \demoref{ctx.send\_event}, because a step
-can return only one event. The validate step runs with up to three workers, so the three
-validators run at the same time. This is the configuration of \cref{sec:events-machine} with more
-than one running handler and no single location. \demoref{judge} holds each \texttt{Verdict}
-until all $V$ have arrived, in any order, and accepts the alert only when every validator accepted.
-It collects verdicts without keying them by alert, which is safe only because the gate admits one
-alert at a time. \textbf{The gate serializes alerts; it does not serialize validators.}
+Second, validators run concurrently, and a judge collects their results. \demoref{submit} sends
+one \texttt{ValidateRequested} for each aspect of validation: correctness, behaviour and scope.
+It sends these events through \demoref{ctx.send\_event}, because a step can return only one
+event. The validate step has up to three workers, allowing the three validators to run at the
+same time. This gives the configuration described in \cref{sec:events-machine}, with several
+running handlers and no single location. \demoref{judge} stores each \texttt{Verdict} until all
+$V$ verdicts have arrived, in any order. It accepts the alert only if every validator accepted.
+The judge collects verdicts without grouping them by alert. This is safe only because the gate
+admits one alert at a time. \textbf{The gate processes alerts one at a time and allows validators
+for the current alert to run concurrently.}
 
-Third, the run has two kinds of ending. An alert ends with an \texttt{AlertDone} carrying one of
+Third, the implementation distinguishes the end of an alert from the end of the whole run. An
+alert ends with an \texttt{AlertDone} carrying one of
 four statuses: \demoref{accepted}, \demoref{rejected}, \demoref{no\_progress} or
-\demoref{budget\_exhausted}. That event returns to the gate, which records the status. The run
-ends when the gate has a result for every alert the scan found, and it returns a
-\texttt{StopEvent} carrying the results. A scan that finds no alert ends the run at once with an
-empty result.
+\demoref{budget\_exhausted}. The gate receives this event and records the status. When it has a
+result for every alert found by the scan, the gate returns a \texttt{StopEvent} carrying all the
+results and ends the run. If the scan finds no alerts, it ends the run immediately with an empty
+result.
 
 \begin{figure*}[tbp]
   \centering
   \begin{adjustbox}{width=\linewidth}\input{figures/event-loop.tikz}\end{adjustbox}
-  \caption{The event-driven agent of \cref{tab:events-steps}. White boxes are runtime components.
-  Steps use the colours of \cref{fig:efsm-planner}: blue steps call a model (the validators will,
-  once they are no longer stubs), and grey steps run tools, checks or bookkeeping. The ellipses
-  are the run request that starts the run and \texttt{END}. Each solid arrow from the dispatcher
-  names the event types its step accepts. Every event a step emits returns to the queue along the
-  dashed path. $V$ validators run at the same time.}
+  \caption{The event implementation of \cref{tab:events-steps}. White boxes are runtime
+  components. Steps use the colours of \cref{fig:efsm-planner}: blue steps call a model (the
+  validators will do so once their stubs are replaced), and grey steps run tools, checks or
+  bookkeeping. The ellipses mark the request that starts the run and \texttt{END}. Each solid
+  arrow from the dispatcher names the event types accepted by the step it leads to. Each event
+  emitted by a step returns to the queue along the dashed path. $V$ validators run concurrently.}
   \label{fig:event-loop}
 \end{figure*}
 
-The code keeps the four rules of \cref{sec:events-machine} in these forms.
+The implementation handles the four rules of \cref{sec:events-machine} as follows.
 
 \bi
 
-\item \textbf{Apply once, then enable.} Every write goes through \demoref{ctx.store.edit\_state()},
-which locks the store, and each step writes its data before it emits the event that lets another
-step read them. The budget check reserves its call under the same lock, so two steps admitted at
-the same moment cannot both take the last call.
+\item \textbf{Apply once, then enable.} Every write uses \demoref{ctx.store.edit\_state()}, which
+locks the store. Each step writes its data before emitting the event that allows another step to
+read them. The budget check and reservation use the same lock. Two steps requesting admission
+at the same time therefore cannot both reserve the last available call.
 
-\item \textbf{Distinguish idle from success.} Only the gate's \texttt{StopEvent} ends the run. Before the
-first run, the framework also checks that every event a step emits has a step that accepts it,
-which is why \demoref{submit} lists \texttt{ValidateRequested} in its return annotation although it
-sends those events rather than returning them.
+\item \textbf{Distinguish idle from success.} A \texttt{StopEvent} explicitly ends the run. The
+gate emits it after collecting all alert results; the scan emits it if it finds no alerts. Before
+the first run, the framework also checks that every emitted event has a step that accepts it.
+For this check, \demoref{submit} lists \texttt{ValidateRequested} in its return annotation even
+though it sends those events through \demoref{ctx.send\_event}.
 
-\item \textbf{Stop dispatch at termination.} The gate emits \texttt{StopEvent} only when the count of
-results equals the count of alerts, so no alert is still in progress when the run ends.
+\item \textbf{Stop dispatch at termination.} The gate emits \texttt{StopEvent} only when the
+number of results equals the number of alerts. Every alert has therefore finished when the gate
+ends the run.
 
-\item \textbf{Separate triggering events from log events.} This agent writes no trace. Its events trigger
-steps, and no event records one. Our graph agents write a trace alongside their events
-(\cref{sec:control-termination}); the event-driven agent does not yet have one.
+\item \textbf{Separate triggering events from log events.} This agent's events trigger steps.
+The agent currently writes no trace of their execution. Our graph agents also write a trace
+(\cref{sec:control-termination}); the event implementation still needs this feature.
 
 \ei
 
 \subsection{Reading}
 
-\citet{cornell-cs2110-lec25}, the sections Event Handling and Understanding the Event
-Loop, for events, handlers, the event loop and inversion of control; and \citet{seshia2015discrete},
-slides 23--25, on event-triggered and time-triggered reactions.
+Read \citet{cornell-cs2110-lec25}, the sections Event Handling and Understanding the Event
+Loop, for events, handlers, the event loop and inversion of control. Read \citet{seshia2015discrete},
+slides 23--25, for event-triggered and time-triggered reactions.
 
-For reference while writing HW1: \citet{llamaindex-workflows}, the sections on entry points, exit
-points and validation, with \citet{llamaindex-workflows-state} for the per-run store; and
-\citet{crewai-flows}, the sections on \texttt{@start()}, \texttt{@listen()}, retrieving the final
-output, conditional logic and the router.
+While writing HW1, refer to \citet{llamaindex-workflows}, the sections on entry points, exit
+points and validation, and to \citet{llamaindex-workflows-state} for the per-run store. For CrewAI,
+refer to \citet{crewai-flows}, the sections on \texttt{@start()}, \texttt{@listen()}, retrieving
+the final output, conditional logic and the router.
 
-\paragraph{Looking ahead.} In an event loop, a registered handler runs when its event arrives, and
-a handler can emit any number of events. The loop itself does not decide whether the work is
-permitted or assess its cost. The next section distinguishes admission, which decides whether a
-model or tool call may start, from accounting, which records its cost after execution. It also
-considers how to measure a realization's cost under the controlled conditions used here to compare
-behaviour.
+\paragraph{Looking ahead.} In an event loop, the runtime calls a registered handler when its event
+arrives. That handler can emit any number of events. Deciding whether this work is permitted and
+measuring its cost require further mechanisms. The next section introduces admission, which
+decides whether a model or tool call may start, and accounting, which records its cost after
+execution. It also considers how to compare the costs of implementations under controlled
+conditions like those used here to compare behaviour.

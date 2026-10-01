@@ -103,11 +103,12 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-These notes explain how an agent's runtime connects successive computations. We use extended
-state machines to describe state, transitions, and execution traces, then examine how graphs and
-events implement those rules. The discussion covers state updates, routing, scheduling, tool
-contracts, and execution authority. It also explains how budgets constrain execution and how
-controlled measurements support comparisons between implementations.
+These notes explain how the software that runs an agent connects one step to the next. Extended
+state machines provide a way to describe the information an agent retains, the steps it can take,
+and the path followed by a run. Graphs and events provide two ways to implement these rules. We
+examine how the runtime updates state, selects and schedules steps, checks tool requests, and
+controls which actions may occur. We then explain how budgets limit work and how controlled
+experiments compare implementations.
 \end{abstract}
 \tableofcontents
 % =====================================================================================
