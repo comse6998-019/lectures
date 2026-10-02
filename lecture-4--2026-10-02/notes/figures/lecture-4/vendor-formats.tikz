@@ -1,0 +1,32 @@
+% OpenAI and Anthropic tool-call formats side by side. Each row is one vendor, each column one stage of the
+% round trip: the declaration in the request, the call in the response, and the result in the next request.
+% The highlighted identifier is the same in the call and in the result.
+\definecolor{deckNavy}{HTML}{28285E}
+\definecolor{deckRose}{HTML}{C73561}
+\begin{tikzpicture}[
+  code/.style={draw=ibmfg!40, rounded corners=2pt, fill=white, font=\ttfamily\scriptsize, align=left,
+    inner sep=4pt, minimum width=46mm, minimum height=17mm, anchor=center},
+  head/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy, align=center},
+  vend/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy, anchor=east},
+  idlink/.style={-{Stealth[length=2mm]}, thick, draw=deckRose}
+]
+  \newcommand{\id}[1]{\textcolor{deckRose}{\textbf{#1}}}
+  \node[head] at (0,1.45) {declaration\\(request)};
+  \node[head] at (5.9,1.45) {call\\(response)};
+  \node[head] at (11.8,1.45) {result\\(next request)};
+
+  \node[vend] at (-2.6,0) {OpenAI};
+  \node[code] (od) at (0,0) {\{"type": "function",\\ \ "function": \{\\ \ \ \ "name": "edit",\\ \ \ \ "parameters": \{...\}\}\}};
+  \node[code] (oc) at (5.9,0) {"tool\_calls": [\{\\ \ "id": \id{"call\_7"},\\ \ "function": \{"name": "edit",\\ \ \ \ "arguments": "\{...\}"\}\}]};
+  \node[code] (or) at (11.8,0) {\{"role": "tool",\\ \ "tool\_call\_id": \id{"call\_7"},\\ \ "content": "..."\}};
+
+  \node[vend] at (-2.6,-2.3) {Anthropic};
+  \node[code] (ad) at (0,-2.3) {\{"name": "edit",\\ \ "input\_schema": \{...\}\}};
+  \node[code] (ac) at (5.9,-2.3) {\{"type": "tool\_use",\\ \ "id": \id{"toolu\_01"},\\ \ "name": "edit",\\ \ "input": \{...\}\}};
+  \node[code] (ar) at (11.8,-2.3) {\{"type": "tool\_result",\\ \ "tool\_use\_id": \id{"toolu\_01"},\\ \ "content": "..."\}};
+
+  \draw[flow] (od) -- (oc);
+  \draw[idlink] (oc) -- node[lab, above, text=deckRose] {same id} (or);
+  \draw[flow] (ad) -- (ac);
+  \draw[idlink] (ac) -- node[lab, above, text=deckRose] {same id} (ar);
+\end{tikzpicture}

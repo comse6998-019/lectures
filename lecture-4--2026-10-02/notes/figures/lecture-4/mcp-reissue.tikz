@@ -1,0 +1,25 @@
+% The re-issue rule (specification 2026-07-28): a broken response stream loses the in-flight request, and the
+% client must re-issue it as a new request with a new request ID. For a tool that is not idempotent, such as
+% append_line, the server applies the effect twice; nothing in the protocol lets it recognize the retry.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  life/.style={densely dotted, draw=ibmfg!45},
+  elab/.style={lab, font=\sffamily\footnotesize, inner sep=2pt},
+  note/.style={font=\sffamily\footnotesize, text=deckNavy, inner sep=2pt}
+]
+  \node[mnode, minimum width=22mm] (c) at (0,0) {client};
+  \node[rnode, minimum width=22mm] (s) at (7.4,0) {server};
+  \draw[life] (c.south) -- ++(0,-4.3);
+  \draw[life] (s.south) -- ++(0,-4.3);
+
+  \draw[flow] (0,-1.0) -- node[elab, above] {tools/call append\_line, id 7} (7.4,-1.0);
+  \node[note, anchor=west] at (7.6,-1.0) {line appended};
+
+  \draw[back] (7.4,-2.0) -- (4.1,-2.0);
+  \node[font=\sffamily\bfseries\Large, text=deckNavy] at (3.7,-2.0) {$\times$};
+  \node[elab, below=4pt] at (5.75,-2.05) {response stream breaks};
+  \node[note, anchor=east, align=right] at (-0.2,-2.75) {must re-issue\\with a new id};
+
+  \draw[flow] (0,-3.5) -- node[elab, above] {tools/call append\_line, id 8} (7.4,-3.5);
+  \node[note, anchor=west, font=\sffamily\footnotesize\bfseries] at (7.6,-3.5) {line appended again};
+\end{tikzpicture}

@@ -1,0 +1,33 @@
+% One native tool call as two model requests. The harness declares the tools, the model replies with a call
+% block and stops, the harness runs the dispatch cycle, and a second request returns the result by id.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  life/.style={densely dotted, draw=ibmfg!45},
+  elab/.style={lab, font=\sffamily\footnotesize, inner sep=2pt},
+  evnum/.style={circle, fill=deckNavy, text=white, inner sep=1.3pt, minimum size=4.2mm,
+    font=\sffamily\scriptsize\bfseries},
+  act/.style={draw=ibmfg!60, rounded corners=2pt, fill=black!4, font=\sffamily\footnotesize, inner sep=3pt}
+]
+  \node[mnode, minimum width=22mm] (h) at (0,0) {harness};
+  \node[mnode, minimum width=22mm] (m) at (5.6,0) {model API};
+  \node[rnode, minimum width=22mm] (t) at (11.2,0) {tool};
+  \foreach \n in {h,m,t} { \draw[life] (\n.south) -- ++(0,-5.7); }
+
+  % first request and the call block
+  \draw[flow] (0,-1.0) -- node[elab, above] {messages + tool declarations} (5.6,-1.0);
+  \node[evnum] at (-1.45,-1.0) {1};
+  \draw[back] (5.6,-1.9) -- node[elab, above, align=center] {call block, id call\_7\\finish\_reason: tool\_calls} (0,-1.9);
+  \node[evnum] at (-1.45,-1.9) {2};
+
+  % the dispatch cycle runs in the harness
+  \node[act] at (0,-2.9) {find, bind, check};
+  \draw[flow] (0,-3.4) -- node[elab, above] {run edit} (11.2,-3.4);
+  \draw[back] (11.2,-4.0) -- node[elab, above] {result} (0,-4.0);
+  \node[evnum] at (-1.45,-3.4) {3};
+
+  % second request: the result echoes the id
+  \draw[flow] (0,-4.9) -- node[elab, above, align=center] {messages + result\\tool\_call\_id: call\_7} (5.6,-4.9);
+  \node[evnum] at (-1.45,-4.9) {4};
+  \draw[back] (5.6,-5.6) -- node[elab, above] {final answer} (0,-5.6);
+  \node[evnum] at (-1.45,-5.6) {5};
+\end{tikzpicture}

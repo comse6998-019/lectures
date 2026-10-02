@@ -1,0 +1,24 @@
+% MCP roles (specification 2026-07-28, Architecture). The host is the application that runs the model loop; it
+% creates one client per server, and each client talks to exactly one server. Servers see only their requests.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  elab/.style={lab, font=\sffamily\scriptsize},
+  note/.style={font=\sffamily\scriptsize, text=deckNavy, align=center}
+]
+  \node[rnode, minimum width=20mm] (api) at (-3.3,1.3) {model API};
+  \node[mnode, minimum width=24mm] (loop) at (0.6,1.3) {model loop};
+  \node[mnode, minimum width=24mm] (ca) at (0.6,0.2) {client A};
+  \node[mnode, minimum width=24mm] (cb) at (0.6,-0.9) {client B};
+  \node[draw=deckNavy, thick, rounded corners=3pt, inner sep=7pt, fit=(loop)(ca)(cb)] (host) {};
+  \node[font=\sffamily\footnotesize\bfseries, text=deckNavy, anchor=south] at (host.north) {host: the application the user runs};
+  \node[note, anchor=north] at (host.south) {holds the conversation, consent and policy};
+
+  \node[rnode, minimum width=26mm, align=center] (sa) at (6.4,0.2) {edit server\\(subprocess)};
+  \node[rnode, minimum width=26mm, align=center] (sb) at (6.4,-1.2) {remote server\\(another machine)};
+  \node[note, anchor=north] at (6.4,-1.8) {each server sees only its own requests};
+
+  \draw[flow] (api.east) -- (loop.west |- api.east);
+  \draw[back] (loop.west |- api.east) ++(0,-0.18) -- ([yshift=-1.8mm]api.east);
+  \draw[flow] (ca.east) -- node[elab, above] {stdio} (sa.west);
+  \draw[flow] (cb.east) -- node[elab, above, sloped] {Streamable HTTP} (sb.west);
+\end{tikzpicture}

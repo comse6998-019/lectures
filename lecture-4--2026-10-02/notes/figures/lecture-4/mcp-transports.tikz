@@ -1,0 +1,22 @@
+% The two MCP transports (specification 2026-07-28, Transports). stdio: newline-delimited messages over the
+% standard streams of a client-launched subprocess. Streamable HTTP: each message is an HTTP POST to a single
+% MCP endpoint; the reply is a JSON object or a request-scoped SSE stream.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  elab/.style={lab, font=\sffamily\scriptsize},
+  head/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy}
+]
+  \node[head] at (2.7,1.25) {stdio};
+  \node[mnode, minimum width=18mm] (c1) at (0,0) {client};
+  \node[rnode, minimum width=22mm, align=center] (s1) at (5.4,0) {server\\subprocess};
+  \draw[flow] ([yshift=1.5mm]c1.east) -- node[elab, above] {stdin: one message per line} ([yshift=1.5mm]s1.west);
+  \draw[back] ([yshift=-1.5mm]s1.west) -- node[elab, below] {stdout} ([yshift=-1.5mm]c1.east);
+
+  \draw[densely dotted, draw=ibmfg!40] (7.3,1.4) -- (7.3,-1.0);
+
+  \node[head] at (11.3,1.25) {Streamable HTTP};
+  \node[mnode, minimum width=18mm] (c2) at (8.6,0) {client};
+  \node[rnode, minimum width=22mm, align=center] (s2) at (14.0,0) {server\\/mcp endpoint};
+  \draw[flow] ([yshift=1.5mm]c2.east) -- node[elab, above] {POST: one message} ([yshift=1.5mm]s2.west);
+  \draw[back] ([yshift=-1.5mm]s2.west) -- node[elab, below] {JSON or SSE stream} ([yshift=-1.5mm]c2.east);
+\end{tikzpicture}

@@ -1,0 +1,23 @@
+% Tool-description defects. Hasan et al. (preprint, 2026): 856 tools on 103 servers; 97.1% of descriptions
+% have at least one defect and 56% fail to state their purpose clearly. Wang et al. (preprint, 2026): 10,831
+% servers; 73% have repeated tool names; fixing functionality and accuracy defects raised selection by 11.6
+% and 8.8 percentage points.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  lbl/.style={font=\sffamily\footnotesize, anchor=east, align=right},
+  val/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy, anchor=west},
+  src/.style={font=\sffamily\scriptsize, text=ibmfg!60, anchor=west}
+]
+  \def\W{6.0}
+  \foreach \y/\v/\t/\s in {0/97.1/{descriptions with at least one defect}/{856 tools, Hasan et al.},
+                            -0.9/56/{descriptions that do not state their purpose clearly}/{856 tools, Hasan et al.},
+                            -1.8/73/{servers with repeated tool names}/{10{,}831 servers, Wang et al.}} {
+    \fill[black!7] (0,\y-0.25) rectangle (\W,\y+0.25);
+    \fill[ibmblue!45] (0,\y-0.25) rectangle ({\W*\v/100},\y+0.25);
+    \node[lbl] at (-0.15,\y) {\t};
+    \node[val] at (\W+0.1,\y) {\v\%};
+    \node[src] at (\W+1.35,\y) {\s};
+  }
+  \node[font=\sffamily\footnotesize, text=deckNavy, anchor=west, align=left] at (-5.2,-2.85)
+    {Fixing functionality and accuracy defects raised correct tool selection by 11.6 and 8.8 percentage points (Wang et al.).};
+\end{tikzpicture}

@@ -1,0 +1,31 @@
+% Guarantee 5: partial effects are visible. A local callee shares the workspace with its caller,
+% which can inspect and repair a partial change. A remote callee owns the workspace, so repair needs a
+% compensating call (Waldo et al. 1994; Garcia-Molina and Salem 1987).
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  elab/.style={lab, font=\sffamily\footnotesize, inner sep=2pt},
+  ttl/.style={font=\sffamily\bfseries\small, text=deckNavy},
+  store/.style={cylinder, shape border rotate=90, aspect=0.28, draw=ibmfg!60, fill=black!6,
+    minimum height=13mm, minimum width=24mm, font=\sffamily\footnotesize, inner sep=2pt},
+  lost/.style={font=\sffamily\bfseries\Large, text=deckNavy}
+]
+  % local call
+  \node[ttl] at (2.1,2.0) {Local call};
+  \node[mnode, minimum width=18mm] (lc) at (0,0.7) {caller};
+  \node[rnode, minimum width=18mm] (le) at (4.2,0.7) {callee};
+  \node[store] (lw) at (2.1,-1.7) {workspace};
+  \draw[flow] (le) -- node[elab, right, pos=.45] {write} (lw.north east);
+  \draw[flow, line width=1.3pt, draw=deckNavy, {Stealth[length=2mm]}-{Stealth[length=2mm]}]
+    (lc) -- node[elab, left, pos=.45] {inspect, repair} (lw.north west);
+
+  % remote call
+  \node[ttl] at (10.2,2.0) {Remote call};
+  \node[mnode, minimum width=18mm] (rc) at (8.1,0.7) {caller};
+  \node[rnode, minimum width=18mm] (re) at (12.3,0.7) {server};
+  \node[store] (rw) at (12.3,-1.7) {workspace};
+  \draw[flow] (re) -- node[elab, right] {write} (rw);
+  \draw[back] (rc) -- (rw.north west);
+  \node[lost] at (10.05,-0.55) {$\times$};
+  \draw[flow, line width=1.3pt, draw=deckNavy] ([yshift=2mm]rc.east) --
+    node[elab, above] {compensating call} ([yshift=2mm]re.west);
+\end{tikzpicture}

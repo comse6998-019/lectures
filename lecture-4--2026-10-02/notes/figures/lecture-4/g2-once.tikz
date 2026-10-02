@@ -1,0 +1,37 @@
+% Guarantee 2: one call runs the callee once. A transport can drop a retransmission that repeats a call
+% identifier (Birrell and Nelson 1984), but a retry that is a new request carries a new identifier and runs again.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  elab/.style={lab, font=\sffamily\footnotesize, inner sep=2pt},
+  rowt/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy, anchor=east},
+  count/.style={font=\sffamily\small\bfseries, text=deckNavy, anchor=west},
+  runbox/.style={draw=deckNavy, fill=deckNavy!15, rounded corners=1.5pt, font=\sffamily\scriptsize,
+    minimum height=5mm, minimum width=9mm, inner sep=1pt}
+]
+  % column heads
+  \node[mnode, minimum width=18mm] at (3.0,0.9) {caller};
+  \node[rnode, minimum width=18mm] at (8.2,0.9) {server};
+
+  % row 1: local call
+  \node[rowt] at (1.6,-0.3) {Local call};
+  \draw[flow] (3.0,-0.3) -- node[elab, above] {call} (7.4,-0.3);
+  \node[runbox] at (8.2,-0.3) {run};
+  \node[count] at (9.5,-0.3) {1 run};
+
+  % row 2: transport retransmission, same identifier
+  \node[rowt] at (1.6,-1.9) {Retransmission};
+  \draw[flow] (3.0,-1.55) -- node[elab, above] {id 7} (7.4,-1.55);
+  \draw[flow] (3.0,-2.25) -- node[elab, below] {id 7 again} (6.2,-2.25);
+  \node[font=\sffamily\bfseries\Large, text=deckNavy] at (6.5,-2.25) {$\times$};
+  \node[elab, fill=none, anchor=west] at (6.8,-2.25) {dropped};
+  \node[runbox] at (8.2,-1.55) {run};
+  \node[count] at (9.5,-1.9) {1 run};
+
+  % row 3: application retry, new identifier
+  \node[rowt] at (1.6,-3.8) {Retry};
+  \draw[flow] (3.0,-3.45) -- node[elab, above] {id 7} (7.4,-3.45);
+  \draw[flow] (3.0,-4.15) -- node[elab, below] {id 8} (7.4,-4.15);
+  \node[runbox] at (8.2,-3.45) {run};
+  \node[runbox] at (8.2,-4.15) {run};
+  \node[count] at (9.5,-3.8) {2 runs};
+\end{tikzpicture}

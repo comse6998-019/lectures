@@ -1,0 +1,23 @@
+% Guarantee 6: effects happen in program order. Two requests in flight can be applied in either order
+% unless the system imposes one (Lamport 1978). The second request overtakes the first.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  life/.style={densely dotted, draw=ibmfg!45},
+  elab/.style={lab, font=\sffamily\footnotesize, inner sep=2pt},
+  runbox/.style={draw=deckNavy, fill=deckNavy!15, rounded corners=1.5pt, font=\sffamily\footnotesize,
+    minimum height=6mm, inner sep=3pt, anchor=west}
+]
+  \node[mnode, minimum width=20mm] (c) at (0,0) {caller};
+  \node[rnode, minimum width=20mm] (s) at (7.2,0) {server};
+  \draw[life] (c.south) -- ++(0,-3.6);
+  \draw[life] (s.south) -- ++(0,-3.6);
+
+  % send order: A then B; delivery order: B then A
+  \draw[flow] (0,-1.0) -- node[elab, above, pos=.14] {edit A} (7.2,-2.7);
+  \draw[flow] (0,-1.7) -- node[elab, below, pos=.14] {edit B} (7.2,-1.9);
+  \node[elab, fill=none, anchor=east] at (-0.2,-1.0) {sent first};
+  \node[elab, fill=none, anchor=east] at (-0.2,-1.7) {sent second};
+
+  \node[runbox, font=\sffamily\footnotesize\bfseries] at (7.45,-1.9) {B applied first};
+  \node[runbox, text=deckNavy] at (7.45,-2.7) {A applied second};
+\end{tikzpicture}

@@ -1,0 +1,18 @@
+% What an MCP server offers (specification 2026-07-28, index): Resources, "context and data, for the user or
+% the AI model to use"; Prompts, "templated messages and workflows for users"; Tools, "functions for the AI
+% model to execute". The examples come from the course's running task.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  part/.style={draw=ibmfg!50, rounded corners=3pt, fill=white, minimum width=42mm, minimum height=27mm,
+               align=center, font=\sffamily\footnotesize, text width=38mm},
+  head/.style={font=\sffamily\bfseries}
+]
+  \node[part] (t) at (0,0) {{\color{deckNavy}\large\bfseries Tools}\\[3pt]functions for the model\\to execute\\[5pt]\ttfamily edit(path, old, new)};
+  \node[part] (r) at (4.7,0) {{\color{deckNavy}\large\bfseries Resources}\\[3pt]data for the user\\or the model to use\\[5pt]\ttfamily the text of src/parse.py};
+  \node[part] (p) at (9.4,0) {{\color{deckNavy}\large\bfseries Prompts}\\[3pt]templated messages\\and workflows for users\\[5pt]\ttfamily "review this change"};
+  \node[draw=deckNavy, thick, rounded corners=5pt, inner sep=7pt, fit=(t)(r)(p), fill=ibmblue!8] (srv) {};
+  \node[part] at (0,0) {{\color{deckNavy}\large\bfseries Tools}\\[3pt]functions for the model\\to execute\\[5pt]\ttfamily edit(path, old, new)};
+  \node[part] at (4.7,0) {{\color{deckNavy}\large\bfseries Resources}\\[3pt]data for the user\\or the model to use\\[5pt]\ttfamily the text of src/parse.py};
+  \node[part] at (9.4,0) {{\color{deckNavy}\large\bfseries Prompts}\\[3pt]templated messages\\and workflows for users\\[5pt]\ttfamily "review this change"};
+  \node[font=\sffamily\footnotesize\bfseries, text=deckNavy, anchor=south] at (srv.north) {an MCP server};
+\end{tikzpicture}

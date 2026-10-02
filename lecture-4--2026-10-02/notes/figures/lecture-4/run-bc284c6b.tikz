@@ -1,0 +1,59 @@
+% The first read_file call of run bc284c6b, trace steps 3 to 7 (cyberbird lectures/lec02/runs/plan-and-validation-bc284c6b.jsonl).
+% Numbered circles mark the trace events; the right-hand gutter lists them with what each establishes.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  life/.style={densely dotted, draw=ibmfg!45},
+  elab/.style={lab, font=\sffamily\footnotesize, inner sep=2pt},
+  evnum/.style={circle, fill=deckNavy, text=white, inner sep=1.3pt, minimum size=4.2mm,
+    font=\sffamily\scriptsize\bfseries},
+  keynum/.style={evnum, draw=deckNavy, line width=1.4pt, minimum size=5mm},
+  act/.style={draw=ibmfg!60, rounded corners=2pt, fill=black!4, font=\sffamily\footnotesize, inner sep=3pt},
+  guide/.style={dotted, draw=ibmfg!35},
+  evt/.style={font=\sffamily\footnotesize\bfseries, anchor=west},
+  est/.style={font=\sffamily\footnotesize, text=deckNavy, anchor=west}
+]
+  % lifelines: controller 0, model 2.7, dispatcher 5.4, tool 8.1, trace 11.0
+  \node[mnode, minimum width=19mm] (ctl) at (0,0) {controller};
+  \node[mnode, minimum width=19mm] (mod) at (2.7,0) {model};
+  \node[rnode, minimum width=19mm] (dis) at (5.4,0) {dispatcher};
+  \node[rnode, minimum width=19mm] (tol) at (8.1,0) {read\_file};
+  \node[draw=ibmfg!60, rounded corners=2pt, fill=white, font=\sffamily\footnotesize, minimum height=7mm,
+    minimum width=19mm] (trc) at (11.0,0) {trace};
+  \foreach \n in {ctl,mod,dis,tol} { \draw[life] (\n.south) -- ++(0,-8.6); }
+
+  % step 3: the model replies with a tool call
+  \draw[flow] (0,-1.0) -- node[elab, above] {messages} (2.7,-1.0);
+  \draw[back] (2.7,-1.7) -- node[elab, above] {read\_file call} (0,-1.7);
+  \node[evnum] at (-1.45,-1.7) {3};
+
+  % step 4: the routing function selects the tools node
+  \node[act] at (0,-2.5) {route: tools};
+  \node[evnum] at (-1.45,-2.5) {4};
+
+  % step 5: the request reaches the dispatcher
+  \draw[flow] (0,-3.3) -- node[elab, above] {tool\_request} (5.4,-3.3);
+  \node[evnum] at (-1.45,-3.3) {5};
+  \node[act] at (5.4,-4.0) {find, bind, check};
+  \draw[flow] (5.4,-4.7) -- node[elab, above] {run} (8.1,-4.7);
+  \draw[back] (8.1,-5.4) -- node[elab, above] {1,665 characters} (5.4,-5.4);
+
+  % step 6: the dispatcher records the result
+  \node[act] at (5.4,-6.2) {log tool\_result};
+  \node[keynum] at (3.75,-6.2) {6};
+  \draw[back] (5.4,-6.9) -- node[elab, above] {observation} (0,-6.9);
+
+  % step 7: the next model call sees the tool message
+  \draw[flow] (0,-8.0) -- node[elab, above, align=center] {messages +\\tool message} (2.7,-8.0);
+  \node[evnum] at (-1.45,-8.0) {7};
+
+  % trace gutter
+  \draw[life] (trc.south) -- ++(0,-8.6);
+  \foreach \s/\y/\name in {3/-1.7/model\_call, 4/-2.5/routing, 5/-3.3/tool\_request, 6/-6.2/tool\_result, 7/-8.0/model\_call} {
+    \draw[guide] (11.0,\y) -- (9.1,\y);
+    \node[evnum] at (11.0,\y) {\s};
+    \node[evt] at (11.35,\y) {\name};
+  }
+  \node[est] at (11.35,-2.05) {the model asked};
+  \node[est] at (11.35,-3.65) {the request arrived};
+  \node[est, font=\sffamily\footnotesize\bfseries] at (11.35,-6.55) {the function ran};
+\end{tikzpicture}

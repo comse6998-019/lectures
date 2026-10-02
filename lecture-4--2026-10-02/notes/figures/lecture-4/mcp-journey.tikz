@@ -1,0 +1,32 @@
+% One request, end to end, in plain terms. Only the hop between the application's MCP client and the server
+% uses MCP; the hop to the model uses the vendor's native tool calling.
+\definecolor{deckNavy}{HTML}{28285E}
+\definecolor{deckRose}{HTML}{C73561}
+\begin{tikzpicture}[
+  elab/.style={lab, font=\sffamily\scriptsize},
+  evnum/.style={circle, fill=deckNavy, text=white, inner sep=1.2pt, minimum size=4mm, font=\sffamily\scriptsize\bfseries},
+  mcpl/.style={-{Stealth[length=2.5mm]}, line width=1.4pt, draw=deckRose}
+]
+  \node[rnode, minimum width=18mm, minimum height=10mm] (u) at (0,0) {user};
+  \node[mnode, minimum width=26mm] (app) at (4.6,0.35) {AI application};
+  \node[mnode, minimum width=22mm] (cl) at (4.6,-0.75) {MCP client};
+  \node[draw=deckNavy, thick, rounded corners=3pt, inner sep=5pt, fit=(app)(cl)] (host) {};
+  \node[rnode, minimum width=22mm] (m) at (4.6,2.6) {model};
+  \node[rnode, minimum width=24mm] (s) at (10.0,-0.75) {MCP server};
+  \node[rnode, minimum width=22mm] (f) at (13.6,-0.75) {src/parse.py};
+
+  \draw[flow] ([yshift=1.5mm]u.east) -- node[elab, above] {fix the off-by-one} ([yshift=1.5mm]host.west |- u.east);
+  \node[evnum] at (1.9,1.0) {1};
+  \draw[flow] ([xshift=-3mm]host.north) -- node[elab, left] {question + tool list} ([xshift=-3mm]m.south);
+  \node[evnum] at (1.75,1.6) {2};
+  \draw[back] ([xshift=3mm]m.south) -- node[elab, right] {call edit} ([xshift=3mm]host.north);
+  \node[evnum] at (6.4,1.6) {3};
+  \draw[mcpl] ([yshift=1.5mm]cl.east) -- node[elab, above, text=deckRose] {edit request} ([yshift=1.5mm]s.west);
+  \draw[mcpl, dashed] ([yshift=-1.5mm]s.west) -- node[elab, below, text=deckRose] {result} ([yshift=-1.5mm]cl.east);
+  \node[evnum] at (7.3,0.15) {4};
+  \node[font=\sffamily\footnotesize\bfseries, text=deckRose] at (7.3,-1.45) {MCP};
+  \draw[flow] (s) -- node[elab, above] {changes} (f);
+  \node[evnum] at (11.8,0.15) {5};
+  \draw[back] ([yshift=-1.5mm]host.west |- u.east) -- node[elab, below] {the answer} ([yshift=-1.5mm]u.east);
+  \node[evnum] at (1.9,-1.0) {6};
+\end{tikzpicture}
