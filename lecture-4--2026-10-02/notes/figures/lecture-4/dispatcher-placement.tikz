@@ -1,0 +1,29 @@
+% Where the dispatcher sits. The model's tool call reaches the tools node, which hands each request to the
+% dispatcher; only the dispatcher calls a tool function, with the workspace root that it holds. Every request
+% and result is written to the trace, and an observation returns to the model.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  elab/.style={lab, font=\sffamily\scriptsize},
+  hold/.style={draw=deckNavy!60, rounded corners=2pt, fill=deckNavy!6, font=\sffamily\scriptsize, align=left,
+    inner sep=3pt}
+]
+  \node[mnode, minimum width=18mm] (m) at (0,0) {model};
+  \node[mnode, minimum width=18mm] (tn) at (3.4,0) {tools node};
+  \node[draw=deckNavy, very thick, rounded corners=2pt, fill=ibmblue!15, font=\sffamily\footnotesize\bfseries,
+    minimum width=22mm, minimum height=8mm] (d) at (7.0,0) {dispatcher};
+  \node[rnode, minimum width=20mm] (f) at (10.8,0) {tool function};
+  \node[rnode, minimum width=20mm] (w) at (14.2,0) {workspace files};
+
+  \draw[flow] ([yshift=2mm]m.east) -- node[elab, above=1pt] {tool call} ([yshift=2mm]tn.west);
+  \draw[flow] ([yshift=2mm]tn.east) -- node[elab, above=1pt] {request} ([yshift=2mm]d.west);
+  \draw[flow] ([yshift=2mm]d.east) -- node[elab, above=1pt] {fn(ws, **args)} ([yshift=2mm]f.west);
+  \draw[flow] (f) -- node[elab, above=1pt] {read, write} (w);
+  \draw[back] ([yshift=-2mm]f.west) -- node[elab, below=1pt] {value or error} ([yshift=-2mm]d.east);
+  \draw[back] ([yshift=-2mm]d.west) -- node[elab, below=1pt] {observation} ([yshift=-2mm]tn.east);
+  \draw[back] ([yshift=-2mm]tn.west) -- node[elab, below=1pt] {tool message} ([yshift=-2mm]m.east);
+
+  \node[hold] (h) at (7.0,1.55) {holds: the tool registry,\\the workspace root, the trace};
+  \draw[densely dotted, draw=deckNavy!60] (h) -- (d);
+  \node[rnode, minimum width=18mm] (t) at (7.0,-1.6) {trace};
+  \draw[flow] (d) -- node[elab, right=1pt] {tool\_request, tool\_result} (t);
+\end{tikzpicture}

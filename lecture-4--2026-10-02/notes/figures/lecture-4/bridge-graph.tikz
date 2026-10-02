@@ -1,0 +1,35 @@
+% Two-node core of the planning agent from lecture 3: the controller calls a model, tools runs tools.
+% Each edge reads "guard / set action"; output actions are omitted, as on lecture 3 slide 17.
+% Solid edges are forward transitions. The dashed edge returns control to the controller.
+% The two guards that leave the controller are mutually exclusive: a reply has tool calls or it has none.
+% The highlighted edge is the example transition (q, v) -> (q', v'); the key lists the variables v.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  elab/.style={lab, font=\sffamily\footnotesize, inner sep=2pt},
+  tag/.style={font=\sffamily\small\itshape, text=deckNavy, inner sep=1pt},
+  key/.style={draw=ibmfg!25, rounded corners=2pt, fill=black!2, font=\sffamily\footnotesize,
+    inner sep=5pt, align=left, text width=41mm}
+]
+  \node[tnode] (start) at (-0.4,0) {START};
+  \node[mnode, minimum width=24mm] (controller) at (4.9,0) {controller};
+  \node[rnode, minimum width=20mm, line width=1.6pt, draw=deckNavy] (tools) at (11.9,0) {tools};
+  \node[tnode] (end) at (4.9,-3.1) {END};
+
+  \node[tag] at ([yshift=2.4mm]controller.north) {$q$};
+  \node[tag] at ([yshift=2.4mm]tools.north) {$q'$};
+
+  \draw[flow] (start) -- node[elab, above=1pt] {status = running,\\calls := 0} (controller);
+  \draw[flow, line width=1.3pt, draw=deckNavy] ([yshift=2mm]controller.east) --
+    node[elab, above=1pt] {reply has tool calls /\\append the reply,\\count the call}
+    ([yshift=2mm]tools.west);
+  \draw[back] ([yshift=-2mm]tools.west) --
+    node[elab, below=1pt] {always /\\append the observations}
+    ([yshift=-2mm]controller.east);
+  \draw[flow] (controller) --
+    node[elab, right=2pt, pos=.58] {reply has no tool calls /\\append the reply,\\count the call} (end);
+
+  \node[key, anchor=north east] at (12.9,-1.65) {
+    $v$: status, calls,\\messages, observations\\[3pt]
+    $(q,v)\xrightarrow{\;g\,/\,\mathit{set}\;}(q',v')$
+  };
+\end{tikzpicture}

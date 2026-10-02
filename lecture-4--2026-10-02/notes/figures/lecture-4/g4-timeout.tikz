@@ -1,0 +1,41 @@
+% Guarantee 4: no timeout is needed locally, because a hung callee hangs the caller. Across a boundary the caller must pick a timeout, and at the
+% deadline a late reply (timing failure) and a lost reply (omission failure) look the same (Cristian 1991).
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  elab/.style={lab, font=\sffamily\footnotesize, inner sep=2pt},
+  rowt/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy, anchor=east},
+  sent/.style={circle, fill=ibmfg!70, inner sep=1.6pt},
+  got/.style={circle, draw=deckNavy, fill=deckNavy, inner sep=2.4pt},
+  late/.style={circle, draw=deckNavy, fill=white, thick, inner sep=2.4pt},
+  lost/.style={font=\sffamily\bfseries\Large, text=deckNavy}
+]
+  % time axis
+  \draw[flow] (0.3,0.6) -- (11.3,0.6) node[right, font=\sffamily\footnotesize] {time};
+
+  % timeout line
+  \draw[dashed, draw=deckNavy, thick] (6.2,0.9) -- (6.2,-3.6);
+  \node[elab, fill=none, text=deckNavy] at (6.2,1.15) {timeout};
+
+  % fast reply
+  \node[rowt] at (0.0,-0.4) {fast reply};
+  \node[sent] (s1) at (0.8,-0.4) {};
+  \node[got] (g1) at (2.9,-0.4) {};
+  \draw[flow] (s1) -- (g1);
+
+  % late reply
+  \node[rowt] at (0.0,-1.6) {late reply};
+  \node[sent] (s2) at (0.8,-1.6) {};
+  \node[late] (g2) at (9.2,-1.6) {};
+  \draw[flow] (s2) -- (g2);
+
+  % lost reply
+  \node[rowt] at (0.0,-2.8) {lost reply};
+  \node[sent] (s3) at (0.8,-2.8) {};
+  \draw[back] (s3) -- (8.4,-2.8);
+  \node[lost] at (8.8,-2.8) {$\times$};
+
+  % what the caller holds at the deadline
+  \draw[deckNavy, line width=2.2pt] (6.2,-1.25) -- (6.2,-3.15);
+  \node[elab, fill=white, anchor=west, text=deckNavy, font=\sffamily\footnotesize\bfseries] at (6.45,-2.2)
+    {same evidence at the timeout};
+\end{tikzpicture}

@@ -1,0 +1,31 @@
+% Pre-history: a local call returns, but a remote call can lose its reply.
+% Birrell and Nelson (1984) made a remote call look like a local call; Waldo et al. (1994) argued that
+% partial failure cannot be hidden. Solid arrows are requests; dashed arrows are replies.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  life/.style={densely dotted, draw=ibmfg!45},
+  elab/.style={lab, font=\sffamily\footnotesize, inner sep=2pt},
+  ttl/.style={font=\sffamily\bfseries\small, text=deckNavy}
+]
+  % local call
+  \node[ttl] at (1.8,1.25) {Local call};
+  \node[mnode, minimum width=18mm] (lc) at (0,0) {caller};
+  \node[rnode, minimum width=18mm] (le) at (3.6,0) {callee};
+  \draw[life] (lc.south) -- ++(0,-3.1);
+  \draw[life] (le.south) -- ++(0,-3.1);
+  \draw[flow] (0,-1.0) -- node[elab, above] {call} (3.6,-1.0);
+  \draw[back] (3.6,-2.2) -- node[elab, above] {return} (0,-2.2);
+
+  % remote call
+  \node[ttl] at (9.9,1.25) {Remote call};
+  \node[mnode, minimum width=18mm] (rc) at (8.1,0) {caller};
+  \node[rnode, minimum width=18mm] (re) at (11.7,0) {callee};
+  \draw[life] (rc.south) -- ++(0,-3.1);
+  \draw[life] (re.south) -- ++(0,-3.1);
+  \draw[dashed, draw=ibmfg!60] (9.9,0.55) -- (9.9,-3.45);
+  \node[elab, fill=none, text=ibmfg!70] at (9.9,0.75) {boundary};
+  \draw[flow] (8.1,-1.0) -- node[elab, above] {request} (11.7,-1.0);
+  \draw[back] (11.7,-2.2) -- (10.2,-2.2);
+  \node[font=\sffamily\bfseries\Large, text=deckNavy] at (9.9,-2.2) {$\times$};
+  \node[elab, below=4pt] at (9.9,-2.35) {reply lost};
+\end{tikzpicture}

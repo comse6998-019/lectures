@@ -1,0 +1,24 @@
+% LangChain's chat-model adapters parse each vendor's call format into one list, AIMessage.tool_calls, and the
+% LangGraph tools node reads only that list. OpenAI's arguments string becomes a dictionary on the way.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  code/.style={draw=ibmfg!40, rounded corners=2pt, fill=white, font=\ttfamily\scriptsize, align=left,
+    inner sep=4pt, minimum width=50mm},
+  vend/.style={font=\sffamily\scriptsize\bfseries, text=deckNavy, anchor=south west},
+  link/.style={flow}
+]
+  \node[code] (o) at (0,1.15) {"tool\_calls": [\{"id": "call\_7",\\ \ "function": \{"name": "edit",\\ \ \ \ "arguments": "\{\textbackslash"path\textbackslash": ...\}"\}\}]};
+  \node[vend] at (o.north west) {OpenAI response};
+  \node[code] (a) at (0,-1.15) {\{"type": "tool\_use", "id": "toolu\_01",\\ \ "name": "edit",\\ \ "input": \{"path": ...\}\}};
+  \node[vend] at (a.north west) {Anthropic response};
+
+  \node[mnode, align=center] (adp) at (5.2,0) {LangChain\\chat model};
+  \node[code, minimum width=44mm] (tc) at (9.6,0) {[\{"name": "edit",\\ \ "args": \{"path": ...\},\\ \ "id": "call\_7",\\ \ "type": "tool\_call"\}]};
+  \node[vend] at (tc.north west) {AIMessage.tool\_calls};
+  \node[mnode, align=center] (tn) at (13.4,0) {LangGraph\\tools node};
+
+  \draw[link] (o.east) -- node[lab, above, sloped] {parse the string} (adp);
+  \draw[link] (a.east) -- (adp);
+  \draw[link] (adp) -- (tc);
+  \draw[link] (tc) -- (tn);
+\end{tikzpicture}

@@ -1,0 +1,24 @@
+% The incident the lecture is built on: the harness sends an edit request over MCP, the server applies the
+% patch, the reply is lost, and the retry is a new request that the server applies a second time.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  life/.style={densely dotted, draw=ibmfg!45},
+  elab/.style={lab, font=\sffamily\footnotesize, inner sep=2pt},
+  note/.style={font=\sffamily\footnotesize, text=deckNavy, inner sep=2pt}
+]
+  \node[mnode, minimum width=22mm] (h) at (0,0) {harness};
+  \node[rnode, minimum width=22mm] (s) at (7.4,0) {server};
+  \draw[life] (h.south) -- ++(0,-4.3);
+  \draw[life] (s.south) -- ++(0,-4.3);
+
+  \draw[flow] (0,-1.0) -- node[elab, above] {tools/call, id 7} (7.4,-1.0);
+  \node[note, anchor=west] at (7.6,-1.0) {patch applied};
+
+  \draw[back] (7.4,-2.0) -- (4.1,-2.0);
+  \node[font=\sffamily\bfseries\Large, text=deckNavy] at (3.7,-2.0) {$\times$};
+  \node[elab, below=4pt] at (5.75,-2.05) {reply lost};
+  \node[note, anchor=east] at (-0.2,-2.75) {timeout};
+
+  \draw[flow] (0,-3.5) -- node[elab, above] {tools/call, id 8} (7.4,-3.5);
+  \node[note, anchor=west, font=\sffamily\footnotesize\bfseries] at (7.6,-3.5) {patch applied again};
+\end{tikzpicture}

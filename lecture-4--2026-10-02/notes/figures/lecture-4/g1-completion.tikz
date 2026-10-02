@@ -1,0 +1,36 @@
+% Guarantee 1: a returned call shows that the callee ran. Over an unreliable channel the caller cannot
+% tell a lost request (world A) from a lost reply (world B): both end in the same timeout.
+% Akkoyunlu et al. (1975); Gray (1978).
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  life/.style={densely dotted, draw=ibmfg!45},
+  elab/.style={lab, font=\sffamily\footnotesize, inner sep=2pt},
+  ttl/.style={font=\sffamily\bfseries\small, text=deckNavy},
+  lost/.style={font=\sffamily\bfseries\Large, text=deckNavy},
+  obs/.style={draw=deckNavy, rounded corners=2pt, fill=white, font=\sffamily\footnotesize\bfseries,
+    text=deckNavy, inner sep=3pt}
+]
+  % world A: the request is lost
+  \node[ttl] at (1.9,1.4) {World A: the request is lost};
+  \node[mnode, minimum width=18mm] (ac) at (0,0) {caller};
+  \node[rnode, minimum width=18mm] (ae) at (3.8,0) {callee};
+  \draw[life] (ac.south) -- ++(0,-3.4);
+  \draw[life] (ae.south) -- ++(0,-3.4);
+  \draw[flow] (0,-1.0) -- (2.2,-1.0);
+  \node[lost] at (2.45,-1.0) {$\times$};
+  \node[elab, above] at (1.1,-1.0) {request};
+  \node[obs] at (0,-3.0) {timeout};
+
+  % world B: the reply is lost
+  \node[ttl] at (8.5,1.4) {World B: the reply is lost};
+  \node[mnode, minimum width=18mm] (bc) at (6.6,0) {caller};
+  \node[rnode, minimum width=18mm] (be) at (10.4,0) {callee};
+  \draw[life] (bc.south) -- ++(0,-3.4);
+  \draw[life] (be.south) -- ++(0,-3.4);
+  \draw[flow] (6.6,-1.0) -- node[elab, above] {request} (10.4,-1.0);
+  \node[draw=deckNavy, fill=deckNavy!15, minimum width=4mm, minimum height=7mm, inner sep=0pt] at (10.4,-1.45) {};
+  \node[elab, fill=none, anchor=west] at (10.65,-1.45) {ran};
+  \draw[back] (10.4,-2.0) -- (8.9,-2.0);
+  \node[lost] at (8.6,-2.0) {$\times$};
+  \node[obs] at (6.6,-3.0) {timeout};
+\end{tikzpicture}

@@ -1,0 +1,37 @@
+% One tool call through MCP (specification 2026-07-28). The host and its client run in one process; the edit
+% server is a separate process. The model sees only native tool declarations and native call blocks.
+\usetikzlibrary{decorations.pathreplacing}
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  life/.style={densely dotted, draw=ibmfg!45},
+  elab/.style={lab, font=\sffamily\footnotesize, inner sep=2pt},
+  evnum/.style={circle, fill=deckNavy, text=white, inner sep=1.3pt, minimum size=4.2mm, font=\sffamily\scriptsize\bfseries},
+  act/.style={draw=ibmfg!60, rounded corners=2pt, fill=black!4, font=\sffamily\footnotesize, inner sep=3pt}
+]
+  \node[rnode, minimum width=20mm] (m) at (0,0) {model API};
+  \node[mnode, minimum width=20mm] (h) at (4.2,0) {host};
+  \node[mnode, minimum width=20mm] (c) at (7.6,0) {client};
+  \node[rnode, minimum width=20mm] (s) at (11.6,0) {edit server};
+  \foreach \n in {m,h,c,s} { \draw[life] (\n.south) -- ++(0,-7.3); }
+
+  \draw[flow] (7.6,-0.8) -- node[elab, above] {tools/list} (11.6,-0.8);
+  \draw[back] (11.6,-1.35) -- node[elab, above] {tool definitions} (7.6,-1.35);
+  \node[evnum] at (-1.4,-1.05) {1};
+  \draw[flow] (4.2,-2.05) -- node[elab, above] {messages + native declarations} (0,-2.05);
+  \node[evnum] at (-1.4,-2.05) {2};
+  \draw[back] (0,-2.75) -- node[elab, above] {native call block} (4.2,-2.75);
+  \node[evnum] at (-1.4,-2.75) {3};
+  \node[act] at (4.2,-3.4) {map to server, ask the user};
+  \node[evnum] at (-1.4,-3.4) {4};
+  \draw[flow] (4.2,-4.05) -- (7.6,-4.05);
+  \draw[flow] (7.6,-4.05) -- node[elab, above] {tools/call: edit, arguments} (11.6,-4.05);
+  \node[evnum] at (-1.4,-4.05) {5};
+  \node[act] at (11.6,-4.7) {validate, run edit};
+  \node[evnum] at (-1.4,-4.7) {6};
+  \draw[back] (11.6,-5.35) -- node[elab, above] {result: content, isError} (7.6,-5.35);
+  \draw[back] (7.6,-5.35) -- (4.2,-5.35);
+  \node[evnum] at (-1.4,-5.35) {7};
+  \draw[flow] (4.2,-6.15) -- node[elab, above] {messages + tool result} (0,-6.15);
+  \node[evnum] at (-1.4,-6.15) {8};
+  \draw[decorate, decoration={brace, amplitude=4pt, mirror}, draw=deckNavy] (3.6,-7.0) -- node[below=3pt, font=\sffamily\scriptsize, text=deckNavy] {one process} (8.2,-7.0);
+\end{tikzpicture}

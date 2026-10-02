@@ -1,0 +1,36 @@
+% What a CodeAct script can reach. The harness binds the tools as functions in the interpreter's namespace,
+% and the same namespace holds the built-ins and every importable module. Each name is a route to a resource.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  grp/.style={font=\sffamily\scriptsize\bfseries, text=deckNavy},
+  fn/.style={minimum width=24mm, minimum height=5.6mm, inner sep=2.5pt, font=\ttfamily\footnotesize},
+  res/.style={rnode, minimum width=36mm},
+  link/.style={flow, draw=ibmfg!60}
+]
+  % the namespace
+  \coordinate (nstop) at (0,2.65);
+  \node[grp] at (0,2.45) {tool functions};
+  \node[mnode, fn] (rf) at (0,1.95) {read\_file()};
+  \node[mnode, fn] (se) at (0,1.35) {search()};
+  \node[mnode, fn] (ed) at (0,0.75) {edit()};
+  \node[grp] at (0,0.25) {the rest of Python};
+  \node[rnode, fn] (op) at (0,-0.25) {open()};
+  \node[rnode, fn] (os) at (0,-0.85) {os};
+  \node[rnode, fn] (sk) at (0,-1.45) {socket};
+  \node[rnode, fn] (sp) at (0,-2.05) {subprocess};
+  \node[draw=deckNavy, thick, rounded corners=3pt, inner sep=6pt, fit=(rf)(sp)(nstop)] (ns) {};
+  \node[grp, anchor=south] at (ns.north) {interpreter namespace};
+
+  % the resources
+  \node[res] (ws) at (11.5,1.35) {files in the workspace};
+  \node[res] (hf) at (11.5,0.25) {other files on the host};
+  \node[res] (net) at (11.5,-0.85) {network};
+  \node[res] (pr) at (11.5,-2.05) {other processes};
+
+  \foreach \t in {rf,se,ed} { \draw[link] (\t.east) -- (ws.west); }
+  \draw[link] (op.east) -- (ws.west);
+  \draw[link] (op.east) -- (hf.west);
+  \draw[link] (os.east) -- (hf.west);
+  \draw[link] (sk.east) -- (net.west);
+  \draw[link] (sp.east) -- (pr.west);
+\end{tikzpicture}

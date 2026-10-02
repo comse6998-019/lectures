@@ -1,0 +1,29 @@
+% Guarantee 3: caller and callee fail together. In one process a crash stops both; across a boundary the
+% callee can fail while the caller keeps running, which is partial failure (Waldo et al. 1994).
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  elab/.style={lab, font=\sffamily\footnotesize, inner sep=2pt},
+  ttl/.style={font=\sffamily\bfseries\small, text=deckNavy},
+  proc/.style={draw=ibmfg!55, rounded corners=3pt, fill=black!2, thick},
+  lost/.style={font=\sffamily\bfseries\huge, text=deckNavy}
+]
+  % local call: one process
+  \node[ttl] at (2.3,2.15) {Local call};
+  \draw[proc] (-0.6,-0.5) rectangle (5.2,1.75);
+  \node[mnode, minimum width=18mm] (lc) at (0.9,0.6) {caller};
+  \node[rnode, minimum width=18mm] (le) at (3.7,0.6) {callee};
+  \draw[flow] (lc) -- (le);
+  \node[lost] at (5.55,1.75) {$\times$};
+  \node[elab, fill=none, text=deckNavy] at (2.3,-1.05) {the process crashes, so both stop};
+
+  % remote call: two processes
+  \node[ttl] at (10.4,2.15) {Remote call};
+  \draw[proc] (7.0,-0.5) rectangle (9.2,1.75);
+  \draw[proc] (11.6,-0.5) rectangle (13.8,1.75);
+  \node[mnode, minimum width=18mm] (rc) at (8.1,0.6) {caller};
+  \node[rnode, minimum width=18mm] (re) at (12.7,0.6) {callee};
+  \draw[flow] (rc) -- node[elab, above] {request} (re);
+  \node[lost] at (14.1,1.75) {$\times$};
+  \node[elab, fill=none, text=deckNavy] at (8.1,-1.05) {the caller keeps waiting};
+  \node[elab, fill=none, text=deckNavy] at (12.7,-1.05) {the callee has crashed};
+\end{tikzpicture}

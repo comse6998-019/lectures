@@ -1,0 +1,36 @@
+% The CodeAct loop. The model replies with a script, the harness runs it in a Python interpreter that keeps
+% its variables between turns, and whatever the script prints or raises returns to the model as the next
+% observation. The loop ends when a reply contains no code.
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  life/.style={densely dotted, draw=ibmfg!45},
+  elab/.style={lab, font=\sffamily\footnotesize, inner sep=2pt},
+  evnum/.style={circle, fill=deckNavy, text=white, inner sep=1.3pt, minimum size=4.2mm,
+    font=\sffamily\scriptsize\bfseries},
+  act/.style={draw=ibmfg!60, rounded corners=2pt, fill=black!4, font=\sffamily\footnotesize, inner sep=3pt}
+]
+  \node[mnode, minimum width=22mm] (m) at (0,0) {model API};
+  \node[mnode, minimum width=22mm] (h) at (5.6,0) {harness};
+  \node[rnode, minimum width=22mm] (i) at (11.2,0) {Python interpreter};
+  \foreach \n in {m,h,i} { \draw[life] (\n.south) -- ++(0,-6.2); }
+
+  \draw[flow] (5.6,-0.9) -- node[elab, above] {messages + task} (0,-0.9);
+  \node[evnum] at (-1.45,-0.9) {1};
+
+  % the loop: one script per turn
+  \draw[densely dashed, draw=deckNavy!70, rounded corners=3pt] (-1.05,-1.35) rectangle (12.75,-5.05);
+  \node[font=\sffamily\scriptsize\bfseries, text=deckNavy, fill=white, inner sep=2pt, anchor=west]
+    at (-0.9,-1.35) {repeat while the reply contains code};
+  \draw[back] (0,-1.9) -- node[elab, above] {reply with a script} (5.6,-1.9);
+  \node[evnum] at (-1.45,-1.9) {2};
+  \draw[flow] (5.6,-2.6) -- node[elab, above] {run the script} (11.2,-2.6);
+  \node[evnum] at (-1.45,-2.6) {3};
+  \node[act] at (11.2,-3.15) {variables persist};
+  \draw[back] (11.2,-3.8) -- node[elab, above] {stdout or traceback} (5.6,-3.8);
+  \node[evnum] at (-1.45,-3.8) {4};
+  \draw[flow] (5.6,-4.6) -- node[elab, above] {messages + output} (0,-4.6);
+  \node[evnum] at (-1.45,-4.6) {5};
+
+  \draw[back] (0,-5.7) -- node[elab, above] {final answer, no code} (5.6,-5.7);
+  \node[evnum] at (-1.45,-5.7) {6};
+\end{tikzpicture}

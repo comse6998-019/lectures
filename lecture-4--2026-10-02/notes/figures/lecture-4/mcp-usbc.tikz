@@ -1,0 +1,23 @@
+% MCP as one standard connection between AI applications and external systems (modelcontextprotocol.io,
+% "What is MCP?": "Think of MCP like a USB-C port for AI applications"). The examples on the right are the
+% documentation's own: data sources (local files, databases), tools (search engines), workflows (prompts).
+\definecolor{deckNavy}{HTML}{28285E}
+\begin{tikzpicture}[
+  app/.style={mnode, minimum width=27mm},
+  sys/.style={rnode, minimum width=30mm},
+  head/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy},
+  link/.style={draw=ibmfg!55, thick}
+]
+  \node[head] at (0,2.15) {AI applications};
+  \foreach \t [count=\i] in {Claude, ChatGPT, VS Code, the course harness} {
+    \node[app] (a\i) at (0,1.95-\i*0.8) {\t};
+  }
+  \node[draw=deckNavy, fill=deckNavy, text=white, rounded corners=4pt, minimum width=24mm, minimum height=26mm,
+        font=\sffamily\bfseries\large, align=center] (mcp) at (4.6,-0.05) {MCP};
+  \node[font=\sffamily\scriptsize, text=deckNavy, align=center] at (4.6,-1.85) {one standard connection,\\like a USB-C port};
+  \node[head] at (9.2,2.15) {external systems};
+  \foreach \t [count=\i] in {local files, databases, search engines, prompt workflows} {
+    \node[sys] (s\i) at (9.2,1.95-\i*0.8) {\t};
+  }
+  \foreach \i in {1,2,3,4} { \draw[link] (a\i.east) -- (mcp.west |- a\i.east); \draw[link] (mcp.east |- s\i.west) -- (s\i.west); }
+\end{tikzpicture}
