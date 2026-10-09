@@ -1,0 +1,14 @@
+
+{
+  "mcpServers": {
+    "workspace-stdio": {
+      "type": "stdio",
+      "command": "/Users/rkrsn/COMSE6998-019/lectures/lecture-5--2026-10-07/mcp-demo/../.venv/bin/python",
+      "args": ["/Users/rkrsn/COMSE6998-019/lectures/lecture-5--2026-10-07/mcp-demo/server_stdio.py"]
+    },
+    "workspace-http": {
+      "type": "streamable-http",
+      "url": "http://127.0.0.1:8000/mcp"
+    }
+  }
+}

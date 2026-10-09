@@ -1,0 +1,43 @@
+% Lecture 5 figure style: lecture 4's standalone style plus the nodes a threat diagram needs.
+% Every figure sets its canvas first with \canvas{width}{height} (centimetres) so all stages of a figure come out the
+% same size; the slide column is 6.58 in wide, so a canvas 16.5 cm wide prints at about 1:1 and a 9 pt label is 9 pt on the slide.
+\documentclass[border=2pt]{standalone}
+\usepackage[T1]{fontenc}
+\IfFileExists{plex-sans.sty}{\usepackage[sfdefault]{plex-sans}}{}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\definecolor{ibmblue}{HTML}{0F62FE}
+\definecolor{ibmfg}{HTML}{161616}
+\definecolor{deckNavy}{HTML}{28285E}
+\definecolor{deckRose}{HTML}{C73561}
+\definecolor{deckLilac}{HTML}{CACAE5}
+\definecolor{deckGrey}{HTML}{5B6673}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,fit,backgrounds,decorations.pathreplacing}
+\providecommand{\stage}{99}
+% \canvas{W}{H}: an invisible rectangle fixes the bounding box, so every stage has the same size
+\newcommand{\canvas}[2]{\useasboundingbox (0,0) rectangle (#1,#2);}
+% \atstage{k}{...}: draw only from stage k on;  \onlystage{k}{...}: draw at stage k only
+\newcommand{\atstage}[2]{\ifnum\stage>#1 #2\else\ifnum\stage=#1 #2\fi\fi}
+\newcommand{\onlystage}[2]{\ifnum\stage=#1 #2\fi}
+\tikzset{
+  gnode/.style={draw=ibmfg!60, rounded corners=2pt, fill=white, font=\sffamily\small,
+                minimum height=7mm, inner sep=4pt, align=center},
+  mnode/.style={gnode, fill=ibmblue!15},                    % model side: host, model, client
+  rnode/.style={gnode, fill=black!6},                       % tool side: server, tool, file
+  evil/.style={gnode, draw=deckRose, fill=deckRose!10, text=black, line width=1pt},   % adversary-controlled
+  ghost/.style={gnode, draw=ibmfg!25, text=ibmfg!35, fill=white, dashed},             % not yet / not here
+  tnode/.style={draw=ibmfg!60, ellipse, font=\sffamily\small, inner sep=3pt},
+  flow/.style={-{Stealth[length=2.2mm]}, thick, draw=ibmfg!80},
+  back/.style={flow, dashed},
+  badflow/.style={-{Stealth[length=2.4mm]}, line width=1.4pt, draw=deckRose},
+  lab/.style={font=\sffamily\footnotesize, fill=white, inner sep=1pt, align=center},
+  badlab/.style={lab, text=deckRose},
+  evnum/.style={circle, fill=deckNavy, text=white, inner sep=0pt, minimum size=4.6mm, font=\sffamily\footnotesize\bfseries},
+  badnum/.style={evnum, fill=deckRose},
+  zone/.style={draw=deckNavy, dashed, rounded corners=4pt, thick, inner sep=6pt},
+  zonelab/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy, fill=white, inner sep=2pt},
+  note/.style={font=\sffamily\footnotesize, text=deckGrey, align=left},
+  hl/.style={draw=deckNavy, line width=1.6pt, rounded corners=3pt},
+  cross/.style={font=\sffamily\bfseries\Large, text=deckRose},
+}

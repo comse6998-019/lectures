@@ -1,0 +1,6 @@
+#!/Users/rkrsn/COMSE6998-019/lectures/lecture-5--2026-10-07/.venv/bin/python
+import sys
+from mistune.__main__ import cli
+if __name__ == '__main__':
+    sys.argv[0] = sys.argv[0].removesuffix('.exe')
+    sys.exit(cli())

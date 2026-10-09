@@ -1,0 +1,64 @@
+% Replay of CVE-2025-49596 (MCP Inspector below 0.14.1), six stages on a 16.5 x 7.2 cm canvas. Facts: GitHub advisory GHSA-7f8r-222p-6f5g and Oligo Security's write-up.
+% 1 the developer runs mcp dev: web client, backend proxy (port 6277, no authentication), MCP server over stdio; 2 the developer visits a public page;
+% 3 its script sends a cross-site request to 0.0.0.0:6277/sse that names a command (the browser reaches this machine through 0.0.0.0);
+% 4 the proxy checks nothing and starts the command as a stdio process; 5 the command runs as the developer (remote code execution);
+% 6 version 0.14.1: session token, origin check, localhost binding, so the request stops at the proxy.
+\begin{tikzpicture}[
+    sm/.style={font=\sffamily\fontsize{8.5}{10}\selectfont},
+    smb/.style={font=\sffamily\fontsize{8.5}{10}\selectfont\bfseries},
+    mono/.style={font=\ttfamily\fontsize{8}{9.5}\selectfont},
+    fixtag/.style={draw=deckNavy, fill=deckNavy!8, rounded corners=1.5pt, font=\sffamily\fontsize{8.5}{10}\selectfont\bfseries, text=deckNavy, inner sep=3pt, minimum width=36mm},
+  ]
+  \canvas{16.5}{7.2}
+  \atstage{2}{
+    \node[evil, anchor=south west, minimum width=62mm, minimum height=11mm, inner sep=2pt, align=center, sm] at (0.2,6.0) {\textbf{malicious public web page}\\script runs in the developer's browser};
+  }
+  \draw[zone] (0.1,0.15) rectangle (16.4,5.55);
+  \node[zonelab, anchor=east] at (16.2,5.55) {developer's machine};
+  % browser with its tabs
+  \node[gnode, anchor=south west, minimum width=42mm, minimum height=39mm, inner sep=0pt] (br) at (0.3,1.1) {};
+  \node[smb, anchor=north, inner sep=0pt] at (2.4,4.9) {browser};
+  \node[mnode, minimum width=34mm, minimum height=9mm, inner sep=2pt, align=center, sm] (tab1) at (2.4,3.7) {Inspector web client\\(the developer's tab)};
+  \atstage{2}{\node[evil, minimum width=34mm, minimum height=9mm, inner sep=2pt, align=center, sm] (tab2) at (2.4,2.0) {other tab:\\the public page};}
+  % the Inspector backend proxy
+  \node[mnode, anchor=south west, minimum width=38mm, minimum height=39mm, inner sep=0pt] (px) at (7.4,1.1) {};
+  \ifnum\stage>5 \node[draw=deckNavy, line width=1.4pt, rounded corners=2pt, anchor=south west, minimum width=38mm, minimum height=39mm, inner sep=0pt] at (7.4,1.1) {};\fi
+  \node[smb, anchor=north west, inner sep=0pt] at (7.55,4.9) {Inspector proxy};
+  \node[sm, text=deckGrey, anchor=north west, inner sep=0pt] at (7.55,4.58) {port 6277};
+  \ifnum\stage<6 \node[sm, anchor=north west, inner sep=0pt, align=left] at (7.55,4.2) {listens on 0.0.0.0,\\no authentication};\fi
+  % the MCP server over stdio
+  \node[rnode, anchor=south west, minimum width=33mm, minimum height=14mm, inner sep=2pt, align=center, sm] (srv) at (12.8,3.65) {MCP server\\(over stdio)};
+  \draw[flow] (tab1.east) -- (7.4,3.7);
+  \draw[flow] (11.2,4.3) -- (12.8,4.3);
+  \node[sm, text=deckGrey, anchor=south, fill=white, inner sep=1pt] at (12.0,4.3) {stdio};
+  \onlystage{1}{
+    \node[mono, anchor=north west, inner sep=1pt] at (7.55,2.2) {mcp dev server.py};
+    \node[sm, text=deckGrey, anchor=north west, inner sep=0pt] at (7.55,1.85) {the developer starts it};
+  }
+  \atstage{2}{
+    \draw[badflow] (1.0,6.0) -- (1.0,2.45); \node[badnum] at (1.0,5.3) {1};
+    \node[sm, text=deckRose, anchor=west, inner sep=1pt, fill=white] at (1.3,5.78) {the developer visits the page};
+  }
+  \ifnum\stage<6 \atstage{3}{
+    \draw[badflow] (4.1,2.0) -- (7.35,2.0); \node[badnum] at (4.45,2.0) {2};
+    \node[mono, text=deckRose, anchor=north west, inner sep=1pt, fill=white] at (4.05,1.72) {POST 0.0.0.0:6277/sse};
+    \node[sm, text=deckRose, anchor=south west, inner sep=1pt, fill=white, align=left] at (4.05,2.18) {cross-site request};
+  }\fi
+  \ifnum\stage<6 \atstage{4}{
+    \node[evil, minimum width=36mm, minimum height=9mm, inner sep=2pt, align=center, sm] (chk) at (9.3,3.0) {the proxy checks nothing:\\no token, no origin};
+    \draw[badflow] (11.2,3.0) -- (14.4,3.0) -- (14.4,3.62); \node[badnum] at (11.6,3.0) {3};
+  }\fi
+  \ifnum\stage<6 \atstage{5}{
+    \node[evil, anchor=south west, minimum width=33mm, minimum height=15mm, inner sep=2pt, align=center, sm] (cmd) at (12.8,1.1) {the command the\\page named runs\\as the developer};
+    \draw[badflow] (14.4,3.0) -- (14.4,2.6); \node[badnum] at (14.4,3.0) {4};
+    \node[smb, text=deckRose, anchor=south east, inner sep=1pt] at (16.2,0.3) {remote code execution};
+  }\fi
+  \onlystage{6}{
+    \node[fixtag, anchor=north west] at (7.55,4.2) {session token};
+    \node[fixtag, anchor=north west] at (7.55,3.4) {origin check};
+    \node[fixtag, anchor=north west] at (7.55,2.6) {bound to localhost};
+    \draw[badflow] (4.1,2.0) -- (6.9,2.0); \node[cross] at (7.25,2.0) {$\times$};
+    \node[mono, text=deckRose, anchor=north west, inner sep=1pt, fill=white] at (4.05,1.72) {POST 0.0.0.0:6277/sse};
+    \node[smb, text=deckNavy, anchor=north west, inner sep=0pt] at (7.55,1.75) {version 0.14.1};
+  }
+\end{tikzpicture}
