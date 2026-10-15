@@ -1,0 +1,125 @@
+% bypass-places: four places where the rule "the agent may not read ~/.ssh" can be enforced, and what bypasses each.
+% A copy of lecture 5's figures/r2/src/enforcement-places.tikz with the ATLAS technique that names each bypass added to its card,
+% in deckGrey and in parentheses, as the continuation of the "bypass requires" line (release 2026.09; names, no identifiers).
+% At 8 pt the bypass text and the technique together run past the verdict badge on cards 2 and 4 (11.4 cm against 9.9 cm free),
+% so the technique takes a fourth line in every card, indented under the bypass text. Each card grows by one line pitch
+% (1.22 to 1.54 cm), the canvas by 1.28 cm, and the nest on the left is stretched to the new height (y scaled by 6.72 / 5.44
+% about the bottom edge); widths, x positions, styles and wording are lecture 5's.
+% Canvas 16.5 x 7.1 cm.  Render: ./render.sh bypass-places 4   (needs standalone-style.tex from the same folder)
+% Left: nested layers around the agent, innermost first. The dashed line is the boundary of the agent's process: layers 1 and 2
+%       lie inside it, layers 3 and 4 outside. Each layer has a numbered tab on its top edge; layers not yet reached are ghost rings.
+% Right: one card per layer (ghost slots until the layer arrives): where the rule runs, how, what a bypass requires, whether the
+%        layer lies inside or outside the agent's process, and the verdict "can the agent disable it?" (rose open lock = yes,
+%        navy closed lock = no).
+% Stage 1 in the model (system prompt, the model's own alignment): inside the agent's process, verdict yes.
+% Stage 2 in the harness process (the dispatcher's check on every tool call): inside the agent's process too, verdict yes.
+% Stage 3 in the operating-system kernel (Landlock file rules, seccomp system-call filters, namespaces, or a microVM): outside the
+%         agent's process, verdict no.
+% Stage 4 in hardware outside the host (a processor in the network path, its own trust domain): outside, verdict no; it never
+%         sees a local file read.
+% Wording follows the lecture's table of the four places ("Each place has its own bypass."), whose last column gives the
+% technique for each bypass: LLM Prompt Injection and LLM Jailbreak; Modify AI Agent Configuration; Escape to Host; no
+% agent-specific technique in release 2026.09. The table's "(direct, indirect)" is left out. No ATLAS identifier is printed.
+\begin{tikzpicture}
+  \canvas{16.5}{7.1}
+  % ---------------------------------------------------------------- local styles and helpers
+  \tikzset{
+    wall/.style={draw=deckNavy, line width=1.5pt},
+    ghostring/.style={draw=ibmfg!28, dashed, line width=0.7pt},
+    chip/.style={anchor=west, fill=white, draw=deckNavy, line width=0.5pt, rounded corners=2pt, inner ysep=2.2pt,
+                 inner xsep=3pt, font=\sffamily\footnotesize\bfseries, text=deckNavy},
+    head/.style={anchor=base west, inner sep=0pt, font=\sffamily\bfseries, text=ibmfg},
+    mech/.style={anchor=base west, inner sep=0pt, font=\sffamily\footnotesize, text=ibmfg},
+    tagin/.style={anchor=base east, inner sep=0pt, font=\sffamily\footnotesize, text=deckRose},
+    tagout/.style={anchor=base east, inner sep=0pt, font=\sffamily\footnotesize, text=deckNavy},
+  }
+  \newcommand{\lockshut}[2]{% closed padlock centred at (#1,#2), white
+    \begin{scope}[shift={(#1,#2)}, line cap=round, line join=round]
+      \draw[white, line width=1.3pt] (-0.085,0.02) -- (-0.085,0.10) arc (180:0:0.085) -- (0.085,0.02);
+      \fill[white, rounded corners=0.8pt] (-0.15,-0.14) rectangle (0.15,0.04);
+    \end{scope}}
+  \newcommand{\lockopen}[2]{% open padlock: the right leg of the shackle is lifted clear of the body
+    \begin{scope}[shift={(#1,#2)}, line cap=round, line join=round]
+      \begin{scope}[rotate around={28:(-0.085,0.04)}]
+        \draw[white, line width=1.3pt] (-0.085,0.04) -- (-0.085,0.12) arc (180:0:0.085) -- (0.085,0.04);
+      \end{scope}
+      \fill[white, rounded corners=0.8pt] (-0.15,-0.14) rectangle (0.15,0.04);
+    \end{scope}}
+  \newcommand{\verdictyes}[1]{% badge centred on y = #1
+    \fill[deckRose, rounded corners=4pt] (15.17,#1-0.46) rectangle (16.27,#1+0.46);
+    \lockopen{15.72}{#1+0.16}
+    \node[font=\fontsize{11}{12}\selectfont\sffamily\bfseries, text=white, inner sep=0pt] at (15.72,#1-0.22) {yes};}
+  \newcommand{\verdictno}[1]{%
+    \fill[deckNavy, rounded corners=4pt] (15.17,#1-0.46) rectangle (16.27,#1+0.46);
+    \lockshut{15.72}{#1+0.16}
+    \node[font=\fontsize{11}{12}\selectfont\sffamily\bfseries, text=white, inner sep=0pt] at (15.72,#1-0.22) {no};}
+  \newcommand{\card}[3]{% k, top, bottom: the newest card is white and outlined, older ones are grey, later ones are ghosts
+    \ifnum\stage<#1 \draw[ghostring, rounded corners=3pt] (5.12,#3) rectangle (16.43,#2);\fi
+    \ifnum\stage=#1 \draw[hl, fill=white] (5.12,#3) rectangle (16.43,#2);\fi
+    \ifnum\stage>#1 \draw[ibmfg!22, thin, fill=black!3, rounded corners=3pt] (5.12,#3) rectangle (16.43,#2);\fi}
+  \newcommand{\cardtext}[6]{% top, number, heading, mechanism, what a bypass requires, the ATLAS technique that names it
+    \node[evnum] at (5.47,#1-0.285) {#2};
+    \node[head] at (5.82,#1-0.41) {#3};
+    \node[mech] at (5.24,#1-0.74) {#4};
+    \node[mech] (bypass#2) at (5.24,#1-1.06) {\textcolor{deckRose}{\bfseries bypass requires}\enspace};
+    \node[mech] at (bypass#2.base east) {#5};
+    \node[mech, text=deckGrey] at ($(bypass#2.base east)+(0,-0.32)$) {(#6)};}
+  \newcommand{\layerchip}[4]{% x of the ring's left edge, y of its top edge, number, name: a tab that sits on the edge
+    \node[chip] at (#1+0.40,#2) {\hspace{3.2mm}#4};
+    \node[evnum] at (#1+0.40,#2) {#3};}
+
+  % ---------------------------------------------------------------- the nest (left)
+  % layer 4, hardware outside the host (outermost)
+  \ifnum\stage<4 \draw[ghostring, rounded corners=8pt] (0.06,0.06) rectangle (4.86,6.78);\fi
+  \atstage{4}{\draw[wall, fill=black!4, rounded corners=8pt] (0.06,0.06) rectangle (4.86,6.78);}
+  % layer 3, the operating-system kernel
+  \ifnum\stage<3 \draw[ghostring, rounded corners=7pt] (0.40,0.75) rectangle (4.52,6.11);\fi
+  \atstage{3}{\draw[wall, fill=black!9, rounded corners=7pt] (0.40,0.75) rectangle (4.52,6.11);}
+  % layer 2, the harness; its outline is the boundary of the agent's process and is drawn from the first stage on
+  \ifnum\stage>1 \fill[ibmblue!10, rounded corners=6pt] (0.74,1.27) rectangle (4.18,5.45);\fi
+  \draw[deckNavy, dashed, line width=1.3pt, rounded corners=6pt] (0.74,1.27) rectangle (4.18,5.45);
+  % layer 1, the model
+  \draw[ibmfg!55, line width=0.8pt, fill=ibmblue!17, rounded corners=5pt] (1.08,1.69) rectangle (3.84,4.78);
+  % the agent and its rule
+  \node[draw=ibmfg!60, rounded corners=2pt, fill=white, font=\sffamily\small, inner sep=3pt, align=center,
+        minimum width=22mm, minimum height=16mm] at (2.46,3.14) {\textbf{agent}\\[2pt] {\footnotesize may not read}\\[-1pt] {\footnotesize\ttfamily\textasciitilde/.ssh}};
+  % the boundary label
+  \node[chip, anchor=center] at (2.46,1.27) {the agent's process};
+  % layer tabs: number and name on the top edge of each layer
+  \layerchip{1.08}{4.78}{1}{model}
+  \atstage{2}{\layerchip{0.74}{5.45}{2}{harness}}
+  \atstage{3}{\layerchip{0.40}{6.11}{3}{kernel}}
+  \atstage{4}{\layerchip{0.06}{6.78}{4}{outside the host}
+              \node[tagout, anchor=center] at (2.46,0.41) {never sees a local file read};}
+
+  % ---------------------------------------------------------------- the cards (right)
+  \node[font=\sffamily\small\bfseries, text=deckNavy, anchor=east, inner sep=0pt] at (16.27,6.78) {can the agent disable it?};
+  % card 1, in the model
+  \card{1}{6.50}{4.96}
+  \atstage{1}{
+    \cardtext{6.50}{1}{In the model}{the system prompt, or the model's own alignment}{persuading the model}{LLM Prompt Injection, LLM Jailbreak}
+    \node[tagin] at (14.97,6.50-0.41) {inside the agent's process};
+    \verdictyes{5.73}
+  }
+  % card 2, in the harness process
+  \card{2}{4.88}{3.34}
+  \atstage{2}{
+    \cardtext{4.88}{2}{In the harness process}{the dispatcher's check on every tool call}{editing, bypassing or disabling the check}{Modify AI Agent Configuration}
+    \node[tagin] at (14.97,4.88-0.41) {inside the agent's process};
+    \verdictyes{4.11}
+  }
+  % card 3, in the operating-system kernel
+  \card{3}{3.26}{1.72}
+  \atstage{3}{
+    \cardtext{3.26}{3}{In the operating-system kernel}{Landlock file rules, seccomp system-call filters, namespaces, or a microVM}{a kernel or hypervisor vulnerability}{Escape to Host}
+    \node[tagout] at (14.97,3.26-0.41) {outside the agent's process};
+    \verdictno{2.49}
+  }
+  % card 4, in hardware outside the host
+  \card{4}{1.64}{0.10}
+  \atstage{4}{
+    \cardtext{1.64}{4}{In hardware outside the host}{a processor in the network path, with its own trust domain}{compromising that processor}{no agent technique in release 2026.09}
+    \node[tagout] at (14.97,1.64-0.41) {outside the agent's process};
+    \verdictno{0.87}
+  }
+\end{tikzpicture}

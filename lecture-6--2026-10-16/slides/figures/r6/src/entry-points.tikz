@@ -1,0 +1,72 @@
+% entry-points: where each of the lecture's six techniques enters one tool call. Replaces the table "Attacks enter through
+% text or the process.". Canvas 16.5 x 5.8 cm.  Render: ./render.sh entry-points 6   (needs standalone-style.tex from the same folder)
+% The frame, at every stage: the end-to-end sequence as one row, model, host, server, tool, kernel (y 3.0), with a call lane
+% (flow, rightward, y 3.2) and a return lane (back, dashed, leftward, y 2.8) between neighbours; the hop between host and server is the MCP
+% hop and carries the message names, tools/list and tools/call above and result below. Model and host are mnode, server and
+% tool rnode (the style file's model side and tool side), the kernel a plain gnode.
+% Six badflow arrows, one per stage, each pointing at the place where its technique enters:
+% three from above, labelled in magenta, enter through text the model reads or writes;
+% three from below, labelled in navy, enter through a process (its code, its environment, its privileges).
+% Stage 1 definition poisoning: into the return lane from host to model, where tools/list's definitions reach the model.
+% Stage 2 response poisoning: into the return lane from the tool, where the tool's output starts back to the host.
+% Stage 3 exfiltration via arguments: into the call lane from host to server, the arguments of tools/call.
+% The two return-lane arrows cross the call lane above it and end on the dashed return line; the lanes are 0.4 cm apart so the
+% arrowhead sits between them.
+% Stage 4 implementation poisoning: into the server, the code that runs the call.
+% Stage 5 credentials from configuration: into the server from the left edge, the environment it starts with.
+% Stage 6 escape to host: into the kernel, from the process across the kernel boundary.
+% The newest arrow is drawn at 1.4 pt with a bold label; earlier ones settle to 0.9 pt and a regular label.
+% A key along the top says what the two label colours mean; its second entry arrives with the first process entry.
+% Geometry: the boxes sit at x = 1.0, 4.0, 8.6, 11.9, 15.0 rather than the evenly spread 1.5 ... 15.0, so the MCP hop is 3 cm
+% long and has room for its message names and, beside them, the exfiltration arrow.
+% Sources: the lecture's table and its notes (Rahul's save of 2026-10-15, slides 62 to 68), which place the techniques on the
+% steps of the sequence diagram; the closing box of slide 68 gives the split into text and process entries.
+% Technique names are the table's shortened ones, in lower case; no identifiers.
+\begin{tikzpicture}
+  \canvas{16.5}{5.8}
+  \tikzset{
+    box/.style={minimum width=16mm, minimum height=8mm, text height=1.6ex, text depth=0.3ex},  % one baseline for every name
+    msg/.style={font=\ttfamily\footnotesize, inner sep=1pt, align=center},
+    elab/.style={font=\sffamily\footnotesize, inner sep=1pt, align=center},
+    keyline/.style={font=\sffamily\footnotesize, inner sep=0pt, anchor=base east},
+  }
+  % \entry{k}{path}: badflow, 1.4 pt on its own stage, 0.9 pt afterwards
+  \newcommand{\entry}[2]{\atstage{#1}{\ifnum\stage=#1 \draw[badflow] #2;\else \draw[badflow, line width=0.9pt] #2;\fi}}
+  % \elabel{k}{colour}{anchor}{position}{text}: the technique's label, bold on its own stage
+  \newcommand{\elabel}[5]{\atstage{#1}{\ifnum\stage=#1 \node[elab, font=\sffamily\footnotesize\bfseries, text=#2, anchor=#3] at #4 {#5};%
+    \else \node[elab, text=#2, anchor=#3] at #4 {#5};\fi}}
+
+  % ---------------------------------------------------------------- the frame: the sequence, model to kernel
+  \node[mnode, box] (model)  at (1.0,3.0)  {model};
+  \node[mnode, box] (host)   at (4.0,3.0)  {host};
+  \node[rnode, box] (server) at (8.6,3.0)  {server};
+  \node[rnode, box] (tool)   at (11.9,3.0) {tool};
+  \node[gnode, box] (kernel) at (15.0,3.0) {kernel};
+  \foreach \a/\b in {model/host, host/server, server/tool, tool/kernel}{
+    \draw[flow] (\a.east |- 0,3.2) -- (\b.west |- 0,3.2);
+    \draw[back] (\b.west |- 0,2.8) -- (\a.east |- 0,2.8);
+  }
+  \node[msg, anchor=south] at (5.75,3.28) {tools/list,\\tools/call};
+  \node[msg, anchor=north] at (5.75,2.72) {result};
+
+  % ---------------------------------------------------------------- the key (along the top)
+  \atstage{1}{\node[keyline] at (10.4,5.5) {\textcolor{deckRose}{\bfseries text}\enspace\textcolor{deckGrey}{the model reads or writes}};}
+  \atstage{4}{\node[keyline] at (16.45,5.5) {\textcolor{deckNavy}{\bfseries process}\enspace\textcolor{deckGrey}{its code, environment or privileges}};}
+
+  % ---------------------------------------------------------------- text entries, from above
+  \entry{1}{(2.5,4.5) -- (2.5,2.84)}
+  \elabel{1}{deckRose}{south}{(2.5,4.55)}{definition\\poisoning}
+  \entry{2}{(10.25,4.5) -- (10.25,2.84)}
+  \elabel{2}{deckRose}{south}{(10.25,4.55)}{response\\poisoning}
+  \entry{3}{(7.25,4.5) -- (7.25,3.24)}
+  \elabel{3}{deckRose}{south}{(7.25,4.55)}{exfiltration via\\arguments}
+
+  % ---------------------------------------------------------------- process entries, from below
+  \entry{4}{(8.95,1.0) -- (8.95,2.6)}
+  \elabel{4}{deckNavy}{north}{(8.95,0.95)}{implementation\\poisoning}
+  \entry{5}{(0.05,1.2) -- (8.2,1.2) -- (8.2,2.6)}
+  \atstage{5}{\node[note, anchor=south west, inner sep=1pt] at (0.1,1.27) {environment};}
+  \elabel{5}{deckNavy}{north}{(4.0,0.95)}{credentials from configuration}
+  \entry{6}{(15.0,1.0) -- (15.0,2.6)}
+  \elabel{6}{deckNavy}{north}{(15.0,0.95)}{escape to host}
+\end{tikzpicture}

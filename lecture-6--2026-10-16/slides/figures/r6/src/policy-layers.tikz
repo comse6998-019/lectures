@@ -1,0 +1,50 @@
+% policy-layers: the four layers of an OpenShell sandbox policy as bands, the three fixed when the sandbox starts and the one
+% that changes while it runs. Replaces the table "OpenShell controls at creation and run time".
+% Canvas 16.5 x 5.4 cm.  Render: ./render.sh policy-layers 4   (needs standalone-style.tex from the same folder)
+% Four bands, top to bottom, each a rounded rectangle 15 cm wide and 1.1 cm tall (x 1.25 to 16.25), 0.2 cm apart. Left of each
+% band a navy badge: a closed padlock (the \lockshut macro of lecture 5's enforcement-places.tikz) on the three layers fixed
+% at startup, an arrow in a circle on the layer that changes while running. A grey note at the band's right edge says which.
+% Bands follow bypass-places' cards: a ghost slot until the band arrives, white with a navy 1.6 pt outline on its own stage,
+% grey afterwards.
+% Stage 1 filesystem policy: paths the workload may read or write; fixed at startup.
+% Stage 2 landlock: required enforcement of that policy; fixed at startup.
+% Stage 3 process: the user and group that run the workload; fixed at startup.
+% Stage 4 network policies and middlewares: binaries, destinations, requests; changes while running.
+% Sources: the lecture's table and its notes (Rahul's save of 2026-10-15, slides 80 to 84): the filesystem and process layers
+% are locked at creation, network policy changes at run time (openshell policy update adds a rule to a running sandbox).
+% Left out on purpose: the table's provider-credentials row and its enforcement column. No magenta: no adversary here.
+\begin{tikzpicture}
+  \usetikzlibrary{bending}% an arrowhead that follows the arc of the change badge; loaded here, inside the picture,
+  % because loaded before it the library's stray spaces widen the standalone page
+  \canvas{16.5}{5.4}
+  \tikzset{
+    ghostring/.style={draw=ibmfg!28, dashed, line width=0.7pt},
+    bandtext/.style={anchor=west, inner sep=0pt, font=\sffamily\small, text=ibmfg},
+    bandnote/.style={note, anchor=east, inner sep=0pt},
+  }
+  \newcommand{\lockshut}[2]{% closed padlock centred at (#1,#2), white (from enforcement-places.tikz)
+    \begin{scope}[shift={(#1,#2)}, line cap=round, line join=round]
+      \draw[white, line width=1.3pt] (-0.085,0.02) -- (-0.085,0.10) arc (180:0:0.085) -- (0.085,0.02);
+      \fill[white, rounded corners=0.8pt] (-0.15,-0.14) rectangle (0.15,0.04);
+    \end{scope}}
+  \newcommand{\lockbadge}[1]{% navy badge with a closed padlock, centred on (0.55, #1)
+    \fill[deckNavy, rounded corners=4pt] (0.17,#1-0.38) rectangle (0.93,#1+0.38);
+    \lockshut{0.55}{#1-0.02}}
+  \newcommand{\changebadge}[1]{% navy disc with a white arrow running round it, centred on (0.55, #1)
+    \fill[deckNavy] (0.55,#1) circle (0.38);
+    \draw[white, line width=1.4pt, line cap=round, -{Triangle[length=1.9mm, width=2.7mm, bend]}]
+      ($(0.55,#1)+(110:0.2)$) arc (110:360:0.2);}
+  \newcommand{\band}[6]{% k, centre y, name, what it governs, badge macro, note
+    \ifnum\stage<#1 \draw[ghostring, rounded corners=4pt] (1.25,#2-0.55) rectangle (16.25,#2+0.55);\fi
+    \ifnum\stage=#1 \draw[hl, rounded corners=4pt, fill=white] (1.25,#2-0.55) rectangle (16.25,#2+0.55);\fi
+    \ifnum\stage>#1 \draw[ibmfg!22, thin, fill=black!3, rounded corners=4pt] (1.25,#2-0.55) rectangle (16.25,#2+0.55);\fi
+    \atstage{#1}{
+      #5{#2}
+      \node[bandtext] at (1.55,#2) {\textbf{#3:} #4};
+      \node[bandnote] at (15.95,#2) {#6};
+    }}
+  \band{1}{4.65}{filesystem policy}{paths the workload may read or write}{\lockbadge}{fixed at startup}
+  \band{2}{3.35}{landlock}{required enforcement of that policy}{\lockbadge}{fixed at startup}
+  \band{3}{2.05}{process}{the user and group that run the workload}{\lockbadge}{fixed at startup}
+  \band{4}{0.75}{network policies and middlewares}{binaries, destinations, requests}{\changebadge}{changes while running}
+\end{tikzpicture}
