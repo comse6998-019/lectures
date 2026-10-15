@@ -50,7 +50,7 @@ def dataflow(path: str, line: int) -> list[Edge]:
     hit = AN.locate(checked(path), line)
     if not hit.callable:
         raise ToolError(f"refused: line {line} of {path} is in no callable")
-    page = AN.get_ddg(hit.callable.name, page_size=2000)
+    page = AN.get_ddg(hit.callable.signature, page_size=2000)  # full signature: a bare name like init matches 1,230 callables
     out = []
     for e in page.edges:
         try:
