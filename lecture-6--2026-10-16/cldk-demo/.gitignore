@@ -1,0 +1,4 @@
+owasp/
+.codeanalyzer/
+*.log
+*.pid
