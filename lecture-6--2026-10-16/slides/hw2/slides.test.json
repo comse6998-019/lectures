@@ -1,0 +1,4 @@
+{"segments": [{"segment": "1", "slides": [
+  {"id": "h.r", "kind": "route", "bullets": [], "refs": [], "title": "", "notes": "test"},
+  {"id": "h.1", "kind": "text", "title": "A smoke-test slide", "bullets": [[["b", "One bullet."], ["r", " With a sentence."]]], "refs": [], "notes": "", "closing": "A closing box."}
+]}]}
