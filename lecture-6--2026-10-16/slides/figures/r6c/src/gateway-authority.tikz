@@ -9,7 +9,7 @@
 %   3 Gate 3, "which": the workspace and the object.
 %   4 The store, "conditional update by resource version", with the write arrow to it, and the reconcile loop back to the gateway:
 %     desired against observed, leases, inventory sweep.
-%   5 In action: the request reads "sandbox create cyberbird"; gate 1 "Rahul's client key" with the captured status line; gate 2
+%   5 In action: the request reads "sandbox create cyberbird"; gate 1 "our client key" with the captured status line; gate 2
 %     "CreateSandbox declares user, scope sandbox:write, role workspace user"; gate 3 "workspace default, object cyberbird"; the store holds
 %     the record, resource version 14 at Ready; the loop compares the record with its container; a note on the supervisor's
 %     own credential.
@@ -89,7 +89,7 @@
   \node[font=\sffamily\small\bfseries, anchor=north] at (7.0,5.22) {Gateway};
 
   \gate{1}{4.1}{\textbf{who:} OIDC token, client key, or a supervisor's runtime credential}
-    {\textbf{who:} \inst{Rahul's client key}\\{\ttfamily\footnotesize\textcolor{deckGrey}{Authentication: Authenticated}}\\{\ttfamily\footnotesize\textcolor{deckGrey}{(mTLS transport)}}}
+    {\textbf{who:} \inst{our client key}\\{\ttfamily\footnotesize\textcolor{deckGrey}{Authentication: Authenticated}}\\{\ttfamily\footnotesize\textcolor{deckGrey}{(mTLS transport)}}}
   \gate{2}{2.8}{\textbf{what:} the method's declared permission (principal kind, scope, role)}
     {\textbf{what:} \inst{CreateSandbox declares}\\\inst{user, scope sandbox:write,}\\\inst{role workspace user}}
   \gate{3}{1.5}{\textbf{which:} the workspace and the object}

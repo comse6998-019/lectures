@@ -15,7 +15,7 @@
 %   5 Trusted supervisor highlighted, with "authenticated runtime channel" (from the runtime) and "supervisor-initiated control
 %     session" (up to the gateway).
 %   6 Approved external service highlighted, with "permitted traffic and responses".
-%   7 In action: no highlight; the heading becomes "in action: Cyberbird" and the instance lines turn navy: the client "Rahul's
+%   7 In action: no highlight; the heading becomes "in action: Cyberbird" and the instance lines turn navy: the client "our
 %     terminal", the agent and tools "cyberbird and bandit", the driver "Docker on Colima", the service "the model server", and
 %     a note under the supervisor, "admits only the model server".
 % Sources. Box texts, arrow labels and "Standard Linux path": architecture.tikz at commit be7af99 of the guide's figures, verbatim
@@ -73,7 +73,7 @@
   % service (13.45 to 16.45); rows: the control plane at y 4.575, the workload row at y 1.35
   % the upper row: the control plane
   \comp{client}{\sClient}{gnode}{toprow, minimum width=2.75cm, text width=2.47cm}{(1.575,4.575)}
-    {\textbf{Client}\\CLI / TUI / SDK}{\textbf{Client}\\\inst{Rahul's terminal}}
+    {\textbf{Client}\\CLI / TUI / SDK}{\textbf{Client}\\\inst{our terminal}}
   \comp{gateway}{\sGateway}{mnode}{toprow, minimum width=3.63cm, text width=3.35cm}{(10.065,4.575)}
     {\textbf{Gateway}\\Identity and records\\Configuration}{\textbf{Gateway}\\Identity and records\\Configuration}
   \comp{driver}{\sDriver}{gnode}{toprow, minimum width=3.0cm, text width=2.72cm}{(14.95,4.575)}

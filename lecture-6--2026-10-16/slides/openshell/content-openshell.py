@@ -201,7 +201,7 @@ SEG.append(item(
          "The trusted supervisor, outside: policy and credentials, the authenticated runtime channel from the runtime, "
          "and the control session it opens to the gateway.",
          "The approved external service: what remains reachable, through the supervisor.",
-         "In action: Rahul's terminal, Docker on Colima, cyberbird and bandit in the workload, and a supervisor that "
+         "In action: our terminal, Docker on Colima, cyberbird and bandit in the workload, and a supervisor that "
          "admits only the model server."])))
 
 # 3 -------------------------------------------------------------------------------------------------- lifecycle
@@ -250,7 +250,7 @@ SEG.append(item(
     bullets=[B("Who:", "a user's token or client key, or a supervisor's own credential."),
              B("What and which:", "the method's permission, then the workspace and object."),
              B("The store", "writes a record only if its version is still the one read."),
-             B("In Cyberbird's case,", "Rahul's client key created `cyberbird` in `default`.")],
+             B("In Cyberbird's case,", "our client key created `cyberbird` in `default`.")],
     closing="The gateway checks caller, method and object before a conditional write.",
     refs=[guide("chapter 5")],
     notes=figure_notes(
