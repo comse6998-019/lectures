@@ -15,11 +15,14 @@
 % 00011 sqli false. The edges are those the HW2 spec reports from CLDK 2.0.0rc8's data-dependence graph of each handler
 % (section 2.3, measured 2026-10-15): in 00099 the value at line 31 reaches the string at 46 through param, the config
 % object and bar, and the call at 49 through sql; in 00011 the value at 39 reaches the call at 50 through bar and never
-% the string at 47.
+% the string at 47. Re-run on 2026-10-15 with CLDK 2.0.0rc8 and 2.0.0 (codeanalyzer-python 1.5.3, a clean copy of f1291485),
+% with the same edges from both: each drawn arrow is a direct edge, 31 -> 41 param, 41 -> 42 conf52528, 42 -> 46 bar,
+% 46 -> 49 sql, 39 -> 43 param, 43 -> 50 bar; line 47 of 00011 has no incoming edge at all. check-dataflow.py asserts this.
 % Illustrative: the code is abbreviated (the config object is conf52528 in the file, arguments are elided with "..."),
 % which the note says.
 % Magenta: the request value is what the adversary controls, so its path is drawn in magenta, with the key from stage 2.
-% The verdict under 00011 is navy, not magenta, because it states where the value does not go (as in two-agents).
+% The verdict under 00011 is navy, not magenta, because it states where the value does not go: the split of lecture 5's
+% enforcement-places, confirmed by Rahul on 2026-10-15, as in two-agents.
 % Left out on purpose: the edge 47 -> 50 through sql, which carries no request value, the other lines of each handler, and
 % BenchmarkTest00012, which behaves like 00011.
 \begin{tikzpicture}

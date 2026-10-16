@@ -16,10 +16,14 @@
 % the path of the workspace copy, and the observation is what the script prints or raises"; "There is no dispatcher check to
 % pass, because the harness sees one script, not individual calls (slide 154)"; the MCP agent "sends every call through the
 % HW1 dispatcher and then the MCP client". tools/call and result are the MCP message names.
-% The model sits outside both zones: it runs at the provider, not in the harness's process, so "one process" encloses the
-% harness and the CLDK object only. Model, harness and host are mnode, server and CLDK object rnode, as in entry-points.
-% Colour: the left verdict is magenta, as the "inside the agent's process" tags of bypass-places are; the right verdict is
-% navy, as the "outside" tags there are. No adversary appears, so there is no key.
+% The model sits outside both zones: it runs at the provider, not in the harness's process (spec 3.2, the network rule: "the
+% agent's process may talk only to the model provider"), so "one process" encloses the harness and the CLDK object only.
+% The right zone holds the CLDK object with the server because the server builds it in its own process (cldk-demo/server.py:
+% AN = CLDK.python(...) at module level). Model, harness and host are mnode, server and CLDK object rnode, as in entry-points.
+% Colour: the left verdict is magenta and the right one navy, the split of lecture 5's enforcement-places (confirmed by Rahul
+% on 2026-10-15; bypass-places is its lecture 6 copy): what lies inside the agent's process, where nothing outside it checks
+% a call, is magenta, with no key; what holds is navy. Magenta on "every call checked" would be magenta on something the
+% adversary does not control, a defect under lectures/CLAUDE.md.
 % Left out on purpose: the MCP client between dispatcher and server (one box, "host and dispatcher"), the kernel and the
 % sandbox (three-doors draws them), and the model's return path on the right.
 \begin{tikzpicture}
