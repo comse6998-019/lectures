@@ -1,0 +1,66 @@
+% two-agents: HW2's two agents side by side, and where a call can be checked in each.
+% Canvas 16.5 x 5.8 cm.  Render: ./render.sh two-agents 3   (needs standalone-style.tex from the same folder)
+% Left half, the code-action agent: the model, the harness that runs the model's script with exec, and the CLDK object and
+% files the script works on. One flow arrow down, the script; one back arrow up, what it printed. A zone, "one process",
+% around the harness and the CLDK object.
+% Right half, the MCP agent: the model, the host and its dispatcher, the MCP server, and the CLDK object and files behind the
+% server. The model's tool call goes to the host, the host sends tools/call to the server, the result comes back. A zone,
+% "another process", around the server and its CLDK object.
+% In both halves an unlabelled flow arrow runs to the CLDK object (from the harness, from the server): the call into the
+% analysis. A bold heading names each half.
+% Stage 1 the code-action agent (left half only).
+% Stage 2 the MCP agent (the right half).
+% Stage 3 the verdict under each: left "no call to check", right "every call checked".
+% Sources: the HW2 spec, section 3.2 (docs/superpowers/specs/2026-10-15-week6-hw2-design.md): the harness runs the script
+% "the way lecture 4's kernel did (slide 137): exec in a namespace that holds the CLDK analysis object for the target and
+% the path of the workspace copy, and the observation is what the script prints or raises"; "There is no dispatcher check to
+% pass, because the harness sees one script, not individual calls (slide 154)"; the MCP agent "sends every call through the
+% HW1 dispatcher and then the MCP client". tools/call and result are the MCP message names.
+% The model sits outside both zones: it runs at the provider, not in the harness's process, so "one process" encloses the
+% harness and the CLDK object only. Model, harness and host are mnode, server and CLDK object rnode, as in entry-points.
+% Colour: the left verdict is magenta, as the "inside the agent's process" tags of bypass-places are; the right verdict is
+% navy, as the "outside" tags there are. No adversary appears, so there is no key.
+% Left out on purpose: the MCP client between dispatcher and server (one box, "host and dispatcher"), the kernel and the
+% sandbox (three-doors draws them), and the model's return path on the right.
+\begin{tikzpicture}
+  \frenchspacing  % one space after a colon
+  \canvas{16.5}{5.8}
+  \tikzset{
+    box/.style={minimum height=6.5mm, text height=1.6ex, text depth=0.3ex},  % one baseline for every name
+    msg/.style={font=\ttfamily\footnotesize, fill=white, inner sep=1pt},
+    head/.style={font=\sffamily\small\bfseries, text=ibmfg, anchor=base west, inner sep=0pt},
+    verdict/.style={font=\sffamily\small\bfseries, inner sep=0pt, anchor=base},
+  }
+
+  % ---------------------------------------------------------------- left: the code-action agent
+  \node[head] at (0.15,5.5) {the code-action agent};
+  \node[mnode, box, minimum width=22mm] (lmodel)   at (3.3,4.85) {model};
+  \node[mnode, box, minimum width=36mm] (harness)  at (3.3,3.2)  {harness: \texttt{exec(script)}};
+  \node[rnode, box, minimum width=36mm] (lcldk)    at (3.3,1.45) {CLDK object, files};
+  \draw[flow] ([xshift=-2mm]lmodel.south) -- ([xshift=-2mm]harness.north) node[lab, pos=0.3, left, xshift=-2pt] {a Python script};
+  \draw[back] ([xshift=2mm]harness.north) -- ([xshift=2mm]lmodel.south) node[lab, pos=0.7, right, xshift=2pt] {what it printed};
+  \draw[flow] (harness.south) -- (lcldk.north);
+  \node[zone, fit=(harness)(lcldk), inner xsep=24pt] (lzone) {};
+  \node[zonelab, anchor=east] at ([xshift=-6pt]lzone.north east) {one process};
+
+  % ---------------------------------------------------------------- right: the MCP agent
+  \atstage{2}{
+    \node[head] at (8.6,5.5) {the MCP agent};
+    \node[mnode, box, minimum width=22mm] (rmodel) at (10.6,4.85) {model};
+    \node[mnode, box, minimum width=34mm] (host)   at (10.6,3.2)  {host and dispatcher};
+    \node[rnode, box, minimum width=22mm] (server) at (10.6,1.45) {MCP server};
+    \node[rnode, box, minimum width=30mm] (rcldk)  at (14.3,1.45) {CLDK object, files};
+    \draw[flow] (rmodel.south) -- (host.north) node[lab, pos=0.3, right, xshift=2pt] {tool call};
+    \draw[flow] ([xshift=-2mm]host.south) -- ([xshift=-2mm]server.north) node[msg, pos=0.3, left, xshift=-2pt] {tools/call};
+    \draw[back] ([xshift=2mm]server.north) -- ([xshift=2mm]host.south) node[msg, pos=0.7, right, xshift=2pt] {result};
+    \draw[flow] (server.east) -- (rcldk.west);
+    \node[zone, fit=(server)(rcldk)] (rzone) {};
+    \node[zonelab, anchor=east] at ([xshift=-6pt]rzone.north east) {another process};
+  }
+
+  % ---------------------------------------------------------------- stage 3: the verdicts
+  \atstage{3}{
+    \node[verdict, text=deckRose] at (lzone.south |- 0,0.32) {no call to check};
+    \node[verdict, text=deckNavy] at (rzone.south |- 0,0.32) {every call checked};
+  }
+\end{tikzpicture}

@@ -1,0 +1,85 @@
+% three-doors: the path a request takes in the MCP agent, the three doors on it, and the three attempts the HW2 tests make,
+% each drawn to the door that stops it.
+% Canvas 16.5 x 5.8 cm.  Render: ./render.sh three-doors 4   (needs standalone-style.tex from the same folder)
+% The frame, at every stage: the request path as one row, model, dispatcher, server, kernel, file (y 2.9), joined by flow
+% arrows. Three vertical lines cross the row, each with its label along the top: a dashed line before the dispatcher, "door:
+% the prompt" (the prompt stops nothing reliably, so its line is dashed), and two thick navy lines before the server and
+% before the kernel, "door: the server" and "door: the kernel".
+% Each attempt is a magenta arrow that ends where it is stopped, with a cross on the door; it is 1.4 pt with a bold label on
+% its own stage and settles to 0.9 pt and a regular label afterwards, as in entry-points.
+% Stage 2 the planted text: an arrow into the model from above, "planted text", and the model's call from there, in a lane
+%         above the row, past the prompt's door and the dispatcher, to the server's door, where it stops.
+% Stage 3 a raw MCP call from the staff driver, from below, into the server's door, where it stops.
+% Stage 4 a process in the sandbox (the staff driver's exec), from below the server: one branch stops at the kernel's door,
+%         "the key, writes outside the workspace"; the other passes it and reaches the file, "the other case".
+% Sources: the HW2 spec, section 3.3 (docs/superpowers/specs/2026-10-15-week6-hw2-design.md): the figure "of the path a
+% request takes, model -> dispatcher -> server -> kernel -> file, with three attempts drawn as arrows and each stopped at a
+% door: the planted text, which the model may or may not obey, stopped at the server when it does; a raw MCP call, stopped at
+% the server; a process in the sandbox, stopped at the kernel for the key and for writes outside the workspace, and let
+% through for the other case". The staff driver sends raw tools/call requests and runs commands with openshell exec
+% (section 3.3, steps 2 and 3); "the other case" is reading another OWASP case, a per-alert rule the kernel cannot hold.
+% Geometry: the kernel's door is 0.85 cm left of the kernel box and 1.1 cm right of the server box, so the process's
+% short branch into it is long enough for its arrowhead.
+% Model and dispatcher are mnode, server and file rnode, the kernel a plain gnode, as in entry-points.
+% Magenta: the planted text and the forbidden calls stand for what an adversary controls, with the key from stage 2.
+% Left out on purpose: the MCP client between dispatcher and server, the return path, the code-action variant (the same
+% figure with the server's door removed) and the sentence under the figure, which the slide carries.
+\begin{tikzpicture}
+  \frenchspacing  % one space after a colon
+  \canvas{16.5}{5.8}
+  \tikzset{
+    box/.style={minimum height=7.5mm, text height=1.6ex, text depth=0.3ex},  % one baseline for every name
+    door/.style={draw=deckNavy, line width=2.2pt},
+    softdoor/.style={draw=deckNavy, line width=1pt, dash pattern=on 4pt off 3pt},
+    doorlab/.style={zonelab, anchor=base},
+    alab/.style={lab, text=deckRose},
+  }
+  % \try{k}{path}: an attempt, 1.4 pt on its own stage, 0.9 pt afterwards
+  \newcommand{\try}[2]{\atstage{#1}{\ifnum\stage=#1 \draw[badflow] #2;\else \draw[badflow, line width=0.9pt] #2;\fi}}
+  % \tlabel{k}{anchor}{point}{text}{colour}: the attempt's label, bold on its own stage
+  \newcommand{\tlabel}[5]{\atstage{#1}{\ifnum\stage=#1 \node[alab, text=#5, font=\sffamily\footnotesize\bfseries, anchor=#2] at #3 {#4};%
+    \else \node[alab, text=#5, anchor=#2] at #3 {#4};\fi}}
+  % \xcross{point}: the style's cross, drawn as two strokes so it has the weight of the arrows
+  \newcommand{\xcross}[1]{\draw[deckRose, line width=1.6pt, line cap=round] #1 +(-0.13,-0.13) -- +(0.13,0.13) #1 +(-0.13,0.13) -- +(0.13,-0.13);}
+
+  % ---------------------------------------------------------------- the frame: the request path and its doors
+  \node[mnode, box, minimum width=18mm] (model)  at (1.2,2.9)  {model};
+  \node[mnode, box, minimum width=22mm] (disp)   at (4.6,2.9)  {dispatcher};
+  \node[rnode, box, minimum width=18mm] (server) at (8.4,2.9)  {server};
+  \node[gnode, box, minimum width=18mm] (kernel) at (12.15,2.9) {kernel};
+  \node[rnode, box, minimum width=16mm] (file)   at (15.3,2.9) {file};
+  \foreach \a/\b in {model/disp, disp/server, server/kernel, kernel/file}{\draw[flow] (\a.east) -- (\b.west);}
+  \draw[softdoor] (2.75,1.15) -- (2.75,4.95);
+  \draw[door] (6.6,1.15) -- (6.6,4.95);
+  \draw[door] (10.45,1.15) -- (10.45,4.95);
+  \node[doorlab] at (2.75,5.3) {door: the prompt};
+  \node[doorlab] at (6.6,5.3) {door: the server};
+  \node[doorlab] at (10.45,5.3) {door: the kernel};
+
+  % ---------------------------------------------------------------- the key (top right), with the first magenta
+  \atstage{2}{
+    \draw[badflow, line width=1pt] (12.15,5.38) -- (12.65,5.38);
+    \node[note, anchor=base west, inner sep=0pt] at (12.78,5.3) {content the adversary controls};
+  }
+
+  % ---------------------------------------------------------------- stage 2: the planted text, stopped at the server
+  \try{2}{(0.8,4.55) -- (0.8,3.3)}
+  \tlabel{2}{south west}{(0.3,4.6)}{planted text}{deckRose}
+  \try{2}{(1.65,3.3) -- (1.65,3.95) -- (6.42,3.95)}
+  \atstage{2}{\xcross{(6.6,3.95)}}
+
+  % ---------------------------------------------------------------- stage 3: a raw MCP call, stopped at the server
+  \try{3}{(5.45,0.95) -- (5.45,2.0) -- (6.42,2.0)}
+  \tlabel{3}{north}{(5.45,0.9)}{raw MCP call\\(staff)}{deckRose}
+  \atstage{3}{\xcross{(6.6,2.0)}}
+
+  % ---------------------------------------------------------------- stage 4: a process in the sandbox
+  \try{4}{(9.75,0.95) -- (9.75,2.0) -- (10.27,2.0)}
+  \try{4}{(9.75,1.45) -- (15.3,1.45) -- (15.3,2.52)}
+  \tlabel{4}{north}{(9.75,0.9)}{a process in the sandbox\\(staff exec)}{deckRose}
+  \atstage{4}{
+    \xcross{(10.45,2.0)}
+    \node[alab, font=\sffamily\footnotesize\bfseries, anchor=west, align=left] at (10.7,2.03) {the key, writes\\outside the workspace};
+    \node[lab, anchor=north] at (13.6,1.38) {the other case};
+  }
+\end{tikzpicture}

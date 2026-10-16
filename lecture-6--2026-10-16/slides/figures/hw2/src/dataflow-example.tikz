@@ -1,0 +1,85 @@
+% dataflow-example: two B608 alerts from HW1's scan scope, told apart by where the request value flows inside the handler.
+% Canvas 16.5 x 5.8 cm.  Render: ./render.sh dataflow-example 4   (needs standalone-style.tex from the same folder)
+% Two columns of line boxes, one per case, each line with its line number in grey. Left, BenchmarkTest00099 (the key says
+% true): 31, 41, 42, 46, 49. Right, BenchmarkTest00011 (the key says false): 39, 43, 47, 50. The rows line up by role, so
+% the request value (31, 39), the value of bar (42, 43), the SQL string (46, 47) and the execute call (49, 50) sit side by
+% side; the right column has no line in the conf.set row. Data-dependence edges are arcs on the left of each column, from
+% box edge to box edge.
+% Stage 1 the boxes and the column titles.
+% Stage 2 the request value's path in 00099: 31 -> 41 -> 42 -> 46 -> 49 (param, the config object, bar, sql).
+% Stage 3 its path in 00011: 39 -> 43 -> 50 (param, bar), and a cross on the edge into 47 that is not there.
+% Stage 4 under each column: "the request value reaches the query string", "it reaches only the parameter tuple".
+% The newest arrows are drawn at 1.4 pt; earlier ones settle to 0.9 pt, as in entry-points.
+% Sources: testcode/BenchmarkTest00099.py and BenchmarkTest00011.py of OWASP BenchmarkPython at commit f129148
+% (HW1-sol/targets/owasp-benchmark-python), lines as numbered there; the key, expectedresults-0.1.csv: 00099 sqli true,
+% 00011 sqli false. The edges are those the HW2 spec reports from CLDK 2.0.0rc8's data-dependence graph of each handler
+% (section 2.3, measured 2026-10-15): in 00099 the value at line 31 reaches the string at 46 through param, the config
+% object and bar, and the call at 49 through sql; in 00011 the value at 39 reaches the call at 50 through bar and never
+% the string at 47.
+% Illustrative: the code is abbreviated (the config object is conf52528 in the file, arguments are elided with "..."),
+% which the note says.
+% Magenta: the request value is what the adversary controls, so its path is drawn in magenta, with the key from stage 2.
+% The verdict under 00011 is navy, not magenta, because it states where the value does not go (as in two-agents).
+% Left out on purpose: the edge 47 -> 50 through sql, which carries no request value, the other lines of each handler, and
+% BenchmarkTest00012, which behaves like 00011.
+\begin{tikzpicture}
+  \frenchspacing  % one space after a colon
+  \canvas{16.5}{5.8}
+  \tikzset{
+    codeline/.style={rnode, anchor=west, minimum height=5.6mm, text width=5.9cm, align=left, font=\ttfamily\small,
+                 text height=1.6ex, text depth=0.4ex},
+    coltitle/.style={font=\sffamily\small\bfseries, anchor=base, inner sep=0pt},
+    verdict/.style={font=\sffamily\small\bfseries, anchor=base, inner sep=0pt},
+    nomatter/.style={draw=ibmfg!35, dashed, thick},
+  }
+  \newcommand{\lno}[1]{\textcolor{deckGrey}{#1}\enspace}
+  \newcommand{\q}{\textquotesingle}
+  % \xcross{point}: the style's cross, drawn as two strokes so it has the weight of the arrows (a 14 pt times sign is hairline)
+  \newcommand{\xcross}[1]{\draw[deckRose, line width=1.6pt, line cap=round] #1 +(-0.13,-0.13) -- +(0.13,0.13) #1 +(-0.13,0.13) -- +(0.13,-0.13);}
+  % \ddedge{k}{from}{to}{looseness}: a data-dependence arc on the left, 1.4 pt on its own stage, 0.9 pt afterwards
+  \newcommand{\ddedge}[4]{\atstage{#1}{%
+    \ifnum\stage=#1 \tikzset{w/.style={line width=1.4pt}}\else \tikzset{w/.style={line width=0.9pt}}\fi
+    \draw[badflow, w] ([yshift=-0.8mm]#2.west) to[out=180, in=180, looseness=#4] ([yshift=0.8mm]#3.west);}}
+  % row centres, top to bottom
+  \def\ya{4.75}\def\yb{3.95}\def\yc{3.15}\def\yd{2.35}\def\ye{1.55}
+
+  % ---------------------------------------------------------------- stage 1: the two columns
+  \node[coltitle] at (4.1,5.35) {00099, key: true};
+  \node[codeline] (l31) at (1.0,\ya) {\lno{31}param = request.form.get(...)};
+  \node[codeline] (l41) at (1.0,\yb) {\lno{41}conf.set(..., param)};
+  \node[codeline] (l42) at (1.0,\yc) {\lno{42}bar = conf.get(...)};
+  \node[codeline] (l46) at (1.0,\yd) {\lno{46}sql = f\q... \{bar\}\q};
+  \node[codeline] (l49) at (1.0,\ye) {\lno{49}cur.execute(sql)};
+
+  \node[coltitle] at (12.7,5.35) {00011, key: false};
+  \node[codeline] (r39) at (9.6,\ya) {\lno{39}param = ...cookies.get(...)};
+  \node[codeline] (r43) at (9.6,\yc) {\lno{43}bar = param};
+  \node[codeline] (r47) at (9.6,\yd) {\lno{47}sql = f\q... = ?\q};
+  \node[codeline] (r50) at (9.6,\ye) {\lno{50}cur.execute(sql, (bar,))};
+
+  \node[note, anchor=base east, inner sep=0pt] at (16.45,0.12) {Code abbreviated; line numbers are the files'.};
+
+  % ---------------------------------------------------------------- stage 2: 00099, the value reaches the string
+  \ddedge{2}{l31}{l41}{1.6}
+  \ddedge{2}{l41}{l42}{1.6}
+  \ddedge{2}{l42}{l46}{1.6}
+  \ddedge{2}{l46}{l49}{1.6}
+  \atstage{2}{
+    \draw[badflow, line width=1pt] (0.12,0.2) -- (0.62,0.2);
+    \node[note, anchor=base west, inner sep=0pt] at (0.75,0.12) {content the adversary controls};
+  }
+
+  % ---------------------------------------------------------------- stage 3: 00011, the value reaches only the call
+  \ddedge{3}{r39}{r43}{1.0}
+  \ddedge{3}{r43}{r50}{1.0}
+  \atstage{3}{
+    \draw[nomatter] (r43.east) to[out=0, in=0, looseness=1.6] (r47.east);
+    \xcross{($(r43.east)!0.5!(r47.east)+(0.36,0)$)}
+  }
+
+  % ---------------------------------------------------------------- stage 4: the verdicts
+  \atstage{4}{
+    \node[verdict, text=deckRose] at (4.1,0.72) {the request value reaches the query string};
+    \node[verdict, text=deckNavy] at (12.7,0.72) {it reaches only the parameter tuple};
+  }
+\end{tikzpicture}

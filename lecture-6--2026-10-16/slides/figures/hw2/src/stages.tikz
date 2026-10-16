@@ -1,0 +1,53 @@
+% stages: the three stages both HW2 agents run, and the runtime's routing of an alert by its label.
+% Canvas 16.5 x 5.8 cm.  Render: ./render.sh stages 3   (needs standalone-style.tex from the same folder)
+% Three rnode boxes in a row, discovery, classification and remediation, joined by flow arrows. Under the row, from stage 3,
+% a ghost box "skipped" under remediation, reached from classification by a dashed back arrow.
+% Stage 1 the three stages: discovery (Bandit), classification (label 1 or 0, with evidence), remediation (edit, rescan,
+%         three checks). The line under classification is added from the spec so that every box has a second line and
+%         the three names share one baseline; it also says what the labels on the branches are.
+% Stage 2 a navy tag "runtime" on the arrow into remediation, with "label = 1 only" over it: the runtime, not the model,
+%         sends only alerts labelled 1 on to remediation.
+% Stage 3 the other branch: a back arrow from classification to the ghost box "skipped", labelled "label = 0".
+%         The runtime tag settles to a navy outline.
+% Sources: the HW2 spec, section 3.2, Part 3 (docs/superpowers/specs/2026-10-15-week6-hw2-design.md): "Discovery: Bandit
+% over the scan block, as in HW1"; "Classification: label each alert 1 or 0 with evidence"; "Remediation: propose and apply
+% a patch and run the three checks. Only alerts labelled 1 are patched. The runtime makes that decision from the label, not
+% the model, and the trace shows it as a routing event with by: runtime." edit and rescan are the write tools of Part 2.
+% The tag is a rounded rectangle in the evnum colours rather than an evnum circle, because the word does not fit a 4.6 mm
+% circle. No adversary appears, so there is no magenta and no key.
+% Left out on purpose: the trace event itself (the slide's bullets name it) and the HW1 stages' details.
+\begin{tikzpicture}
+  \frenchspacing  % one space after a colon
+  \canvas{16.5}{5.8}
+  \tikzset{
+    stage/.style={rnode, minimum height=12mm},
+    sname/.style={font=\sffamily\small, anchor=base, inner sep=0pt},
+    sub/.style={font=\sffamily\footnotesize, anchor=base, inner sep=0pt},
+    tag/.style={rounded corners=2pt, inner xsep=4pt, inner ysep=2.5pt, font=\sffamily\footnotesize\bfseries},
+  }
+  \def\yrow{3.9}
+
+  % ---------------------------------------------------------------- stage 1: the three stages
+  % \stagebox{name}{x}{width}{stage}{what it does}: the name and the line under it on shared baselines
+  \newcommand{\stagebox}[5]{%
+    \node[stage, minimum width=#3] (#1) at (#2,\yrow) {};
+    \node[sname] at (#2,\yrow+0.08) {#4};
+    \node[sub] at (#2,\yrow-0.34) {#5};}
+  \stagebox{disc}{1.85}{30mm}{discovery}{(Bandit)}
+  \stagebox{class}{6.75}{41mm}{classification}{(label 1 or 0, with evidence)}
+  \stagebox{rem}{13.7}{46mm}{remediation}{(\texttt{edit}, \texttt{rescan}, three checks)}
+  \draw[flow] (disc.east) -- (class.west);
+  \draw[flow] (class.east) -- (rem.west);
+
+  % ---------------------------------------------------------------- stage 2: the runtime routes on the label
+  \coordinate (gate) at ($(class.east)!0.5!(rem.west)$);
+  \onlystage{2}{\node[tag, fill=deckNavy, text=white] at (gate) {runtime};}
+  \atstage{3}{\node[tag, fill=white, draw=deckNavy, line width=1pt, text=deckNavy] at (gate) {runtime};}
+  \atstage{2}{\node[lab, anchor=south] at ($(gate)+(0,0.3)$) {label = 1 only};}
+
+  % ---------------------------------------------------------------- stage 3: label 0 is skipped
+  \atstage{3}{
+    \node[ghost, minimum width=30mm, minimum height=8mm, draw=ibmfg!50, line width=0.6pt, text=deckGrey] (skip) at (13.7,1.5) {skipped};
+    \draw[back] (class.south) |- (skip.west) node[lab, pos=0.75, above] {label = 0};
+  }
+\end{tikzpicture}

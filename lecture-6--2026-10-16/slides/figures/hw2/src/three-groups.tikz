@@ -1,0 +1,54 @@
+% three-groups: the team's MCP server and its three tool groups, one group per stage.
+% Canvas 16.5 x 5.8 cm.  Render: ./render.sh three-groups 3   (needs standalone-style.tex from the same folder)
+% The server is a wide rnode along the top. Under it, a row of four boxes joined to it by thin lines: the three tool groups
+% (gnode, each with its tools in typewriter and a grey note under it saying where the group comes from) and, at the right,
+% a small ghost box for the host-only tool set_alert, which the model never sees.
+% The newest group is outlined in navy at 1.6 pt on its own stage and settles to the plain outline on the next.
+% Geometry: the server spans x 0.15 to 16.35 (y 4.2 to 5.1); the boxes hang from y 3.0, 1.6 cm tall (the ghost 1.2 cm), with
+% widths 5.8, 3.3, 3.3 and 2.4 cm and equal gaps between them. Each group's name sits on one baseline 0.5 cm under the top
+% and its tools start under it, so the names line up whatever the number of tool lines; the notes share one baseline too.
+% The ghost's text is deckGrey rather than the style's 35 percent grey so it stays legible, as in openshell-assets.
+% Stage 1 the server, the analysis group (locate, source, callers, callees, dataflow, entry_points; "CLDK 2.0"), and the
+%         ghost set_alert box, drawn from stage 1 as part of the server's frame.
+% Stage 2 the text group (read_file, search; "HW1's tools").
+% Stage 3 the write group (edit, rescan; "the three checks").
+% Sources: the HW2 spec, section 3.2, Part 2 (docs/superpowers/specs/2026-10-15-week6-hw2-design.md): the six analysis tools
+% over CLDK 2.0, the text tools read_file and search from HW1, the write tools edit(path, old, new) and rescan(path), a patch
+% accepted by three mechanical checks, and the host-only tool set_alert(alert_id) "that the model never sees".
+% Left out on purpose: arguments, result schemas and refusal cases (the slide's closing box says every tool has them), and
+% any tool a team adds. No adversary appears, so there is no magenta and no key.
+\begin{tikzpicture}
+  \frenchspacing  % one space after a colon
+  \canvas{16.5}{5.8}
+  \tikzset{
+    frame/.style={gnode, anchor=north west, minimum width=#1, minimum height=16mm},
+    link/.style={draw=ibmfg!60, thick},
+    gname/.style={font=\sffamily\small\bfseries, anchor=base, inner sep=0pt},
+    gtools/.style={font=\ttfamily\small, anchor=north, align=center, inner sep=0pt},
+    gnote/.style={note, anchor=base, inner sep=0pt},
+  }
+  \def\gtop{3.0}
+  % \group{k}{name}{left x}{width}{group name}{tools}{note}: a group under the server, outlined in navy on its own stage
+  \newcommand{\group}[7]{%
+    \atstage{#1}{
+      \ifnum\stage=#1 \node[frame=#4cm, draw=deckNavy, line width=1.6pt] (#2) at (#3,\gtop) {};%
+      \else \node[frame=#4cm] (#2) at (#3,\gtop) {};\fi
+      \draw[link] (#3+#4/2,4.2) -- (#3+#4/2,\gtop);
+      \node[gname] at (#3+#4/2,\gtop-0.5) {#5};
+      \node[gtools] at (#3+#4/2,\gtop-0.68) {#6};
+      \node[gnote] at (#3+#4/2,\gtop-2.0) {#7};
+    }}
+
+  % ---------------------------------------------------------------- the server and its host-only tool
+  \draw[draw=ibmfg!60, fill=black!6, rounded corners=2pt] (0.15,4.2) rectangle (16.35,5.1);
+  \node[font=\sffamily\small\bfseries, inner sep=0pt] at (8.25,4.65) {MCP server};
+  \node[ghost, anchor=north west, minimum width=2.4cm, minimum height=12mm, draw=ibmfg!50, line width=0.6pt] at (13.95,\gtop) {};
+  \draw[link, draw=ibmfg!50, thin, dashed] (15.15,4.2) -- (15.15,\gtop);
+  \node[gtools, font=\ttfamily\footnotesize, text=deckGrey] at (15.15,\gtop-0.3) {set\_alert};
+  \node[gnote, text=deckGrey] at (15.15,\gtop-0.85) {host-only};
+
+  % ---------------------------------------------------------------- the three groups
+  \group{1}{analysis}{0.15}{5.8}{analysis}{locate, source, callers,\\ callees, dataflow, entry\_points}{CLDK 2.0}
+  \group{2}{text}{6.417}{3.3}{text}{read\_file, search}{HW1's tools}
+  \group{3}{write}{10.183}{3.3}{write}{edit, rescan}{the three checks}
+\end{tikzpicture}
