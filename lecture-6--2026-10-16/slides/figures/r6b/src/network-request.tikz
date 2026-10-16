@@ -1,0 +1,107 @@
+% network-request: one allowed request from a workload tool to an upstream service, and the place outside the host
+% where Sentry watches it. Placed on the build "Sentry watches from outside the host." (lecture 6).
+% Source: the guide's figure openshell/openshell-figures/network-request.tikz (OpenShell: Architecture, Enforcement, and
+% Policy, commit be7af99, Figure 5) with the walkthrough of chapter 2.2 and the text of chapter 8. The guide draws a
+% sequence diagram 17 cm tall; the slide has room for a canvas 16.5 x 5.45 cm, so the same four participants and the
+% guide's own labels are laid out left to right, in the order the request meets them.
+% Canvas 16.5 x 5.45 cm.  Render: ./render.sh network-request 4   (needs standalone-style.tex from the same folder)
+%
+% Frame (every stage): the host boundary (dashed navy) around the sandbox boundary (dashed navy, heavier) and the
+%   supervisor; Upstream and Sentry outside the host. The sandbox holds the workload and the guide's lane "Kernel +
+%   sandbox broker" (chapter 2: the sandbox runtime shares the workload side of the boundary; the supervisor is outside
+%   it). Participants not yet reached are ghosts (dashed grey, grey text); every box keeps its place and size on every
+%   stage. The newest element of each stage has a navy 1.2 pt outline and settles to the guide's grey outline after.
+% Stage 1  the program's connect call is paused by the kernel and handed to the broker: "Workload tool", the arrow
+%          "connect()", "Kernel + sandbox broker" and the guide's "Pause connect()" (the guide's ellipse is drawn as a
+%          pill so it fits the sandbox's width).
+% Stage 2  the supervisor, outside the sandbox, checks the process's identity and the policy: the arrow carrying the
+%          guide's "Destination; observed socket and executable evidence" into the guide's box "TCP admission: host +
+%          port; binary; policy generation".
+% Stage 3  the credential is substituted and the upstream connection made: the guide's box "If credentials apply:
+%          substitute or sign" and the arrow out of the host to "Upstream".
+% Stage 4  Sentry, to the right of Upstream and outside the host's boundary: "Sentry, a BlueField-4 processor on the
+%          network path", a dotted tap from the request's path where it leaves the host, and the note "watches the
+%          traffic, can quarantine the agent; it never sees a local file read". The slide's claim is about this place.
+% Strings: the participant names, "Pause connect()", the evidence label and both supervisor boxes are the guide's
+%   Figure 5 verbatim. Sentry's wording is the slide's (Open Agent Safety Platform announcement, September 28, 2026).
+% Illustrative: the host box follows the Docker and VM placements of chapter 6.3 (supervisor on the host's network, or a
+%   native host supervisor); on Kubernetes the supervisor is a separate Pod. The tap marks where Sentry observes; the
+%   announcement gives no wiring.
+% Left out on purpose: the guide's return arrows ("Allow: relay may proceed", "connect() completes"), "Open approved
+%   upstream TCP connection", the L7 box ("When inspected: terminate client TLS; L7 + middleware checks; credential
+%   binding"), the response arrows, DNS and the TLS handshakes. The grey note at the top right says so.
+% Checked at 240 dpi: 1613 x 569 px on every stage. On the slide's column (6016752 EMU) the patch shrinks it to about
+%   96 percent, so the 8.5 pt labels print at about 8 pt.
+\definecolor{deckNavy}{HTML}{28285E}%
+\definecolor{deckGrey}{HTML}{5B6673}%
+\begin{tikzpicture}[
+  f85/.style={font=\sffamily\fontsize{8.5}{10}\selectfont},
+  head/.style={f85, minimum height=7mm, inner sep=4pt, align=center},
+  ghost/.style={gnode, f85, draw=ibmfg!25, text=ibmfg!35, fill=white, dashed},
+  newest/.style={draw=deckNavy, line width=1.2pt},
+  dimbefore/.code={\ifnum\stage<#1 \pgfkeysalso{text=ibmfg!35}\fi},
+  newat/.code={\ifnum\stage=#1 \pgfkeysalso{newest}\fi},
+  act/.style={gnode, f85, fill=white, inner xsep=3pt, inner ysep=3pt, minimum width=29mm},
+  elab/.style={lab, f85, align=center, inner sep=2pt},
+  zone/.style={draw=deckNavy, dashed, rounded corners=4pt},
+  zonelab/.style={font=\sffamily\fontsize{8.5}{10}\selectfont\bfseries, text=deckNavy, fill=white, inner sep=2pt},
+  tap/.style={densely dotted, draw=deckNavy, line width=1.1pt, -{Stealth[length=2mm]}},
+  note/.style={f85, text=deckGrey, align=center, inner sep=0pt},
+]
+  \useasboundingbox (0,0) rectangle (16.5,5.45);
+
+  % ---------------------------------------------------------------- frame: the two boundaries
+  \draw[zone, draw=deckNavy!55, line width=0.8pt] (0.06,0.1) rectangle (10.4,5.2);
+  \node[zonelab, anchor=east] at (10.15,5.2) {host};
+  \draw[zone, line width=1.3pt] (0.25,0.3) rectangle (3.75,4.85);
+  \node[zonelab, anchor=east] at (3.5,4.85) {sandbox};
+
+  % ---------------------------------------------------------------- stage 1: connect() paused and handed to the broker
+  \node[rnode, head, minimum width=26mm] (tool) at (2.0,4.1) {Workload tool};
+  \node[rnode, head, minimum width=26mm, newat=1] (broker) at (2.0,2.55) {Kernel +\\sandbox broker};
+  \draw[flow] (tool.south) -- node[elab, right, xshift=1pt] {\texttt{connect()}} (broker.north);
+  % the guide's event marker "Pause connect()", drawn as a pill so it fits the sandbox's width
+  \node[draw=ibmfg!60, f85, rounded corners=3mm, minimum height=6mm, inner xsep=5pt, inner ysep=2pt, newat=1]
+    (pause) at (2.0,1.1) {Pause \texttt{connect()}};
+
+  % ---------------------------------------------------------------- the supervisor, outside the sandbox
+  \ifnum\stage<2
+    \node[ghost, minimum width=31mm, minimum height=39.5mm, anchor=north] (sup) at (8.65,4.4) {};
+  \else
+    \node[mnode, f85, minimum width=31mm, minimum height=39.5mm, anchor=north] (sup) at (8.65,4.4) {};
+  \fi
+  \node[f85, inner sep=0pt, dimbefore=2] at (8.65,4.05) {Supervisor};
+
+  % ---------------------------------------------------------------- stage 2: identity evidence, TCP admission
+  \atstage{2}{
+    \node[act, newat=2] (admit) at (8.65,2.55) {TCP admission:\\host + port; binary;\\policy generation};
+    \draw[flow] (broker.east) -- (admit.west);
+    \node[elab, anchor=south, inner sep=1pt] at (5.425,2.62) {Destination; observed\\socket and executable\\evidence};
+  }
+
+  % ---------------------------------------------------------------- stage 3: credential, then the upstream connection
+  \ifnum\stage<3
+    \node[ghost, head, minimum width=16mm] (up) at (12.15,1.05) {Upstream};
+  \else
+    \node[gnode, head, minimum width=16mm] (up) at (12.15,1.05) {Upstream};
+  \fi
+  \atstage{3}{
+    \node[act, newat=3] (cred) at (8.65,1.05) {If credentials apply:\\substitute or sign};
+    \draw[flow] (cred.east) -- (up.west);
+  }
+
+  % ---------------------------------------------------------------- stage 4: Sentry, outside the host
+  \ifnum\stage<4
+    \node[ghost, head, minimum width=32mm] (sentry) at (14.8,1.05) {Sentry, a BlueField-4\\processor on the\\network path};
+  \else
+    \node[gnode, head, minimum width=32mm, newest] (sentry) at (14.8,1.05) {\textbf{Sentry}, a BlueField-4\\processor on the\\network path};
+    \fill[deckNavy] (10.85,1.05) circle (0.065);
+    \draw[tap] (10.85,1.05) -- (10.85,2.2) -| (sentry.north);
+    \node[f85, align=right, anchor=south east, inner sep=0pt] at (16.4,2.45)
+      {watches the traffic,\\can quarantine the agent;\\it never sees a local file read};
+  \fi
+
+  % ---------------------------------------------------------------- what is left out (every stage)
+  \node[note, align=right, anchor=north east] at (16.4,5.15)
+    {Allowed path only.\\DNS, the TLS handshakes and\\the response are omitted.};
+\end{tikzpicture}%

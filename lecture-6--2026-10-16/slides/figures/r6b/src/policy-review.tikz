@@ -1,0 +1,75 @@
+% policy-review: from a denied request to an applied policy revision, as four cards left to right, one card per click.
+% Used on the build "A denied request is recorded for approval." (the guide's Figure 8, chapter 12.1, drawn in the guide as a
+% vertical chain of seven boxes; here the seven steps and the prover's report are grouped into four stages of two boxes).
+% Canvas 16.5 x 5.0 cm, fixed by \useasboundingbox, so all four stages have one pixel size.  Render: ./render.sh policy-review 4
+% Stage 1 denial: the denied request, then the draft proposed rule (the supervisor's mapper drafts it from the denial, or the
+%         agent proposes it through the advisor).
+% Stage 2 validation: the gateway validates the candidate effective policy; the prover reports new findings; a review token
+%         binds that evaluation to the policy and provider state it was made against.
+% Stage 3 review: pending review (the default) or automatic approval, which needs no new findings and no
+%         destination flag; the approved revision is saved.
+% Stage 4 activation: the supervisor loads the revision and the workload retries the request; approval and storage alone do
+%         not show that the revision is loaded (the guide's caption to Figure 8).
+% Sources: the course's OpenShell guide (openshell/openshell-guide.html, commit be7af99), chapter 12: 12.1 for the two sources
+% of a proposal (mapper, advisor, "defaults off"), the candidate evaluation and the review token, and the caption of Figure 8;
+% 12.2 for "Manual review is the default" and the two conditions of automatic approval; 12.3 for the prover's before-and-after
+% model and "reports newly introduced findings". The box wording follows Figure 8's "Text of the sequence" (the guide's
+% openshell-figures/policy-review.tikz); "prover reports new findings" is the one box added, from 12.2 and 12.3, and
+% "configured" is dropped from "configured automatic approval" to keep the box at two lines (the note says "automatic mode",
+% 12.2's own phrase).
+% Nothing is illustrative. Left out on purpose: the finding names (12.3), the private-network rule (12.1), standalone
+% containment (12.4), none of which the slide uses.
+% Newest card: navy 1.6 pt outline and a navy tag; settled cards: thin grey outline and a lilac tag; cards not yet reached:
+% dashed ghosts with their words, so the canvas never changes.  No magenta: no adversary here.
+\begin{tikzpicture}[every node/.append style={text=ibmfg}]
+  \useasboundingbox (0,0) rectangle (16.5,5.0);
+  \hyphenpenalty=10000 \exhyphenpenalty=10000 % no hyphenated words in the labels
+  \definecolor{deckNavy}{HTML}{28285E}%
+  \definecolor{deckLilac}{HTML}{CACAE5}%
+  \definecolor{deckGrey}{HTML}{5B6673}%
+  \tikzset{
+    ghostnode/.style={gnode, draw=ibmfg!25, text=ibmfg!35, dashed, fill=white},
+    ghostflow/.style={-{Stealth[length=2mm]}, thick, draw=ibmfg!25, dashed},
+    cardnote/.style={font=\sffamily\fontsize{8.5}{10.2}\selectfont, align=left, inner sep=0pt,
+                     anchor=north west, text width=3.4cm},
+    cardhead/.style={font=\sffamily\fontsize{8.5}{10.2}\selectfont\bfseries, anchor=west, inner sep=0pt},
+    cardtag/.style={circle, inner sep=0pt, minimum size=5mm, font=\sffamily\fontsize{8.5}{10.2}\selectfont\bfseries},
+    cardbox/.style={text width=3.0cm, minimum height=1.0cm, font=\sffamily\fontsize{8.5}{10.2}\selectfont},
+  }
+  % \card{k}{centre x}{heading}{style of box a}{box a}{style of box b}{box b}{note}
+  \newcommand{\card}[8]{%
+    \begin{scope}
+      \ifnum\stage<#1
+        \tikzset{cs/.style={draw=ibmfg!25, dashed, rounded corners=4pt},
+                 na/.style={ghostnode}, nb/.style={ghostnode}, hs/.style={text=ibmfg!35},
+                 ts/.style={draw=ibmfg!25, dashed, text=ibmfg!35}, as/.style={ghostflow}, nts/.style={text=ibmfg!35}}\fi
+      \ifnum\stage=#1
+        \tikzset{cs/.style={draw=deckNavy, line width=1.6pt, fill=white, rounded corners=4pt},
+                 na/.style={#4}, nb/.style={#6}, hs/.style={text=deckNavy},
+                 ts/.style={fill=deckNavy, draw=deckNavy, text=white}, as/.style={flow}, nts/.style={text=deckGrey}}\fi
+      \ifnum\stage>#1
+        \tikzset{cs/.style={draw=ibmfg!22, thin, fill=white, rounded corners=4pt},
+                 na/.style={#4}, nb/.style={#6}, hs/.style={text=deckNavy},
+                 ts/.style={fill=deckLilac, draw=deckLilac, text=deckNavy}, as/.style={flow}, nts/.style={text=deckGrey}}\fi
+      \draw[cs] ({#2-1.875},0) rectangle ({#2+1.875},5.0);
+      \node[cardtag, ts] at ({#2-1.875+0.42},4.62) {#1};
+      \node[cardhead, hs] at ({#2-1.875+0.78},4.62) {#3};
+      \node[na, cardbox, anchor=south] (c#1a) at (#2,2.79) {#5};
+      \node[nb, cardbox, anchor=north] (c#1b) at (#2,2.47) {#7};
+      \draw[as] (c#1a.south) -- (c#1b.north);
+      \node[cardnote, nts] at ({#2-1.7},1.18) {#8};
+    \end{scope}}
+  \card{1}{1.875}{denial}{rnode}{denied request}{rnode}{draft proposed rule}
+       {from the supervisor's mapper, or proposed through the advisor}
+  \card{2}{6.125}{validation}{mnode}{gateway validates\\candidate effective\\policy}{rnode}{prover reports new findings}
+       {a review token binds this evaluation to the policy and provider state}
+  \card{3}{10.375}{review}{rnode}{pending review, or\\automatic approval}{rnode}{approved revision\\saved}
+       {automatic mode needs no new findings and no destination flag}
+  \card{4}{14.625}{activation}{rnode}{supervisor loads revision}{rnode}{workload retries\\request}
+       {approval and storage alone do not show that the revision is loaded}
+  % arrows between cards: each arrives with the card it leads to, a ghost until then
+  \foreach \k in {1,2,3}{%
+    \pgfmathsetmacro{\xa}{4.25*\k-0.5}%
+    \pgfmathsetmacro{\xb}{4.25*\k}%
+    \ifnum\stage>\k \draw[flow] (\xa,2.63) -- (\xb,2.63);\else \draw[ghostflow] (\xa,2.63) -- (\xb,2.63);\fi}
+\end{tikzpicture}

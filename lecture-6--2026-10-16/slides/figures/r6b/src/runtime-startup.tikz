@@ -1,0 +1,97 @@
+% runtime-startup: how OpenShell starts an unmodified agent, for the slide "OpenShell sandboxes an unmodified agent."
+% Re-drawn from the guide's Figure 4 (openshell/openshell-figures/runtime-startup.tikz, chapter 7 "Linux containment and the
+% trust boundary", sections 7.3 to 7.6, commit be7af99) as four click stages, in the guide's own style (standalone-style.tex).
+% Canvas 16.5 x 5.2 cm.  Render: ./render.sh runtime-startup 4   (needs standalone-style.tex from the same folder)
+% The guide's chain has six nodes: driver provisions resources; supervisor attaches to the boundary; backend confirms
+% enforcement and identity; supervisor prepares networking; backend starts the agent; supervisor manages the running workload.
+% They group into the four stages. The first four nodes stand behind stage 1 (the grey note under its panel: the supervisor
+% README of the same commit gives the order "confirm the attached boundary, prepare network mediation, then start the
+% workload"); "backend starts the agent" is stages 2 to 4, the setup each child receives and then the exec; the last node is the
+% grey closing line under stage 4.
+% Stage 1 the unmodified agent image and the launcher thread (7.5: "One dedicated launcher thread owns the network
+%         notification filter. Children launched from that thread inherit the filter").
+% Stage 2 the capability-free identity transition (7.3): non-root user and group IDs, capability sets dropped (bounding and
+%         ambient sets included), no_new_privs set, a one-way setting.
+% Stage 3 the Landlock baseline (7.4, 10): ABI v3 or newer required, which covers truncation; the private /.openshell hierarchy protected;
+%         the user's read-only and read-write paths applied in a second ruleset above it (rulesets combine by intersection:
+%         an access must satisfy both).
+% Stage 4 seccomp (7.5): the network notification filter (labelled "network filter" for room) lives on the launcher thread
+%         and the children launched from that thread inherit it; each child also installs its syscall and self-protection
+%         filters; then the agent's command is exec'd. 7.5: "Before executing untrusted instructions, each child also installs
+%         its filesystem restrictions and self-protection filters." Figure 4's caption: "Confirmation of enforcement and
+%         identity precedes the launch of agent code." The last node of the guide's chain, the supervisor managing the running
+%         workload, is the grey line under the panel.
+% Panels not yet reached are ghost slots with a ghost number; the newest panel is the one in IBM blue, earlier ones are grey.
+% Left out on purpose: the syscall list (process tracing, cross-process memory access, BPF loading, mount manipulation,
+% io_uring), the compatibility setting of the user's layer, the saved-ID change, and the type-state names.
+\begin{tikzpicture}
+  \useasboundingbox (0,0) rectangle (16.5,5.2);
+  \hyphenpenalty=10000 \exhyphenpenalty=10000 % every line break below is set by hand
+  % ---------------------------------------------------------------- styles and geometry
+  \tikzset{
+    ghostbox/.style={draw=ibmfg!25, dashed, rounded corners=2pt},
+    oldbox/.style={draw=ibmfg!60, rounded corners=2pt, fill=black!6},
+    newbox/.style={draw=ibmblue, line width=1.3pt, rounded corners=2pt, fill=ibmblue!12},
+    ttl/.style={anchor=north west, inner sep=0pt, font=\sffamily\footnotesize\bfseries, align=left, text=ibmfg},
+    bt/.style={anchor=north west, inner sep=0pt, font=\sffamily\footnotesize, align=left, text=ibmfg},
+    num/.style={circle, inner sep=0pt, minimum size=4.6mm, font=\sffamily\footnotesize\bfseries, text=white},
+    item/.style={gnode, fill=white, minimum width=2.6cm, minimum height=0.9cm},
+    gnote/.style={font=\sffamily\footnotesize, text=ibmfg!65, align=left, inner sep=0pt, anchor=north west},
+    ghostarrow/.style={-{Stealth[length=2mm]}, thick, draw=ibmfg!25, dashed},
+  }
+  \def\ybot{1.15}\def\ytop{4.95}\def\ymid{3.05}
+  \def\clA{0}\def\crA{3.3}
+  \def\clB{4.0}\def\crB{6.8}
+  \def\clC{7.5}\def\crC{11.5}
+  \def\clD{12.2}\def\crD{16.5}
+  \newcommand{\panel}[4]{% k, left, right, number: the panel as ghost slot, newest, or earlier
+    \ifnum\stage<#1 \draw[ghostbox] (#2,\ybot) rectangle (#3,\ytop);
+      \node[num, draw=ibmfg!25, dashed, text=ibmfg!35, fill=white] at (#2+0.3,\ytop) {#4};\fi
+    \ifnum\stage=#1 \draw[newbox] (#2,\ybot) rectangle (#3,\ytop);
+      \node[num, fill=ibmblue] at (#2+0.3,\ytop) {#4};\fi
+    \ifnum\stage>#1 \draw[oldbox] (#2,\ybot) rectangle (#3,\ytop);
+      \node[num, fill=ibmfg!60] at (#2+0.3,\ytop) {#4};\fi}
+  % ---------------------------------------------------------------- the four panels
+  \panel{1}{\clA}{\crA}{1}
+  \panel{2}{\clB}{\crB}{2}
+  \panel{3}{\clC}{\crC}{3}
+  \panel{4}{\clD}{\crD}{4}
+  % ---------------------------------------------------------------- arrows between panels (ghost until the next panel arrives)
+  \ifnum\stage<2 \draw[ghostarrow] (\crA,\ymid) -- (\clB,\ymid); \else \draw[flow] (\crA,\ymid) -- (\clB,\ymid); \fi
+  \ifnum\stage<3 \draw[ghostarrow] (\crB,\ymid) -- (\clC,\ymid); \else \draw[flow] (\crB,\ymid) -- (\clC,\ymid); \fi
+  \ifnum\stage<4 \draw[ghostarrow] (\crC,\ymid) -- (\clD,\ymid); \else \draw[flow] (\crC,\ymid) -- (\clD,\ymid); \fi
+  % ---------------------------------------------------------------- stage 1: the image and the launcher
+  \atstage{1}{
+    \node[ttl] at (\clA+0.2,\ytop-0.35) {Image and\\launcher};
+    \node[item] (img) at (1.65,3.3) {\textbf{Agent image}\\unmodified};
+    \node[item] (lau) at (1.65,2.1) {\textbf{Launcher thread}\\starts each child};
+    \draw[flow] (img.south) -- (lau.north);
+    \node[gnote, text width=3.3cm] at (\clA,\ybot-0.12) {Boundary provisioned,\\attached, confirmed;\\networking prepared.};
+  }
+  % ---------------------------------------------------------------- stage 2: identity
+  \atstage{2}{
+    \node[ttl] at (\clB+0.2,\ytop-0.35) {Capability-free\\identity transition};
+    \node[bt, text width=2.5cm] at (\clB+0.2,\ytop-1.2) {%
+      non-root user and\\group IDs\\[3pt]
+      capability sets\\dropped\\[3pt]
+      \texttt{no\_new\_privs} set,\\a one-way setting};
+  }
+  % ---------------------------------------------------------------- stage 3: Landlock
+  \atstage{3}{
+    \node[ttl] at (\clC+0.2,\ytop-0.35) {Landlock baseline};
+    \node[bt, text width=3.7cm] at (\clC+0.2,\ytop-0.9) {%
+      ABI v3 or newer required,\\covering truncation\\[3pt]
+      private \texttt{/.openshell}\\protected\\[3pt]
+      the user's filesystem\\policy layered above it:\\an access must satisfy both};
+  }
+  % ---------------------------------------------------------------- stage 4: seccomp and exec
+  \atstage{4}{
+    \node[ttl] at (\clD+0.2,\ytop-0.35) {Seccomp filters,\\then exec};
+    \node[bt, text width=4.0cm] at (\clD+0.2,\ytop-1.2) {%
+      network filter on the launcher\\thread, inherited by each child\\[3pt]
+      the child adds syscall and\\self-protection filters};
+    \node[gnode, fill=white, draw=ibmblue, line width=1pt, font=\sffamily\footnotesize\bfseries,
+          minimum width=3.7cm] at (\clD+2.15,\ybot+0.6) {exec the agent's command};
+    \node[gnote, text width=4.2cm] at (\clD,\ybot-0.12) {then the supervisor manages\\the running workload};
+  }
+\end{tikzpicture}

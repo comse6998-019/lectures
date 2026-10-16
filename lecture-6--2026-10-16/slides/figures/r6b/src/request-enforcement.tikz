@@ -1,0 +1,116 @@
+% request-enforcement: what the supervisor does with one request on an admitted connection, as five blocks left to right. For the
+% slide "OpenShell policy schema". The drawing is the guide's Figure 6 (openshell/openshell-figures/request-enforcement.tikz: eight
+% boxes in one column, "Request processing in the supervisor"), with its eight boxes kept in the guide's order and grouped
+% into blocks; the guide's wording is kept in the boxes, and the grey text under each box gives the detail of that block.
+% Canvas 16.15 x 6.0 cm: the PNG, with the style's 8 pt border, is 16.71 cm wide, the slide column (6016752 EMU), so an 8 pt label stays 8 pt.
+% Stages (the stage plan of Task 4.5, step 2, item 2):
+%   1 connection admission: "admit destination and executable".
+%   2 request rule: "parse and validate the application request", "evaluate application policy"; rest endpoints, method and path;
+%     audit logs and lets through, enforce blocks.
+%   3 credential binding: "resolve endpoint-bound credentials or sign the request", "guard current policy and credential
+%     generations"; only the authorized host, port and path admit the placeholder's substitution.
+%   4 middleware and the upstream connection: "run selected pre-credentials middleware", "recheck policy-relevant
+%     transformations", then "send upstream and process the response".
+% The blocks keep the guide's order (middleware runs before credentials are supplied), the stages keep the plan's order, so on stage 3
+% the middleware block is still a ghost between two blocks that are drawn; stage 4 fills it. To reveal in the guide's order instead,
+% change the numbers in the \def line marked "the stage on which each block arrives". The five column widths (2.3 to 3.1 cm) are set so that every box
+% holds at most three lines of 8 pt text.
+% Sources, all chapter 9 of the guide (commit be7af99): the eight box labels are the figure's; "L4 ... destination and port" and "A
+% binary entry specifies an executable path" (9.1, 10.1) for the admission note; "audit records a policy violation but ordinarily
+% permits the request; enforce blocks it", "Method, canonical path, and configured query
+% constraints" for REST (9.1, 9.3); "Credential resolution is scoped to the authorized host, port, and request path" and "possession
+% of that placeholder does not authorize its use at an arbitrary destination" (9.4); "A processor may inspect a request, return
+% findings, deny it, or transform permitted content" and "re-evaluates policy-relevant body replacements before the next stage or
+% upstream" (9.5); "establishes a separate verified TLS connection upstream" (9.2).
+% Illustrative: nothing. Left out on purpose: TLS skip (an opaque tunnel with no inspection), the non-HTTP protocols, fail-open
+% middleware, and the guide's "sign the request" cloud-signing detail beyond the box label.
+% No magenta: no adversary here. The newest block is a solid navy tag over boxes outlined in navy at 1.6 pt; earlier blocks settle to a lilac tag
+% and thin outlines; blocks not yet reached are dashed ghosts.
+\begin{tikzpicture}
+  \useasboundingbox (0,0.2) rectangle (16.15,6.2);
+  \definecolor{deckNavy}{HTML}{28285E}
+  \definecolor{deckLilac}{HTML}{CACAE5}
+  \definecolor{deckGrey}{HTML}{5B6673}
+  \hyphenpenalty=10000 \exhyphenpenalty=50
+  % the stage on which each block arrives
+  \def\sAdmit{1}\def\sRule{2}\def\sCred{3}\def\sMid{4}\def\sUp{4}
+  % the five columns a to e, in the guide's order: left edge and width in cm, 0.55 cm apart
+  \def\colxa{0}\def\colwa{2.75}   \def\colxb{3.3}\def\colwb{2.9}   \def\colxc{6.75}\def\colwc{2.9}   \def\colxd{10.2}\def\colwd{3.1}   \def\colxe{13.85}\def\colwe{2.3}
+  \tikzset{
+    pn/.style={minimum height=1.2cm, inner sep=3pt},
+    ghn/.style={gnode, pn, draw=ibmfg!25, text=ibmfg!35, fill=white, dashed},
+    nd/.style={mnode, pn},
+    ndr/.style={rnode, pn},
+    newb/.style={draw=deckNavy, line width=1.6pt},
+    tagnew/.style={draw=deckNavy, fill=deckNavy, text=white, rounded corners=2pt, font=\sffamily\footnotesize\bfseries,
+                   minimum height=0.8cm, inner sep=3pt, align=center},
+    tagold/.style={tagnew, draw=deckNavy!30, fill=deckLilac, text=deckNavy},
+    taggh/.style={tagnew, draw=ibmfg!25, fill=white, text=ibmfg!35, dashed},
+    gnote/.style={font=\sffamily\footnotesize, text=deckGrey, align=left, anchor=north west, inner sep=0pt},
+    ghflow/.style={-{Stealth[length=2mm]}, thick, draw=ibmfg!25, dashed},
+  }
+  % column geometry: \cx centre, \cw width, \tw text width of column #1
+  \newcommand{\geom}[1]{%
+    \edef\cw{\csname colw#1\endcsname}\edef\xl{\csname colx#1\endcsname}%
+    \pgfmathsetmacro{\tw}{\cw-0.3}%
+    \pgfmathsetmacro{\cx}{\xl+\cw/2}%
+    \pgfmathsetmacro{\nx}{\xl+0.02}}
+  % \bhead{col}{stage}{heading}: the heading of a block: a ghost before its stage, solid navy on it, lilac after it
+  \newcommand{\bhead}[3]{\geom{#1}%
+    \ifnum\stage<#2 \node[taggh, minimum width=\cw cm, text width=\tw cm] (t#1) at (\cx,5.8) {#3};\fi
+    \ifnum\stage=#2 \node[tagnew, minimum width=\cw cm, text width=\tw cm] (t#1) at (\cx,5.8) {#3};\fi
+    \ifnum\stage>#2 \node[tagold, minimum width=\cw cm, text width=\tw cm] (t#1) at (\cx,5.8) {#3};\fi}
+  % \pbox{col}{row}{stage}{style}{text}: a box of the block, on row 1 or 2: a ghost before its stage, outlined in navy on it
+  \newcommand{\pbox}[5]{\geom{#1}%
+    \pgfmathsetmacro{\by}{4.45-1.6*(#2-1)}%
+    \ifnum\stage<#3 \node[ghn, minimum width=\cw cm, text width=\tw cm] (b#1#2) at (\cx,\by) {#5};\fi
+    \ifnum\stage=#3 \node[#4, newb, minimum width=\cw cm, text width=\tw cm] (b#1#2) at (\cx,\by) {#5};\fi
+    \ifnum\stage>#3 \node[#4, minimum width=\cw cm, text width=\tw cm] (b#1#2) at (\cx,\by) {#5};\fi}
+  % \note{col}{stage}{text}: the grey detail under a block, from its stage on
+  \newcommand{\note}[3]{\geom{#1}%
+    \atstage{#2}{\node[gnote, text width=\cw cm] at (\nx,2.0) {#3};}}
+  % \link{from}{to}{stage}: an arrow, solid once the stage it needs is reached and a ghost before
+  \newcommand{\link}[3]{%
+    \ifnum\stage<#3 \draw[ghflow] (#1) -- (#2);\else \draw[flow] (#1) -- (#2);\fi}
+
+  % block a: connection admission
+  \bhead{a}{\sAdmit}{connection admission}
+  \pbox{a}{1}{\sAdmit}{nd}{admit destination and executable}
+  \note{a}{\sAdmit}{the destination's host and port, and the binary's identity}
+
+  % block b: request rule
+  \bhead{b}{\sRule}{request rule}
+  \pbox{b}{1}{\sRule}{nd}{parse and validate the application request}
+  \pbox{b}{2}{\sRule}{nd}{evaluate application policy}
+  \link{bb1}{bb2}{\sRule}
+  \note{b}{\sRule}{method and path on a \texttt{rest} endpoint\\ \texttt{audit}: logs, lets the request through\\ \texttt{enforce}: blocks it}
+
+  % block c: middleware
+  \bhead{c}{\sMid}{middleware}
+  \pbox{c}{1}{\sMid}{nd}{run selected pre-credentials middleware}
+  \pbox{c}{2}{\sMid}{nd}{recheck policy-relevant transformations}
+  \link{bc1}{bc2}{\sMid}
+  \note{c}{\sMid}{may inspect, deny or transform the request; a policy-relevant change is re-evaluated}
+
+  % block d: credential binding
+  \bhead{d}{\sCred}{credential binding}
+  \pbox{d}{1}{\sCred}{nd}{resolve endpoint-bound credentials or sign the request}
+  \pbox{d}{2}{\sCred}{nd}{guard current policy and credential generations}
+  \link{bd1}{bd2}{\sCred}
+  \note{d}{\sCred}{only the authorized host, port and path admit the placeholder's substitution}
+
+  % block e: upstream connection
+  \bhead{e}{\sUp}{upstream connection}
+  \pbox{e}{1}{\sUp}{ndr}{send upstream and process the response}
+  \note{e}{\sUp}{for HTTPS, a separate verified TLS connection}
+
+  % arrows between blocks, on the heading row; each is solid once both blocks it joins are drawn
+  \pgfmathtruncatemacro{\sAB}{max(\sAdmit,\sRule)}
+  \pgfmathtruncatemacro{\sBC}{max(\sRule,\sMid)}
+  \pgfmathtruncatemacro{\sCD}{max(\sMid,\sCred)}
+  \pgfmathtruncatemacro{\sDE}{max(\sCred,\sUp)}
+  \link{ta.east}{tb.west}{\sAB}
+  \link{tb.east}{tc.west}{\sBC}
+  \link{tc.east}{td.west}{\sCD}
+  \link{td.east}{te.west}{\sDE}
+\end{tikzpicture}%

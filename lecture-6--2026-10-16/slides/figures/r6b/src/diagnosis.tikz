@@ -1,0 +1,89 @@
+% diagnosis: six enforcement boundaries along one request, what a failure at each looks like, and the evidence to read next.
+% Placed on the new build "Diagnose by the boundary that failed." Task 4.5, figure 6 of 6. A new drawing (the guide has no
+% figure for this chapter); every string is from the guide's chapter 14, "Diagnosis by enforcement boundary" (commit be7af99):
+% the six boxes are the boundaries the chapter's table names, in the order a request meets them; the observations and the
+% evidence are its "Observation" and "Next evidence" columns, shortened; the band headings are those two column headers.
+% Canvas 16.1 x 5.4 cm (plus the style's 8 pt border, 16.66 x 5.96 cm in all): the brief's 16.5 x 5.8 cm is the deck's
+% \canvas, whose style has a 2 pt border; the guide style here has 8 pt, so the box is 0.4 cm smaller each way and the
+% 8 pt labels still print at 8 pt on the 16.71 cm column.
+% Render: ./render.sh diagnosis 4   (needs standalone-style.tex from the same folder)
+% Fills follow the guide's figures: the four boundaries OpenShell checks are mnode (blue), upstream is gnode (white, outside),
+% the filesystem is rnode (grey). The box labels are the brief's words for the chapter's boundaries.
+% Stage 1 the row of boundaries, joined by arrows in request order: creation and provisioning, connection admission, TLS and
+%         request policy, credential binding, upstream; the filesystem (mounts, Landlock) set apart at the right, off the
+%         network path. The observation band, the evidence band and the banner are ghosts.
+% Stage 2 the observations (navy outline, newest), each with an arrow down to the boundary it points at. Creation and
+%         provisioning carries two, side by side: "creation rejected" over creation, "stuck in Provisioning" over provisioning.
+%         "policy saved, behaviour unchanged" sits over credential binding (the brief's placement: the guide's request path
+%         guards the current policy and credential generations there; the table's boundary for it is revision application).
+% Stage 3 the next evidence under each boundary (navy outline, newest); the observations settle to grey.
+% Stage 4 the banner under the row, the chapter's step 6: "Change the narrowest responsible configuration, then repeat the
+%         same request." The evidence settles to grey.
+% Left out on purpose: the table's middle column (the likely boundaries in full), DNS, the timeout paragraph, the six-step
+% procedure except its last step, and the admission model of section 14.2. Upstream carries no observation of its own: in the
+% chapter's table the upstream response is one candidate among several for "Connection opens; an HTTP operation fails", whose
+% primary home here is TLS and request policy.
+\begin{tikzpicture}
+  \useasboundingbox (0,0) rectangle (16.1,5.4);
+  \definecolor{deckNavy}{HTML}{28285E}
+  \tikzset{
+    hl/.style={draw=deckNavy, line width=1.6pt},
+    bnd/.style={minimum height=8.8mm, inner xsep=2pt, inner ysep=2pt, text=ibmfg},
+    item/.style={font=\sffamily\footnotesize, text=ibmfg, align=center, inner sep=0pt},
+    bandhead/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy, inner sep=0pt, anchor=west},
+    cue/.style={-{Stealth[length=1.6mm]}, semithick, draw=ibmfg!55},
+    ghostband/.style={draw=ibmfg!25, dashed, rounded corners=3pt},
+  }
+  % observations end, and evidence starts, with a \strut so every column shares one baseline
+  % a band: ghost before its stage, navy outline at its stage, grey after
+  \newcommand{\band}[5]{% stage, x0, y0, x1, y1
+    \ifnum\stage<#1 \draw[ghostband] (#2,#3) rectangle (#4,#5);\fi
+    \ifnum\stage=#1 \draw[hl, fill=white, rounded corners=3pt] (#2,#3) rectangle (#4,#5);\fi
+    \ifnum\stage>#1 \draw[ibmfg!22, thin, fill=black!3, rounded corners=3pt] (#2,#3) rectangle (#4,#5);\fi}
+  % ---------------------------------------------------------------- geometry (cm)
+  % banner 0.04 to 0.50; evidence band 0.64 to 2.30; box row 2.62 to 3.50; observation band 3.82 to 5.36
+  % column centres: creation 2.2575 (its two halves 1.095 and 3.275, under the words), admission 5.475, TLS 7.785,
+  % credential 10.04, upstream 11.995; filesystem 14.63, set apart. Arrow gaps 0.40; the filesystem sits 0.585 off,
+  % with no arrow and its own bands.
+  % ---------------------------------------------------------------- stage 1: the boundaries
+  \node[mnode, bnd, minimum width=3.915cm] (c1) at (2.2575,3.06) {creation and provisioning};
+  \node[mnode, bnd, minimum width=1.72cm] (c2) at (5.475,3.06) {connection\\admission};
+  \node[mnode, bnd, minimum width=2.1cm] (c3) at (7.785,3.06) {TLS and\\request policy};
+  \node[mnode, bnd, minimum width=1.61cm] (c4) at (10.04,3.06) {credential\\binding};
+  \node[gnode, bnd, minimum width=1.5cm] (c5) at (11.995,3.06) {upstream};
+  \node[rnode, bnd, minimum width=2.6cm] (c6) at (14.63,3.06) {filesystem\\(mounts, Landlock)};
+  \foreach \a/\b in {c1/c2, c2/c3, c3/c4, c4/c5} { \draw[flow] (\a.east) -- (\b.west); }
+  % ---------------------------------------------------------------- stage 2: the observations
+  \band{2}{0.03}{3.82}{12.90}{5.36}
+  \band{2}{13.15}{3.82}{16.07}{5.36}
+  \atstage{2}{
+    \node[bandhead] at (0.22,5.14) {observation};
+    \node[item, anchor=south] at (1.095,3.98) {creation\\rejected\strut};
+    \node[item, anchor=south] at (3.275,3.98) {stuck in\\Provisioning\strut};
+    \node[item, anchor=south] at (5.475,3.98) {connection\\denied\strut};
+    \node[item, anchor=south] at (7.785,3.98) {connection opens,\\the HTTP operation\\fails\strut};
+    \node[item, anchor=south] at (10.04,3.98) {policy saved,\\behaviour\\unchanged\strut};
+    \node[item, anchor=south] at (14.63,3.98) {file write fails\strut};
+    \foreach \x in {1.095, 3.275, 5.475, 7.785, 10.04, 14.63} { \draw[cue] (\x,3.82) -- (\x,3.50); }
+  }
+  % ---------------------------------------------------------------- stage 3: the next evidence
+  \band{3}{0.03}{0.64}{12.90}{2.30}
+  \band{3}{13.15}{0.64}{16.07}{2.30}
+  \atstage{3}{
+    \node[bandhead] at (0.22,0.86) {next evidence};
+    \node[item, anchor=north] at (1.095,2.13) {\strut RPC error and\\the create\\handler};
+    \node[item, anchor=north] at (3.275,2.13) {\strut conditions,\\driver events,\\supervisor logs};
+    \node[item, anchor=north] at (5.475,2.13) {\strut the denial\\event and the\\effective rules};
+    \node[item, anchor=north] at (7.785,2.13) {\strut the HTTP event,\\policy mode,\\endpoint binding};
+    \node[item, anchor=north] at (10.04,2.13) {\strut the revision\\result and a\\fresh request};
+    \node[item, anchor=north] at (14.63,2.13) {\strut path, process\\identity, creation\\policy};
+    \foreach \x in {1.095, 3.275, 5.475, 7.785, 10.04, 14.63} { \draw[cue] (\x,2.62) -- (\x,2.30); }
+  }
+  % ---------------------------------------------------------------- stage 4: the banner
+  \ifnum\stage<4 \draw[ghostband] (0.03,0.04) rectangle (16.07,0.50);\fi
+  \atstage{4}{
+    \fill[deckNavy, rounded corners=3pt] (0.03,0.04) rectangle (16.07,0.50);
+    \node[font=\sffamily\footnotesize\bfseries, text=white, inner sep=0pt] at (8.05,0.27)
+      {Change the narrowest responsible configuration, then repeat the same request.};
+  }
+\end{tikzpicture}

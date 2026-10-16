@@ -1,0 +1,77 @@
+% interceptors: how a gateway interceptor governs one sandbox at creation, and what OpenShell leaves outside that scope.
+% Placed on "OpenShell governs each sandbox on its own." (Rahul's slides 100 to 103 of his 2026-10-15 save). Task 4.5, figure 5 of 6.
+% Starts from the guide's figure 3 (openshell/openshell-figures/interceptors.tikz; chapter 6.6, "Gateway interception of API
+% writes"; commit be7af99): six steps in one column, validate in the model-side blue. The step names are the guide's own, in
+% its order: authenticate, decode the permitted operation view, modify_operation, validate, normal gateway handler,
+% post_commit observation. The chain sits inside the gateway's dashed boundary; a create request enters it from the left.
+% Canvas 16.1 x 5.0 cm. The style's 8 pt border makes the picture 16.66 cm wide, so the 8 pt labels print at 8 pt on the
+% 16.71 cm column (6016752 EMU). Every stage shares the canvas through \useasboundingbox.
+% Render: ./render.sh interceptors 4   (needs standalone-style.tex from the same folder)
+% Newest element: solid navy 1.6 pt outline; it settles to a thin grey outline (or to the blue fill) on the next stage.
+% Stage 1 a create request reaches the gateway: the request (newest) and the six steps, all grey. The request is the guide's
+%         own situation (chapter 4.2, "Creation requires authorization and configuration validation").
+% Stage 2 the interceptor supplies the approved policy and the provider attachments at creation: modify_operation turns blue
+%         (the guide's colour for validate, extended to the two steps an interceptor acts on here) and the interceptor box
+%         arrives, outside the gateway because the guide calls an interceptor "an external service". Sources: chapter 6.6's
+%         exercise ("A service that supplies an approved policy during sandbox creation uses a gateway interceptor") and
+%         chapter 4.2 ("the caller supplies permitted governance fields, such as policy and provider attachments").
+% Stage 3 validation bindings guard every API operation that could weaken the policy later: validate turns blue and the
+%         bindings box arrives. Source: the same exercise ("Preventing later policy weakening also requires validation
+%         bindings on the API operations that can change policy. Modification during creation alone cannot preserve the
+%         rule."). The two boxes sit above and below their arrows because the two steps are only 0.72 cm apart.
+% Stage 4 three ghost nodes at the right, in a dashed zone labelled "outside OpenShell's scope": agent identity,
+%         agent-to-agent governance, cross-sandbox communication. Source: Tigera's analysis, as the slide's body text and its
+%         reference [1] give it (a vendor's reading of OpenShell's documentation); the guide does not say it. The ghost style
+%         is the brief's (draw ibmfg!25, text ibmfg!35, dashed); the zone and its bold navy label carry the newest-element
+%         emphasis, since a ghost is faint by design.
+% Left out on purpose: the failure policy (fail-closed or fail-open), the JSON-patch mechanics, the restart that bindings
+% need, the allowlist of unary writes, and the post_commit step's role (it stays grey: the slide's claim is about creation
+% and later weakening).
+\begin{tikzpicture}
+  \useasboundingbox (0,0) rectangle (16.1,5.0);
+  \definecolor{deckNavy}{HTML}{28285E}
+  \definecolor{deckGrey}{HTML}{5B6673}
+  \tikzset{
+    hl/.style={draw=deckNavy, line width=1.6pt},
+    ghost/.style={gnode, draw=ibmfg!25, text=ibmfg!35, fill=white, dashed, minimum width=3.0cm, minimum height=0.9cm},
+    zone/.style={draw=deckNavy, dashed, rounded corners=4pt, thick},
+    zonelab/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy, fill=white, inner sep=2pt},
+    chainnode/.style={minimum width=4.95cm, minimum height=4.6mm, inner sep=1.5pt},
+    sidebox/.style={gnode, text width=3.15cm, align=left, inner sep=4pt},
+  }
+  % ---------------------------------------------------------------- the gateway and its six steps
+  \draw[zone] (2.2,0.15) rectangle (7.6,4.75);
+  \node[zonelab, anchor=east] at (7.4,4.75) {gateway};
+  \node[rnode, chainnode] (s0) at (4.9,4.25) {authenticate};
+  \node[rnode, chainnode] (s1) at (4.9,3.53) {decode the permitted operation view};
+  \ifnum\stage=2 \node[mnode, chainnode, hl] (s2) at (4.9,2.81) {modify\_operation};\fi
+  \ifnum\stage>2 \node[mnode, chainnode] (s2) at (4.9,2.81) {modify\_operation};\fi
+  \ifnum\stage<2 \node[rnode, chainnode] (s2) at (4.9,2.81) {modify\_operation};\fi
+  \ifnum\stage=3 \node[mnode, chainnode, hl] (s3) at (4.9,2.09) {validate};\fi
+  \ifnum\stage>3 \node[mnode, chainnode] (s3) at (4.9,2.09) {validate};\fi
+  \ifnum\stage<3 \node[rnode, chainnode] (s3) at (4.9,2.09) {validate};\fi
+  \node[rnode, chainnode] (s4) at (4.9,1.37) {normal gateway handler};
+  \node[rnode, chainnode] (s5) at (4.9,0.65) {post\_commit observation};
+  \foreach \a/\b in {s0/s1, s1/s2, s2/s3, s3/s4, s4/s5} { \draw[flow] (\a) -- (\b); }
+  % ---------------------------------------------------------------- stage 1: the create request
+  \ifnum\stage=1 \node[gnode, hl, minimum width=1.7cm, minimum height=0.9cm] (req) at (0.85,4.25) {create\\request};\fi
+  \ifnum\stage>1 \node[gnode, minimum width=1.7cm, minimum height=0.9cm] (req) at (0.85,4.25) {create\\request};\fi
+  \draw[flow] (req) -- (s0);
+  % ---------------------------------------------------------------- stage 2: the interceptor supplies policy and attachments
+  % (box A sits above the arrow that feeds modify_operation, box B below the one that feeds validate: the two steps are 0.72 cm apart)
+  \ifnum\stage=2 \node[sidebox, hl, anchor=south west] (A) at (8.4,2.56) {\textbf{interceptor}\\supplies the approved\\policy and the provider\\attachments at creation};\fi
+  \ifnum\stage>2 \node[sidebox, anchor=south west] (A) at (8.4,2.56) {\textbf{interceptor}\\supplies the approved\\policy and the provider\\attachments at creation};\fi
+  \atstage{2}{ \draw[flow] (A.west |- s2) -- (s2.east); }
+  % ---------------------------------------------------------------- stage 3: validation bindings
+  \ifnum\stage=3 \node[sidebox, hl, anchor=north west] (B) at (8.4,2.34) {\textbf{validation bindings}\\guard every API\\operation that could\\weaken the policy later};\fi
+  \ifnum\stage>3 \node[sidebox, anchor=north west] (B) at (8.4,2.34) {\textbf{validation bindings}\\guard every API\\operation that could\\weaken the policy later};\fi
+  \atstage{3}{ \draw[flow] (B.west |- s3) -- (s3.east); }
+  % ---------------------------------------------------------------- stage 4: what OpenShell leaves out
+  \atstage{4}{
+    \draw[zone] (12.3,0.15) rectangle (16.1,4.75);
+    \node[zonelab, anchor=east] at (16.0,4.75) {outside OpenShell's scope};
+    \node[ghost] at (14.2,3.65) {agent identity};
+    \node[ghost, text width=2.6cm] at (14.2,2.45) {agent-to-agent governance};
+    \node[ghost, text width=2.6cm] at (14.2,1.25) {cross-sandbox communication};
+  }
+\end{tikzpicture}
