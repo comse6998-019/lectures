@@ -4,16 +4,26 @@
 His save (143 slides) is the title slide, the "Lecture 5 Recap" leader, the enforcement divider and slides 276 to 416 of the 416-slide
 lecture5.pptx. The patch
   1. copies four recap builds of lecture5.pptx (20 slides) after the leader,
-  2. replaces the five table builds with the stage figures of figures/r6 (a build whose PNGs are missing keeps its table),
-  3. rewrites the closing build ("Next Friday is the midterm.") and adds a midterm-scope slide after the poll,
+  2. replaces the five table builds with the stage figures of figures/r6 (a build whose PNGs are missing keeps its table); "Limits of
+     OpenShell enforcement", whose figure the build before it completes, keeps two clicks: the figure, then the figure and its box,
+  3. rewrites the closing build ("Next Friday is the midterm.") and adds the midterm-scope build after the poll, one bullet per click and
+     its closing box on the last (six clicks),
   4. renumbers: every slide-jump link text follows its target, and every slide number in the notes, written against lecture5.pptx,
      names the slide's place in this deck or the lecture 5 slide that this deck no longer carries.
+From his 143 slides it makes 166: 143 + 20 recap + 6 midterm - 3 Limits clicks.
 
 usage:  SRC=<his save> L5=<416-slide lecture5.pptx> MAP=<json from tools-r6/verify-r6.py> OUT=<patched deck> \
         [MEASURES=<json from tools-r3/measure-ppt.py of a previous OUT>] \
         uv run --no-project --python 3.12 --with python-pptx,lxml python patch-r6.py
 Without MEASURES the figures sit at the tables' tops (the first pass); with PowerPoint's measurements of the first pass's output, a second
 run places each figure under its lead-in and each closing box under its content. Both runs start from SRC.
+
+        MODE=fix1 SRC=<a deck that already carries the first patch> OUT=<patched deck> uv run ... python patch-r6.py
+The first patch (164 slides, installed as lecture6.pptx on 2026-10-15 at 22:07) showed the midterm scope on one click and kept five Limits
+clicks of which three changed nothing. MODE=fix1 applies the same two corrections to any later save of that deck, and to the output of
+patch-r6.py's companion patch-r6b.py (pass two), since it finds every build by its title: it turns the one
+midterm slide into the six-click build, keeps the first and last Limits clicks, rewrites the two notes that cite the early ~/.ssh poll,
+and moves every slide-jump link text and every slide number in the notes to the new positions. Its output equals a full run from SRC.
 """
 import copy
 import io
@@ -28,8 +38,10 @@ from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.oxml.ns import qn
 
 SRC = os.environ["SRC"]
-L5 = os.environ["L5"]                 # the 416-slide lecture5.pptx
-MAP = json.load(open(os.environ["MAP"]))   # Rahul's slide -> old number, from verify-r6.py
+MODE = os.environ.get("MODE", "full")      # full: Rahul's 143-slide save; fix1: a deck that already carries the first patch
+assert MODE in ("full", "fix1"), MODE
+L5 = os.environ["L5"] if MODE == "full" else None                                # the 416-slide lecture5.pptx
+MAP = json.load(open(os.environ["MAP"])) if MODE == "full" else {}               # Rahul's slide -> old number, from verify-r6.py
 OUT = os.environ["OUT"]
 MEASURES = json.load(open(os.environ["MEASURES"])) if os.environ.get("MEASURES") else None
 FIG6 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "figures", "r6")
@@ -250,6 +262,60 @@ def clean_title(t):
     return re.sub(r"\[\d+\]", "", t).strip()
 
 
+def copy_notes(dst, src):
+    """dst's notes become a copy of src's, runs and formatting included (a build carries identical notes on every click)."""
+    a, b = src.notes_slide.notes_placeholder._element, dst.notes_slide.notes_placeholder._element
+    body = copy.deepcopy(a.find(qn("p:txBody")))
+    assert not body.xpath(".//@r:id"), "a relationship in the notes"
+    b.replace(b.find(qn("p:txBody")), body)
+
+
+def look(slide):
+    """What a click shows: every shape's kind, name, place, size and text, and a picture's image."""
+    out = []
+    for sh in slide.shapes:
+        el = sh._element
+        img = None
+        if el.tag == qn("p:pic"):
+            img = slide.part.related_part(el.find(".//" + qn("a:blip")).get(qn("r:embed"))).sha1
+        out.append((etree.QName(el).localname, sh.name, sh.left, sh.top, sh.width, sh.height,
+                    sh.text_frame.text if sh.has_text_frame else None, img))
+    return out
+
+
+def retarget_links(prs, moved):
+    """Every slide-jump link whose target part is a key of moved points at the value instead."""
+    n = 0
+    for s in prs.slides:
+        for h in s._element.iter(qn("a:hlinkClick")):
+            rid = h.get(qn("r:id"))
+            if rid and h.get("action", "").startswith("ppaction://hlinksldjump") and s.part.rels[rid].target_part in moved:
+                h.set(qn("r:id"), s.part.relate_to(moved[s.part.rels[rid].target_part], RT.SLIDE))
+                drop_if_unused(s, rid)
+                n += 1
+    return n
+
+
+def drop_slides(prs, slides):
+    """Remove slides from the deck: the sldId and the presentation's relationship; python-pptx then saves only the parts still reachable.
+    lectures/CLAUDE.md: no kept slide may link to a dropped one (retarget_links first)."""
+    gone = {s.part for s in slides}
+    for s in prs.slides:
+        if s.part in gone:
+            continue
+        for h in s._element.iter(qn("a:hlinkClick")):
+            rid = h.get(qn("r:id"))
+            assert not (rid and h.get("action", "").startswith("ppaction://hlinksldjump") and s.part.rels[rid].target_part in gone), \
+                ("a kept slide links to a dropped one", title_of(s))
+    lst = prs.slides._sldIdLst
+    for sid in [s.slide_id for s in slides]:
+        el = next(e for e in lst if int(e.get("id")) == sid)
+        rid = el.get(qn("r:id"))
+        lst.remove(el)
+        prs.part.drop_rel(rid)
+        assert rid not in prs.part.rels, rid
+
+
 # ----------------------------------------------------------------------------------------------- 1. the recap
 RECAP5 = [  # (title in the 416-slide deck, first, last, notes)
     ("MCP client–server connection model", 36, 38,
@@ -380,9 +446,31 @@ def back_link_on_targets(copies, targets, template):
 FIGURES = {"Each place has its own bypass.": ("bypass-places", 4), "OpenShell controls by protected asset": ("openshell-assets", 6),
            "Limits of OpenShell enforcement": ("openshell-assets", 6), "Attacks enter through text or the process.": ("entry-points", 6),
            "OpenShell controls at creation and run time": ("policy-layers", 4)}
-# "Limits of OpenShell enforcement" continues the figure that the build before it completed: every click shows the last stage, so the
-# columns its rows discuss stay on the screen (spec 2.2: one figure for both builds).
+# "Limits of OpenShell enforcement" continues the figure that the build before it completed (spec 2.2: one figure for both builds), so it
+# shows the last stage. Its five table clicks revealed one row each; with the figure the middle three would change nothing, and
+# lectures/CLAUDE.md asks for one new element per click, so the build keeps its first click and its last (the closing box): a build pair.
 WHOLE = {"Limits of OpenShell enforcement"}
+
+
+def collapse_to_pair(prs, title):
+    """A build whose clicks between the first and the last show what the first shows keeps those two. Returns {dropped slide's part: the
+    last slide} (a dropped slide has no id any more); links to a dropped click are pointed at the last one, which shows what a reference
+    to the build names."""
+    slides = [prs.slides[i] for i in build(prs, title)]
+    if len(slides) <= 2:
+        return {}
+    first, last, gone = slides[0], slides[-1], slides[1:-1]
+    for s in gone:
+        assert look(s) == look(first), ("a middle click differs from the first", title, list(prs.slides).index(s) + 1)
+        assert s.notes_slide.notes_text_frame.text == last.notes_slide.notes_text_frame.text, (title, "notes differ")
+    relinked = retarget_links(prs, {s.part: last.part for s in gone})
+    at = list(prs.slides).index(first) + 1
+    drop_slides(prs, gone)
+    log(f"pair: {title!r}: {len(slides)} clicks -> 2 at {at}-{at + 1} (the figure, then the figure and its box); "
+        f"{len(gone)} identical middle clicks dropped, {relinked} links to them now open the last click")
+    return {s.part: last for s in gone}
+
+
 LEAD_INS = {  # build title -> (lead-in as saved, lead-in for the figure); the old text named the table, its rows or a cut slide
     "Each place has its own bypass.": (
         "This table gives, for each place, what a bypass requires and the ATLAS technique that names it. Rows three and four lie outside the agent's process.",
@@ -397,6 +485,8 @@ LEAD_INS = {  # build title -> (lead-in as saved, lead-in for the figure); the o
 
 
 def tables_to_figures(prs):
+    """Returns {dropped slide's part: the slide that replaces it} for the builds collapse_to_pair shortened."""
+    replaced = {}
     for title, (name, n) in FIGURES.items():
         stages = [os.path.join(FIG6, f"{name}-{k}.png") for k in range(1, n + 1)]
         missing = [p for p in stages if not os.path.exists(p)]
@@ -453,6 +543,9 @@ def tables_to_figures(prs):
         log(f"figures: {title!r}: slides {list(prs.slides).index(slides[0]) + 1}-{list(prs.slides).index(last) + 1} show "
             f"{name} stages {[n if title in WHOLE else min(k, n) for k in range(1, len(slides) + 1)]}, {where}, "
             f"{scale:.0%} ({fw} x {fh}), closing box at {box_top}")
+        if title in WHOLE:
+            replaced.update(collapse_to_pair(prs, title))
+    return replaced
 
 
 # ----------------------------------------------------------------------------------------------- 4. the closing build and the midterm slide
@@ -518,9 +611,52 @@ TEMPLATE = "Model-based security controls"
 POLL = "Where should the ~/.ssh rule be enforced?"
 
 
+def bullet_protos(prs):
+    """The house bullet, shown and not yet revealed, as the template build has them: its third bullet ('Both live in the prompt or the
+    weights,') on its last click (black, the ● glyph) and on its first (transparent white, alpha 0, no glyph)."""
+    tb = build(prs, TEMPLATE)
+    shown = copy.deepcopy(body_of(prs.slides[tb[-1]]).text_frame.paragraphs[2]._p)
+    hidden = copy.deepcopy(body_of(prs.slides[tb[0]]).text_frame.paragraphs[2]._p)
+    for p, glyph in ((shown, "a:buChar"), (hidden, "a:buNone")):
+        assert len(p.findall(qn("a:r"))) == 2 and p.find(qn("a:pPr")).find(qn(glyph)) is not None, glyph
+    alphas = list(hidden.iter(qn("a:alpha")))
+    assert len(alphas) == 3 and all(a.get("val") == "0" for a in alphas) and not list(shown.iter(qn("a:alpha")))
+    return shown, hidden
+
+
+def bullet(proto, lead, rest):
+    p = copy.deepcopy(proto)
+    r1, r2 = p.findall(qn("a:r"))
+    r1.find(qn("a:t")).text, r2.find(qn("a:t")).text = lead, rest
+    return p
+
+
+def midterm_clicks(prs, full):
+    """The midterm slide with every bullet and its box is the build's last click. Before it go one click per bullet (lectures/CLAUDE.md:
+    a text slide shows one bullet per click, and the closing box is the last click): click k shows bullets 1 to k, carries the later
+    ones in the not-yet-revealed format so nothing moves, has no box, and carries the full slide's notes. Returns the six slides in order."""
+    shown, hidden = bullet_protos(prs)
+    paras = body_of(full).text_frame.paragraphs
+    assert [p.text for p in paras] == [lead + rest for lead, rest in MIDTERM_BULLETS], [p.text for p in paras]
+    assert len(banners(full)) == 1, [b.text_frame.text for b in banners(full)]
+    clicks = []
+    for k in range(1, len(MIDTERM_BULLETS) + 1):
+        c = copy_slide(prs, full)
+        for b in banners(c):
+            drop(b)
+        txBody = body_of(c).text_frame._txBody
+        for j, (p, (lead, rest)) in enumerate(zip(txBody.findall(qn("a:p")), MIDTERM_BULLETS)):
+            if j >= k:
+                txBody.replace(p, bullet(hidden, lead, rest))
+        copy_notes(c, full)
+        clicks.append(c)
+    return clicks + [full]
+
+
 def midterm(prs):
-    """A text slide after the poll: a copy of the first slide of the 'Model-based security controls' build without its references, five
-    bullets in the house bullet format of that build's last click, and its closing box."""
+    """The midterm-scope build after the poll. Its last click is a copy of the first slide of the 'Model-based security controls' build
+    without its references, with five bullets in the house format of that build's last click and its closing box; midterm_clicks puts one
+    click per bullet before it. Returns the six slides."""
     tb = build(prs, TEMPLATE)
     first, last = prs.slides[tb[0]], prs.slides[tb[-1]]
     s = copy_slide(prs, first)
@@ -529,15 +665,11 @@ def midterm(prs):
             drop(sh)
     set_first_run(title_shape(s), MIDTERM_TITLE)
     txBody = body_of(s).text_frame._txBody
-    proto = copy.deepcopy(body_of(last).text_frame.paragraphs[2]._p)       # 'Both live in the prompt or the weights,' visible, bulleted
-    assert len(proto.findall(qn("a:r"))) == 2 and proto.find(qn("a:pPr")).find(qn("a:buChar")) is not None
+    shown, _ = bullet_protos(prs)
     for p in txBody.findall(qn("a:p")):
         txBody.remove(p)
     for lead, rest in MIDTERM_BULLETS:
-        p = copy.deepcopy(proto)
-        r1, r2 = p.findall(qn("a:r"))
-        r1.find(qn("a:t")).text, r2.find(qn("a:t")).text = lead, rest
-        txBody.append(p)
+        txBody.append(bullet(shown, lead, rest))
     box = copy.deepcopy(banners(last)[0]._element)
     box.find(".//" + qn("p:cNvPr")).set("id", str(next_id(s)))
     s.shapes._spTree.append(box)
@@ -546,10 +678,12 @@ def midterm(prs):
         if rel.is_external:
             drop_if_unused(s, rid)
     set_notes(s, MIDTERM_NOTES)
+    slides = midterm_clicks(prs, s)
     poll = build(prs, POLL)
-    move_to(prs, [s], poll[-1] + 1)
-    log(f"midterm: {MIDTERM_TITLE!r} inserted at {poll[-1] + 2}, after the poll")
-    return s
+    move_to(prs, slides, poll[-1] + 1)
+    log(f"midterm: {MIDTERM_TITLE!r} inserted at {poll[-1] + 2}-{poll[-1] + 1 + len(slides)}, after the poll: one bullet per click, "
+        f"the closing box on the last")
+    return slides
 
 
 # ----------------------------------------------------------------------------------------------- 5. slide numbers
@@ -559,8 +693,6 @@ def midterm(prs):
 STALE = [
     ("Model-based security controls", "family of slide 220)", "family of slide 219)"),   # 212-219 lists the 'harden the model' family
     ("Model-based security controls", "Slide 242 quotes", "Slide 241 quotes"),           # 237-241 quotes ATLAS's warning; 242 is OpenClaw
-    ("Tool use weakens a model's refusals.", "slide 25", "lecture 5's revision 3 (its 25th slide)"),   # the early poll; no longer in lecture5.pptx
-    ("Tool use weakens a model's refusals.", "returns on slide 407.", "returns on slide 412."),         # the poll returns at 412-413
     ("Enforcement points and trust boundaries", "The table on slide 328 gives", "The figure on slide 333 gives"),   # the bypass build, 329-333
     ("Attacks enter through text or the process.", "sequence diagram of slide 48)", "sequence diagram of slide 46)"),
     ("OpenShell governs each sandbox on its own.", "(slide 395;", "(slide 400;"),          # AgentKernel is on 396-400, as the body's link says
@@ -571,9 +703,45 @@ STALE = [
     ("The agent must not reach the runtime.", "slides 372 and 378", "slides 382 and 387"),   # the two asset builds, 377-382 and 383-387
     ("The agent must not reach the runtime.", "(slides 338 to 382)", "(slides 343 to 387)"),  # the OpenShell slides
     ("The agent must not reach the runtime.", "slide 24", "slide 23"),                       # 'A rule inside the agent can be disabled.', 21-23
-    (POLL, "slide 25", "lecture 5's revision 3 (its 25th slide)"),
     (POLL, "Sentry (slide 367)", "Sentry (slide 372)"),                                      # 369-372
 ]
+
+
+# The early ~/.ssh poll. Rahul's notes cite "the poll of slide 25", which "asked the class" and "returns on slide 407", and the poll's own
+# notes compare its split "with the one recorded on slide 25". That poll was slide 25 of lecture 5's revision 3 (2026-10-09 07:29); every
+# save of his from 09:02 that day on lacks it, so lecture 5 was most likely taught without it, and lecture6.pptx asks the question once.
+# The first sentence now names the poll this deck carries; the comparison sentence goes. In a full run the poll is the 416-slide
+# deck's 412 (renumber6 maps it); in a MODE=fix1 run the notes carry the first patch's wording and name the poll by its position in the
+# input (159 in the first patch, 163 once patch-r6b.py has added its four slides before it).
+POLL_CITES = "Tool use weakens a model's refusals."
+POLL_ASKED = " asked the class where the rule about ~/.ssh belongs, and returns on slide {}."
+POLL_ASKS = " asks the class where the rule about ~/.ssh belongs."
+POLL_COMPARE = ". Compare this split with the one recorded on "
+EARLY_POLL = {"full": ("slide 25", 407, 412), "fix1": ("lecture 5's revision 3 (its 25th slide)", None, None)}
+
+
+def poll_refs(prs):
+    early, said, poll_at = EARLY_POLL[MODE]
+    if said is None:                                   # fix1: the poll where the input deck has it
+        said = poll_at = build(prs, POLL)[0] + 1
+    n = 0
+    for i in build(prs, POLL_CITES):
+        runs = list(prs.slides[i].notes_slide.notes_text_frame._txBody.iter(qn("a:t")))
+        at = [k for k, t in enumerate(runs) if t.text == early]
+        assert len(at) == 1 and runs[at[0] + 1].text == POLL_ASKED.format(said), (i + 1, [t.text for t in runs])
+        runs[at[0]].text, runs[at[0] + 1].text = f"slide {poll_at}", POLL_ASKS
+        n += 1
+    for i in build(prs, POLL):
+        runs = list(prs.slides[i].notes_slide.notes_text_frame._txBody.iter(qn("a:t")))
+        at = [k for k, t in enumerate(runs) if t.text == early]
+        assert len(at) == 1 and runs[at[0] - 1].text == POLL_COMPARE and runs[at[0] + 1].text == ". ", (i + 1, [t.text for t in runs])
+        runs[at[0] - 1].text = ". "
+        for t in (runs[at[0]], runs[at[0] + 1]):
+            r = t.getparent()
+            r.getparent().remove(r)
+        n += 1
+    log(f"poll: {n} notes no longer cite the early ~/.ssh poll; '{POLL_CITES}' names the poll at slide {poll_at} "
+        f"(this run's numbering), the poll's own notes drop the comparison")
 
 
 def fix_stale(prs):
@@ -631,8 +799,49 @@ def renumber6(prs, old_to_new, old_titles, skip_ids):
     log(f"renumbered: {linked} link texts, {shifted} note runs")
 
 
+POSREF = re.compile(r"(?i)(?<!removed )\b(slides?)(\s+)(\d+)((?:\s*(?:,|and|to|–|-|&)\s*\d+)*)")
+
+
+def renumber_positions(prs, pos_map):
+    """MODE=fix1: the notes already name this deck's slides by position (renumber6 wrote them). Every slide-jump link text follows its
+    target, and every 'slide N' in the notes moves to N's new position; 'the removed slide N (“…”)' names a lecture 5 slide and stays."""
+    index_of = {s.part: i + 1 for i, s in enumerate(prs.slides)}
+    linked = shifted = 0
+
+    def one(m):
+        word, sp, first, rest = m.groups()
+        for n in [int(first)] + [int(x) for x in re.findall(r"\d+", rest)]:
+            assert n in pos_map, ("a slide number this deck does not have", m.group(0))
+        return f"{word}{sp}{pos_map[int(first)]}" + re.sub(r"\d+", lambda k: str(pos_map[int(k.group(0))]), rest)
+    for s in prs.slides:
+        for h in s._element.iter(qn("a:hlinkClick")):
+            if h.get("action", "").startswith("ppaction://hlinksldjump"):
+                target = s.part.rels[h.get(qn("r:id"))].target_part
+                t = h.getparent().getparent().find(qn("a:t"))
+                if t is not None and t.text and t.text.strip().isdigit():
+                    t.text = str(index_of[target]); linked += 1
+        if not s.has_notes_slide:
+            continue
+        for t in s.notes_slide.notes_text_frame._txBody.iter(qn("a:t")):
+            if t.text and POSREF.search(t.text):
+                new = POSREF.sub(one, t.text)
+                if new != t.text:
+                    t.text = new; shifted += 1
+    log(f"renumbered: {linked} link texts, {shifted} note runs moved to the new positions")
+
+
 # ----------------------------------------------------------------------------------------------- main
 SLIDE_OF = {}   # Rahul's slide number in SRC -> the slide object
+
+
+def save(prs, n0):
+    for title in ("Limits of OpenShell enforcement", POLL, MIDTERM_TITLE, CLOSING_TITLE):
+        at = build(prs, title)
+        log(f"at: {title!r} on slides {at[0] + 1}-{at[-1] + 1}")
+    prs.save(OUT)
+    log(f"saved {OUT}: {n0} -> {len(prs.slides)} slides")
+    with open(OUT + ".log", "w") as f:
+        f.write("\n".join(LOG) + "\n")
 
 
 def main():
@@ -648,19 +857,38 @@ def main():
     slide_for_old.update(copies)
     targets = repair_links(prs, src, slide_for_old)
     back_link_on_targets(copies, targets, back_template)
-    tables_to_figures(prs)
+    replaced = tables_to_figures(prs)
+    slide_for_old = {old: replaced.get(s.part, s) for old, s in slide_for_old.items()}
     end = closing(prs)
     place_box_under_text(prs, end, "closing")
-    place_box_under_text(prs, [mid], "midterm")
+    place_box_under_text(prs, mid, "midterm")
     fix_stale(prs)
+    poll_refs(prs)
     position = {s.slide_id: i + 1 for i, s in enumerate(prs.slides)}
     old_to_new = {old: position[s.slide_id] for old, s in slide_for_old.items()}
-    renumber6(prs, old_to_new, old_titles, {c.slide_id for c in copies.values()} | {mid.slide_id})
-    prs.save(OUT)
-    log(f"saved {OUT}: {n0} -> {len(prs.slides)} slides")
-    with open(OUT + ".log", "w") as f:
-        f.write("\n".join(LOG) + "\n")
+    renumber6(prs, old_to_new, old_titles, {c.slide_id for c in copies.values()} | {m.slide_id for m in mid})
+    save(prs, n0)
+
+
+def main_fix1():
+    """The two corrections on a deck that already carries the first patch (lecture6.pptx as installed, or Rahul's later save of it)."""
+    prs = Presentation(SRC)
+    n0 = len(prs.slides)
+    before = [s.part for s in prs.slides]
+    poll_refs(prs)                                     # before anything moves: its numbers are the input's positions
+    at = build(prs, MIDTERM_TITLE)
+    assert len(at) == 1, ("the midterm build already has its clicks", len(at))
+    slides = midterm_clicks(prs, prs.slides[at[0]])
+    move_to(prs, slides, at[0])
+    log(f"midterm: {MIDTERM_TITLE!r} at {at[0] + 1}-{at[0] + len(slides)}: one bullet per click, the closing box on the last")
+    replaced = collapse_to_pair(prs, "Limits of OpenShell enforcement")
+    assert replaced, "the Limits build has no clicks to drop"
+    position = {s.part: i + 1 for i, s in enumerate(prs.slides)}
+    pos_map = {k: position[replaced[part].part if part in replaced else part] for k, part in enumerate(before, 1)}
+    log(f"positions: {sum(1 for k, v in pos_map.items() if k != v)} of {len(pos_map)} slides moved")
+    renumber_positions(prs, pos_map)
+    save(prs, n0)
 
 
 if __name__ == "__main__":
-    main()
+    main() if MODE == "full" else main_fix1()
