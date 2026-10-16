@@ -1,0 +1,8 @@
+locate('app.py', 1): None [('module_scope', 'line 1 is at module scope in app.py.')]
+locate('testcode/NoSuchFile.py', 3): None [('file_not_in_graph', 'testcode/NoSuchFile.py is not covered by any analysed module (no such file in the analysed project).')]
+get_source(node_id): sql = f'SELECT username from USERS where password = \'{bar}\''
+get_method_bodies of an unknown signature: {}
+callers_of('init'): AmbiguousName: 'init' is ambiguous: 1230 callables match. Narrow it with in_module= or more of the dotted path. Matches: 'testcode.BenchmarkTest00001.init'; 'testcod
+callers_of('execute'): SelectorNotInGraph: 1 of 1 callable not in graph: 'execute'
+callers_of('init', in_module='testcode/BenchmarkTest00099.py'): []
+has_resolution_edges: True

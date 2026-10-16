@@ -1,0 +1,5 @@
+testcode.BenchmarkTest00099.init.BenchmarkTest00099_post
+def BenchmarkTest00099_post():
+		RESPONSE = ""
+
+		param = request.form.get("BenchmarkTest00099")

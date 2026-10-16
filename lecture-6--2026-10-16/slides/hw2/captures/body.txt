@@ -1,0 +1,8 @@
+def BenchmarkTest00099_post():
+		RESPONSE = ""
+
+		param = request.form.get("BenchmarkTest00099")
+		if not param:
+			param = ""
+
+		import configparser

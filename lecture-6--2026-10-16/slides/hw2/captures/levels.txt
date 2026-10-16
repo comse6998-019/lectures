@@ -1,0 +1,5 @@
+symbol_table              3710 callables  182 s
+call_graph                3710 callables  219 s
+program_dependency_graph  3710 callables  220 s
+system_dependency_graph   3710 callables  222 s
+CodeanalyzerUsageException: control and data flow need analysis_level='program_dependency_graph' or deeper (analyzer level 3); this analysis was built at 'symbol_table' (analyzer level 1), where the analyzer emits no cfg/cdg/ddg at all. Returning an empty result would be indistinguishable from a callable that has no dependence, so this raises instead. Rebuild with CLDK.python(..., analysis_level='system_dependency_graph').

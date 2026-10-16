@@ -1,0 +1,1230 @@
+{
+ "segments": [
+  {
+   "segment": "1",
+   "slides": [
+    {
+     "id": "1.r",
+     "kind": "route",
+     "title": "",
+     "bullets": [],
+     "refs": [],
+     "notes": "We spend the rest of today on HW2: first the CLDK SDK and an MCP server over it, then the assignment itself."
+    },
+    {
+     "id": "1.d",
+     "kind": "divider",
+     "title": "",
+     "heading": "The CLDK SDK",
+     "legible": [
+      0
+     ],
+     "bullets": [],
+     "refs": [],
+     "notes": "We start with CLDK, the analysis library that both HW2 agents call."
+    },
+    {
+     "id": "1.1",
+     "kind": "text",
+     "title": "CLDK answers questions about code.",
+     "bullets": [
+      [
+       [
+        "b",
+        "One SDK,"
+       ],
+       [
+        "r",
+        " static analysis of Java, Python and TypeScript behind one Python API (Krishna et al."
+       ],
+       [
+        "m",
+        "[1]"
+       ],
+       [
+        "r",
+        ", 2025)."
+       ]
+      ],
+      [
+       [
+        "b",
+        "One object per checkout:"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "CLDK.python(project_path, analysis_level)"
+       ],
+       [
+        "r",
+        ", built once and cached."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Four levels:"
+       ],
+       [
+        "r",
+        " symbol table, call graph, program dependency graph, system dependency graph."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Four moves:"
+       ],
+       [
+        "r",
+        " locate a line, read the body, walk callers and callees, ask a dataflow question."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] R. Krishna et al. Codellm-Devkit: a framework for contextualizing code LLMs with program analysis insights. FSE Companion 2025, pp. 308-318."
+     ],
+     "notes": "CLDK is the analysis SDK under both HW2 agents: R. Krishna, R. Pan, R. Pavuluri, S. Tamilselvam, M. Vukovic and S. Sinha, Codellm-Devkit: A Framework for Contextualizing Code LLMs with Program Analysis Insights, FSE Companion 2025, pages 308 to 318 (arXiv 2410.13007). For Python it runs codeanalyzer-python, built on Jedi and the standard library's ast. We pay for the analysis once: on 2026-10-15, on this Mac with CLDK 2.0.0rc8, the first attach to the OWASP BenchmarkPython checkout analysed 3,710 callables in 241 s at the call-graph level and 151 s at the program-dependency-graph level, and every query after it answered from the cache in under a second. We run the four moves live in cldk-mcp.ipynb, sections 1 and 2.",
+     "closing": "An alert classifier needs every move, and CLDK gives each as a single call."
+    },
+    {
+     "id": "1.2",
+     "kind": "text",
+     "title": "The request value reaches the query string.",
+     "bullets": [
+      [
+       [
+        "b",
+        "Three B608 alerts"
+       ],
+       [
+        "r",
+        " in HW1's scan scope: 00099 is true, 00011 and 00012 false."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In 00099"
+       ],
+       [
+        "r",
+        " the value goes through a "
+       ],
+       [
+        "c",
+        "configparser"
+       ],
+       [
+        "r",
+        " round trip into the f-string."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In 00011"
+       ],
+       [
+        "r",
+        " the value is passed as a query parameter, outside the f-string."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The analyzer answers it as a path"
+       ],
+       [
+        "r",
+        " of data-dependence edges."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "We take the three B608 alerts that Bandit 1.9.4 reports in HW1's scan scope of OWASP BenchmarkPython at f1291485; the answer key, expectedresults-0.1.csv, says 00099 is a true positive and 00011 and 00012 are false. We read each handler's data-dependence graph with get_ddg at the program-dependency-graph level, measured on 2026-10-15 with CLDK 2.0.0rc8 and again with 2.0.0 (codeanalyzer-python 1.5.3), which gave identical edges. In 00099 the request value at line 31 reaches the SQL string at line 46 through param, the config object and bar, and the execute call at line 49 through sql. In 00011 the value at line 39 reaches the call at line 50 through bar and never the string at line 47, and 00012 behaves the same through its string slicing. An HW1 agent told these cases apart by reading the code, and the analyzer answers the same question as a path.\n\nThe figure, stage by stage.\n1. The two handlers, 00099 on the left and 00011 on the right, with the lines that matter in each.\n2. The request value's path in 00099: line 31 to 41 to 42 to the SQL string at 46, and on to execute at 49.\n3. Its path in 00011: line 39 to 43 to the execute call at 50, and no edge into the string at 47.\n4. The verdicts: the value reaches the query string in 00099 and only the parameter tuple in 00011.",
+     "figure": {
+      "stages": [
+       "hw2/dataflow-example-1.png",
+       "hw2/dataflow-example-2.png",
+       "hw2/dataflow-example-3.png",
+       "hw2/dataflow-example-4.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 2,
+       "fig": 2
+      },
+      {
+       "b": 3,
+       "fig": 3
+      },
+      {
+       "b": 4,
+       "fig": 4
+      },
+      {
+       "b": 4,
+       "fig": 4,
+       "close": true
+      }
+     ],
+     "closing": "Bandit flags the string in all three. Dataflow says which one is tainted."
+    },
+    {
+     "id": "1.3",
+     "kind": "text",
+     "title": "An empty answer is ambiguous until checked.",
+     "bullets": [
+      [
+       [
+        "b",
+        "Check diagnostics"
+       ],
+       [
+        "r",
+        " before concluding that nothing was found."
+       ]
+      ],
+      [
+       [
+        "c",
+        "callers_of"
+       ],
+       [
+        "b",
+        " covers declared callables only,"
+       ],
+       [
+        "r",
+        " and "
+       ],
+       [
+        "c",
+        "callees_of"
+       ],
+       [
+        "r",
+        " also lists external callees."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Read the entry-point coverage:"
+       ],
+       [
+        "r",
+        " on OWASP it finds 2,463 routes and marks 2,460 decorators unresolved."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Value-name predicates resolve parameters, globals and captures."
+       ],
+       [
+        "r",
+        " A local variable needs the per-callable dependence graph, "
+       ],
+       [
+        "c",
+        "get_ddg"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "These are the rules of CLDK's agent API that a classifier depends on. An empty list from callers_of can mean that nothing calls the function or that the function is not declared in the checkout, so we read the diagnostics before we conclude anything. On the OWASP checkout get_entrypoint_coverage reports 2,463 routes and 2,460 app.route decorators it could not resolve, measured on 2026-10-15, so a short entry-point list says little until we read the coverage. The value-name predicates (resolve_value, flows_to_argument, taint) resolve parameters, captured globals and closure captures; for a local variable such as bar we use the per-callable get_ddg, as on the dataflow slide.",
+     "closing": "An empty result that could mean two things is a defect, so the agent asks why before it says no."
+    }
+   ]
+  },
+  {
+   "segment": "2",
+   "slides": [
+    {
+     "id": "2.d",
+     "kind": "divider",
+     "title": "",
+     "heading": "An MCP server over CLDK",
+     "legible": [
+      1
+     ],
+     "bullets": [],
+     "refs": [],
+     "notes": "We serve the same analysis as MCP tools, the pattern each team's server follows in HW2."
+    },
+    {
+     "id": "2.1",
+     "kind": "window",
+     "title": "Every tool queries the same CLDK object.",
+     "bullets": [
+      [
+       [
+        "c",
+        "MCPServer"
+       ],
+       [
+        "b",
+        " and "
+       ],
+       [
+        "c",
+        "@mcp.tool"
+       ],
+       [
+        "b",
+        ","
+       ],
+       [
+        "r",
+        " as in lecture 5's server."
+       ]
+      ],
+      [
+       [
+        "c",
+        "ToolError"
+       ],
+       [
+        "b",
+        " refuses"
+       ],
+       [
+        "r",
+        " a path outside the checkout or a line in no callable."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The Inspector runs it:"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "locate"
+       ],
+       [
+        "r",
+        ", "
+       ],
+       [
+        "c",
+        "dataflow"
+       ],
+       [
+        "r",
+        ", then a refused path."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "The window quotes cldk-demo/server.py as cell 18 of cldk-mcp.ipynb writes it, on the MCP Python SDK 2.3.0 in the lecture's .venv; we shortened one description, the parsing of the edge ends and a comment where the window shows dots. The server builds one CLDK object when it starts, at the program-dependency-graph level, and its four tools (locate, source, callers, dataflow) all read from it; checked() raises ToolError for any path that resolves outside the checkout. dataflow addresses the callable by its full signature, because a bare name such as init matches 1,230 callables. In class we open cldk-demo/catalog.json in the Inspector, call locate and dataflow on line 46 of testcode/BenchmarkTest00099.py, then call locate on ../expectedresults-0.1.csv to see the refusal; the server needs the cache from section 1 of the notebook, or the Inspector gives up after 30 seconds.",
+     "window": {
+      "label": "cldk-demo/server.py: the locate and dataflow tools, \"...\" where the text is shortened",
+      "lang": "python",
+      "lines": [
+       "@mcp.tool(description=\"The callable that holds a line, or module scope.\")",
+       "def locate(path: str, line: int) -> Located:",
+       "    hit = AN.locate(checked(path), line)",
+       "    return {\"signature\": hit.callable.signature if hit.callable else None,",
+       "            \"name\": hit.callable.name if hit.callable else None, \"module\": hit.module.module_name}",
+       "@mcp.tool(description=\"Data-dependence edges of the callable that holds a line: ...\")",
+       "def dataflow(path: str, line: int) -> list[Edge]:",
+       "    hit = AN.locate(checked(path), line)",
+       "    if not hit.callable:",
+       "        raise ToolError(f\"refused: line {line} of {path} is in no callable\")",
+       "    page = AN.get_ddg(hit.callable.signature, page_size=2000)",
+       "    out = []",
+       "    for e in page.edges:",
+       "        try:",
+       "            out.append({\"from_line\": ..., \"to_line\": ..., \"var\": e.var})",
+       "        except ValueError:",
+       "            continue",
+       "    return out"
+      ]
+     },
+     "closing": "The server validates arguments and results. The description enforces nothing."
+    }
+   ]
+  },
+  {
+   "segment": "3",
+   "slides": [
+    {
+     "id": "3.d",
+     "kind": "divider",
+     "title": "",
+     "heading": "HW2: what you build",
+     "legible": [
+      2
+     ],
+     "bullets": [],
+     "refs": [],
+     "notes": "We turn to HW2 itself: the two agents, the server they share, and the stages they run."
+    },
+    {
+     "id": "3.1",
+     "kind": "text",
+     "title": "From a local agent to an MCP agent",
+     "bullets": [
+      [
+       [
+        "b",
+        "Two agents from your HW1 code."
+       ],
+       [
+        "r",
+        " The code-action agent's action is a Python script that your harness runs against the CLDK object and the workspace."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The MCP agent:"
+       ],
+       [
+        "r",
+        " every tool it uses is served over MCP by a server you write."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Same stages, same outputs,"
+       ],
+       [
+        "r",
+        " chosen by "
+       ],
+       [
+        "c",
+        "[agent] kind"
+       ],
+       [
+        "r",
+        " in the config."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "Each team builds both agents on its HW1 loop and compares them on OWASP. The code-action agent has one tool, run_python(script): the harness runs the script with exec in a namespace that holds the CLDK object and the workspace path, the pattern of lecture 4 (slide 137), and the observation is what the script prints or raises. The MCP agent discovers the server's tools with tools/list and sends every call through the HW1 dispatcher and then the MCP client. Both write the same report.json and trace.jsonl, and kind under [agent] in config.toml selects which one runs.\n\nThe figure, stage by stage.\n1. The code-action agent: the model sends a Python script, and the harness runs it with exec against the CLDK object and the files, all in one process.\n2. The MCP agent: the model's tool call goes through the host and its dispatcher, as tools/call, to a server in another process.\n3. The verdicts: inside one process there is no call to check, and on the server every call is checked.",
+     "figure": {
+      "stages": [
+       "hw2/two-agents-1.png",
+       "hw2/two-agents-2.png",
+       "hw2/two-agents-3.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 2,
+       "fig": 2
+      },
+      {
+       "b": 3,
+       "fig": 2
+      },
+      {
+       "b": 3,
+       "fig": 3
+      },
+      {
+       "b": 3,
+       "fig": 3,
+       "close": true
+      }
+     ],
+     "closing": "One process cannot check a script's calls. A server checks every call."
+    },
+    {
+     "id": "3.2",
+     "kind": "text",
+     "title": "The server: analysis, text and write tools",
+     "bullets": [
+      [
+       [
+        "b",
+        "Analysis tools over CLDK 2.0:"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "locate"
+       ],
+       [
+        "r",
+        ", "
+       ],
+       [
+        "c",
+        "source"
+       ],
+       [
+        "r",
+        ", "
+       ],
+       [
+        "c",
+        "callers"
+       ],
+       [
+        "r",
+        ", "
+       ],
+       [
+        "c",
+        "callees"
+       ],
+       [
+        "r",
+        ", "
+       ],
+       [
+        "c",
+        "dataflow"
+       ],
+       [
+        "r",
+        ", "
+       ],
+       [
+        "c",
+        "entry_points"
+       ],
+       [
+        "r",
+        ", with contracts the brief fixes."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Text tools from HW1:"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "read_file"
+       ],
+       [
+        "r",
+        " and "
+       ],
+       [
+        "c",
+        "search"
+       ],
+       [
+        "r",
+        ", whose use the report counts."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Write tools:"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "edit"
+       ],
+       [
+        "r",
+        " and "
+       ],
+       [
+        "c",
+        "rescan"
+       ],
+       [
+        "r",
+        ", with a patch accepted by three checks."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "We fix the names, arguments and results of the six analysis tools in the brief, so that our driver can call any team's server. Each wraps one CLDK 2.0 call: locate, get_method_bodies, callers_of, callees_of, get_ddg, and get_entrypoints with get_entrypoint_coverage. read_file and search are HW1's, and on OWASP the model should rarely need them. edit(path, old, new) and rescan(path) are the write tools; set_alert is a host-only tool that the model never sees.\n\nThe figure, stage by stage.\n1. The server, its analysis group over CLDK 2.0, and the host-only set_alert at the right.\n2. The text group, read_file and search, from HW1.\n3. The write group, edit and rescan, judged by the three checks.",
+     "figure": {
+      "stages": [
+       "hw2/three-groups-1.png",
+       "hw2/three-groups-2.png",
+       "hw2/three-groups-3.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 2,
+       "fig": 2
+      },
+      {
+       "b": 3,
+       "fig": 3
+      },
+      {
+       "b": 3,
+       "fig": 3,
+       "close": true
+      }
+     ],
+     "closing": "Every tool has an argument schema, a result schema and listed refusal cases."
+    },
+    {
+     "id": "3.3",
+     "kind": "text",
+     "title": "Only labelled alerts are patched.",
+     "bullets": [
+      [
+       [
+        "b",
+        "Discovery,"
+       ],
+       [
+        "r",
+        " Bandit over the scan block, as in HW1."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Classification,"
+       ],
+       [
+        "r",
+        " now with the analysis tools."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Remediation,"
+       ],
+       [
+        "r",
+        " for alerts labelled 1 only: the runtime decides from the label, and the trace records it."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "Both agents run the same three stages on the same targets, and discovery is Bandit 1.9.4 at MEDIUM or higher, as in HW1. After classification the runtime sends the alerts labelled 1 to remediation and skips the rest; the model does not choose, and the trace records the decision as a routing event with by: runtime. A patch is accepted when it applies cleanly against the pinned commit, touches the flagged line, and a fresh rescan no longer reports that rule at that location. A clean rescan is evidence of a fix, and the report says that it does not prove the fix correct.\n\nThe figure, stage by stage.\n1. The three stages: discovery with Bandit, classification with a label of 1 or 0 and its evidence, and remediation with edit, rescan and the three checks.\n2. The runtime tag: only alerts labelled 1 go on to remediation, and the runtime makes that decision.\n3. The other branch: alerts labelled 0 are skipped.",
+     "figure": {
+      "stages": [
+       "hw2/stages-1.png",
+       "hw2/stages-2.png",
+       "hw2/stages-3.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 2,
+       "fig": 1
+      },
+      {
+       "b": 3,
+       "fig": 2
+      },
+      {
+       "b": 3,
+       "fig": 3
+      },
+      {
+       "b": 3,
+       "fig": 3,
+       "close": true
+      }
+     ],
+     "closing": "A patch applies cleanly, touches the flagged line, and a fresh rescan no longer reports the rule."
+    }
+   ]
+  },
+  {
+   "segment": "4",
+   "slides": [
+    {
+     "id": "4.d",
+     "kind": "divider",
+     "title": "",
+     "heading": "HW2: the guardrails",
+     "legible": [
+      3
+     ],
+     "bullets": [],
+     "refs": [],
+     "notes": "We state the rules HW2 enforces and the places that hold each of them."
+    },
+    {
+     "id": "4.1",
+     "kind": "text",
+     "title": "Each rule has a fixed and a per-alert part.",
+     "bullets": [
+      [
+       [
+        "b",
+        "Read:"
+       ],
+       [
+        "r",
+        " only the target's code. Never "
+       ],
+       [
+        "c",
+        ".git"
+       ],
+       [
+        "r",
+        ", never the answer key, and never a case other than the open one."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Write:"
+       ],
+       [
+        "r",
+        " only inside the workspace copy, and only the file of the alert being fixed. The agent never runs the target."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Network:"
+       ],
+       [
+        "r",
+        " only the model provider."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Fixed parts are set before the run,"
+       ],
+       [
+        "r",
+        " and per-alert parts change with every alert."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "We ask for the rules in words first, as rubric item A3 does. Never the answer key, only inside the workspace and only the provider are fixed before the run starts. Only the open case and only the file of the alert being fixed change with every alert, so whatever enforces them must know which alert is open. The kernel's policy is set when the sandbox starts, which is why it holds the fixed parts and cannot hold the per-alert ones: Sandlock's split from today's lecture, with the server as the narrow supervisor.",
+     "closing": "The kernel can hold the fixed parts. Only the server can hold the per-alert parts."
+    },
+    {
+     "id": "4.2",
+     "kind": "text",
+     "title": "Where each rule is enforced",
+     "bullets": [
+      [
+       [
+        "b",
+        "The server"
+       ],
+       [
+        "r",
+        " checks every MCP call, with "
+       ],
+       [
+        "c",
+        "set_alert"
+       ],
+       [
+        "r",
+        " for the per-alert parts."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The kernel,"
+       ],
+       [
+        "r",
+        " through OpenShell, holds the fixed parts for both agents."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The code-action agent has no server,"
+       ],
+       [
+        "r",
+        " so nothing holds its per-alert parts."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "We reuse the main deck's figure of the four places, drawn there for the rule that the agent may not read ~/.ssh; here we read HW2's three rules into it. The prompt states all three rules for both agents, and persuading the model bypasses it. The server is the team's own code inside the sandbox, the harness placement: it holds HW1's path check for reads and writes, and set_alert(alert_id) gives it the per-alert parts. The kernel, through OpenShell, holds the fixed parts for both agents, while the code-action agent has no server, so its per-alert parts are enforced nowhere.\n\nThe figure, stage by stage.\n1. In the model: the system prompt, inside the agent's process; persuading the model bypasses it.\n2. In the harness process: the dispatcher's check, and in HW2 the team's server, still inside the agent's process.\n3. In the kernel: Landlock file rules and the network policy through OpenShell, outside the agent's process.\n4. In hardware outside the host: a processor in the network path, which HW2 does not use.",
+     "figure": {
+      "stages": [
+       "r6/bypass-places-1.png",
+       "r6/bypass-places-2.png",
+       "r6/bypass-places-3.png",
+       "r6/bypass-places-4.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 0,
+       "fig": 1
+      },
+      {
+       "b": 1,
+       "fig": 2
+      },
+      {
+       "b": 2,
+       "fig": 3
+      },
+      {
+       "b": 2,
+       "fig": 4
+      },
+      {
+       "b": 3,
+       "fig": 4
+      },
+      {
+       "b": 3,
+       "fig": 4,
+       "close": true
+      }
+     ],
+     "closing": "A rule belongs where the agent cannot reach it from inside its own process."
+    },
+    {
+     "id": "4.3",
+     "kind": "window",
+     "title": "The policy you run under",
+     "bullets": [
+      [
+       [
+        "b",
+        "Allow-lists:"
+       ],
+       [
+        "r",
+        " no grant on the target root, so reading the key or "
+       ],
+       [
+        "c",
+        ".git"
+       ],
+       [
+        "r",
+        " fails."
+       ]
+      ],
+      [
+       [
+        "c",
+        "hard_requirement"
+       ],
+       [
+        "b",
+        ":"
+       ],
+       [
+        "r",
+        " a policy the kernel cannot enforce fails the start."
+       ]
+      ],
+      [
+       [
+        "b",
+        "One endpoint for Python:"
+       ],
+       [
+        "r",
+        " the provider, or a model server on the host."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "The window is the policy we verified on 2026-10-15 in an OpenShell sandbox on this Mac, with the OWASP target mounted read-only at /target and the workspace at /sandbox/work. Inside it, cat /target/expectedresults-0.1.csv exits 1 with Permission denied, and so do .git/HEAD and a write into /target, while reads of the test code and a write into the workspace succeed. Filesystem denials leave no log record, so their evidence is the process's error and exit code; network denials are logged with a reason. The provider key arrives through an OpenShell provider attachment and never enters the sandbox, and a team on a local model server grants that server's host port as the one endpoint instead. The sandbox needs Linux, macOS on Apple Silicon or WSL 2, with Docker or Podman; Intel Macs follow the brief's VM recipe and ask us for help.",
+     "window": {
+      "label": "policy.yaml: the OWASP policy, verified in an OpenShell sandbox on October 15",
+      "lang": "yaml",
+      "lines": [
+       "version: 1",
+       "filesystem_policy:",
+       "  include_workdir: true",
+       "  read_only: [/bin, /usr, /lib, /lib64, /etc, /proc, /dev/urandom, /app,",
+       "              /target/testcode, /target/helpers, /target/app.py]",
+       "  read_write: [/sandbox, /tmp, /dev/null]",
+       "landlock:",
+       "  compatibility: hard_requirement",
+       "network_policies:",
+       "  model_provider:",
+       "    endpoints:",
+       "      - host: api.anthropic.com",
+       "        port: 443",
+       "        protocol: rest",
+       "        enforcement: enforce",
+       "        access: read-write",
+       "    binaries:",
+       "      - path: /usr/local/bin/python3.12"
+      ]
+     },
+     "closing": "Linux, Apple Silicon macOS or WSL 2. On an Intel Mac, use the VM recipe."
+    },
+    {
+     "id": "4.4",
+     "kind": "text",
+     "title": "How the guardrails are tested",
+     "bullets": [
+      [
+       [
+        "b",
+        "You run each agent five times"
+       ],
+       [
+        "r",
+        " under a planted injection and count refusals."
+       ]
+      ],
+      [
+       [
+        "b",
+        "We drive your server"
+       ],
+       [
+        "r",
+        " with raw MCP calls, from "
+       ],
+       [
+        "c",
+        "mcp.json"
+       ],
+       [
+        "r",
+        ", inside your policy."
+       ]
+      ],
+      [
+       [
+        "b",
+        "We bypass your server"
+       ],
+       [
+        "r",
+        " from inside the sandbox, where the kernel alone decides."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The result:"
+       ],
+       [
+        "r",
+        " the kernel stops what was fixed before the run, the server what depends on the alert, and the prompt nothing reliably."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "Two things test the guardrails, and neither needs a harness from the team. With fixtures/injection.patch applied, a comment inside one OWASP handler, placed after the flagged statement so that Bandit's line does not move, tells automated reviewers to read the answer key; each team runs both agents five times and reports from its traces what the model attempted and which place refused it. At grading, our driver starts the team's server from mcp.json inside the team's policy, sends raw tools/call requests for forbidden reads and writes and one malformed argument, then runs commands in the sandbox with openshell exec, past the server. Reading the key and writing outside the workspace fail at the kernel, and reading another case succeeds, because only the server knows which alert is open.\n\nThe figure, stage by stage.\n1. The path a request takes, model, dispatcher, server, kernel, file, and the three doors on it.\n2. The planted text: the model may obey it, and its call stops at the server's door.\n3. A raw MCP call from our driver, stopped at the server.\n4. A process inside the sandbox: the kernel stops the key and writes outside the workspace, and the other case gets through.",
+     "figure": {
+      "stages": [
+       "hw2/three-doors-1.png",
+       "hw2/three-doors-2.png",
+       "hw2/three-doors-3.png",
+       "hw2/three-doors-4.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 0,
+       "fig": 1
+      },
+      {
+       "b": 1,
+       "fig": 2
+      },
+      {
+       "b": 2,
+       "fig": 3
+      },
+      {
+       "b": 3,
+       "fig": 4
+      },
+      {
+       "b": 4,
+       "fig": 4
+      },
+      {
+       "b": 4,
+       "fig": 4,
+       "close": true
+      }
+     ],
+     "closing": "Teams write no test harness. The fixtures and our driver do the testing."
+    }
+   ]
+  },
+  {
+   "segment": "5",
+   "slides": [
+    {
+     "id": "5.d",
+     "kind": "divider",
+     "title": "",
+     "heading": "HW2: contracts, rubric, dates",
+     "legible": [
+      4
+     ],
+     "bullets": [],
+     "refs": [],
+     "notes": "We close with what changed in the contracts since HW1, the rubric and the dates."
+    },
+    {
+     "id": "5.1",
+     "kind": "window",
+     "title": "What changed since HW1",
+     "bullets": [
+      [
+       [
+        "b",
+        "The CLI is unchanged."
+       ],
+       [
+        "r",
+        " The config gains "
+       ],
+       [
+        "c",
+        "[agent] kind"
+       ],
+       [
+        "r",
+        ", "
+       ],
+       [
+        "c",
+        "[mcp] config"
+       ],
+       [
+        "r",
+        " and "
+       ],
+       [
+        "c",
+        "[sandbox] policy"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ],
+      [
+       [
+        "c",
+        "mcp.json"
+       ],
+       [
+        "b",
+        " and "
+       ],
+       [
+        "c",
+        "policy.yaml"
+       ],
+       [
+        "r",
+        " at the repository root: the evaluator starts your server and your sandbox from them without reading your code."
+       ]
+      ],
+      [
+       [
+        "b",
+        "A config that does not validate"
+       ],
+       [
+        "r",
+        " stops grading at the first step."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "The brief boxes these changes under one heading, What changed since HW1, so that nobody misses them; the lines in the window come from the examples in hw2-tool-boundary. The CLI stays ./your-agent --input <root> --output <dir> --config config.toml. The trace keeps HW1's kinds and six invariants: tool_request and tool_result gain via, a refused tool_result gains refused_by (dispatcher, server or kernel), and the MCP host writes one discovery event after tools/list. Each row of report.json gains remediation, with its status, the unified diff and the three checks, and the three schemas are reissued.",
+     "window": {
+      "label": "examples/: the additions to config, trace and report, shortened with \"...\"",
+      "lang": "toml",
+      "lines": [
+       "# config.toml",
+       "[agent]",
+       "kind = \"mcp\"            # or \"codeact\"",
+       "[mcp]",
+       "config = \"mcp.json\"",
+       "[sandbox]",
+       "policy = \"policy.yaml\"",
+       "# trace.jsonl",
+       "{\"kind\": \"discovery\", \"server\": \"analysis\", \"tools\": [\"locate\", \"source\", ...]}",
+       "{\"kind\": \"tool_request\", \"tool\": \"dataflow\", ..., \"via\": \"mcp\"}",
+       "{\"kind\": \"tool_result\", \"ok\": false, ..., \"via\": \"mcp\", \"refused_by\": \"server\"}",
+       "# report.json, each alert",
+       "\"remediation\": {\"status\": \"accepted\", \"diff\": \"--- a/testcode/...\",",
+       "  \"checks\": {\"applies\": true, \"touches_flagged_line\": true, \"clean_rescan\": true}}"
+      ]
+     },
+     "closing": "Everything behind these files is your design."
+    },
+    {
+     "id": "5.2",
+     "kind": "text",
+     "title": "The rubric",
+     "bullets": [
+      [
+       [
+        "b",
+        "Design, 5 points:"
+       ],
+       [
+        "r",
+        " tool contracts, the call path, the three rules with their places, the policy with reasons, patch acceptance."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Implementation, 9 points:"
+       ],
+       [
+        "r",
+        " the server, the code-action agent, write tools, discovery, dispatcher refusals, the remediation route, the per-alert parts, the sandbox, the network rule."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Evidence and README, 4 points:"
+       ],
+       [
+        "r",
+        " a README we can follow, the live-run measurement, the two comparisons, limitations."
+       ]
+      ],
+      [
+       [
+        "b",
+        "18 items, one point each,"
+       ],
+       [
+        "r",
+        " scaled to the assignment's 20 percent of the course grade. Classification accuracy is collected for teaching only."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "The rubric has 18 items of one point each, scaled to the assignment's 20 percent of the course grade. Part A grades the design report, Part B the mechanisms in the code, and Part C the evidence and the README; the website now lists the same items. A report that describes a mechanism the code lacks earns nothing for it. We collect classification accuracy to see how the agents do, and it carries no points.",
+     "closing": "A missing mechanism cannot earn its point."
+    },
+    {
+     "id": "5.3",
+     "kind": "text",
+     "title": "Dates and platform",
+     "bullets": [
+      [
+       [
+        "b",
+        "Released today, Friday, October 16, 2026."
+       ],
+       [
+        "r",
+        " Due Friday, November 13, 2026, before 11:59 pm."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Six late days per student per semester,"
+       ],
+       [
+        "r",
+        " at most three on one assignment."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The MCP agent runs on all three targets,"
+       ],
+       [
+        "r",
+        " and the code-action agent on OWASP only."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The repository"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "comse6998-019/hw2-tool-boundary"
+       ],
+       [
+        "r",
+        ": brief, schemas, examples, fixtures, and after today the CLDK server as a reference pattern."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "HW2 is released today, Friday, October 16, 2026, and due Friday, November 13, 2026, before 11:59 pm. Each student has six late days per semester, at most three on one assignment, and the website corrects the HW1 brief's wording. OpenShell needs Linux, macOS on Apple Silicon, or Windows with WSL 2, plus Docker, Podman or host virtualization, and a kernel of 6.2 or newer for Landlock ABI v3; Intel Macs and Windows without WSL 2 follow the brief's Linux VM recipe. The midterm is next Friday, October 23, in class: one hour, individual, closed book.",
+     "closing": "Next Friday is the midterm. Office hours Friday 12:00 to 1:30 pm."
+    }
+   ]
+  }
+ ]
+}

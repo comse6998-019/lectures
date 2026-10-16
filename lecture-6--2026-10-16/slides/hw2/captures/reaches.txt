@@ -1,0 +1,4 @@
+00099: request (31) -> sql string (46): (['31', '41', '42', '46'], ['param', 'conf52528.get', 'bar'])
+00099: request (31) -> execute (49):    (['31', '41', '42', '46', '49'], ['param', 'conf52528.get', 'bar', 'sql'])
+00011: request (39) -> sql string (47): (None, None)
+00011: request (39) -> execute (50):    (['39', '43', '50'], ['param', 'bar'])

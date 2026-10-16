@@ -17,7 +17,9 @@ own layout of an earlier build of the same spec (lectures/CLAUDE.md: "PowerPoint
     MEASURED=../lecture6-hw2.pptx MEASURES=<scratch>/hw2.measures.json DECK=... SPEC=... OUT=... python hw2/build-hw2.py
 
 MEASURED is the measured build (its .map.json says which slide holds each item); with it, plain text counts at the bottom of its
-text as PowerPoint laid it out, and every other shape at its declared box.
+text as PowerPoint laid it out, and every other shape at its declared box. A figure or code window under the body then starts
+GAP under the body's measured text, the figure narrowing and the window's code stepping down from 8 to 7 pt to stay above the
+floor; the body's words and size still come from the estimates, so the measurement stays valid.
 
 Markup inside any text field of the spec (bullets, lead, closing, table cells; notes get the plain form):
   slide links    "slide ⟦s:6.2⟧" the last click of item 6.2 (its complete slide); ⟦sf:6.2⟧ its first click;
@@ -28,6 +30,12 @@ Markup inside any text field of the spec (bullets, lead, closing, table cells; n
 
 Steps: an item's clicks come from its content in this order unless it carries an explicit "steps" list:
 bullets (one each), then figure stages, then table rows, then the closing box. Geometry never moves between clicks.
+
+Code windows: "lang" yaml, python or toml (TOML and JSON lines) is set in the VS Code Light+ colours of lectures/CLAUDE.md;
+"out" (a program's printed output) in plain black; any other lang as raw lines in #1F1F1F. A window may carry an "output":
+{"label", "lines"} window, stacked OUTPUT_GAP under it as on lecture 4's slide 196; a step with "out": false hides it, so
+the output can arrive on its own click. Code is set at the sizes in CODE_SIZES (env, default "8.0": the HW2 deck's floor);
+a window that does not fit at the smallest is reported, never squeezed.
 """
 import copy
 import json
@@ -438,12 +446,63 @@ def lines_for(chars, width_emu, size_pt, factor=0.52):
     return max(1, -(-chars // per_line))
 
 
+# PowerPoint's layout of the body placeholder, fitted to its own measurements of Task 3.4's build (14 bodies, exact): the
+# text starts at the layout's top inset (97500 EMU) and each bullet paragraph takes its 3 pt before and after plus 1.38 x
+# the size per line (Arial's 1.15 em at the layout's 120 percent). Lines come from real widths (Arial and Arial Bold for
+# the words, Aptos Mono at 0.6 em for code runs) across the text width, the placeholder less its insets and the bullet
+# margin, at 99 percent; that rule gave PowerPoint's own line count on all 14 bodies.
+BODY_INSET, BULLET_MARL, LINE_EM, WRAP_FRACTION = 97500, 342900, 1.38, 0.99
+
+
+def segment_lines(segs, size, width_emu):
+    """Lines one bullet paragraph takes in PowerPoint, broken greedily at spaces with real font widths."""
+    avail = (width_emu - 2 * BODY_INSET - BULLET_MARL) / EMU_PT * WRAP_FRACTION
+    try:
+        fonts = {False: _arial(size, False), True: _arial(size, True)}
+    except OSError:
+        return lines_for(sum(len(plain(t)) for _, t in segs), width_emu - BULLET_MARL, size)
+
+    def run_width(text, kind):
+        if kind == "c":
+            return len(text) * 0.6 * size
+        if kind == "m":
+            return fonts[False].getlength(text) / 20.0 * 0.6
+        return fonts[kind == "b"].getlength(text) / 20.0
+
+    words, cur = [], []
+    for kind, text in segs:
+        for ch in plain(text):
+            if ch == " ":
+                if cur:
+                    words.append(cur)
+                    cur = []
+            else:
+                cur.append((ch, kind))
+    if cur:
+        words.append(cur)
+    space = fonts[False].getlength(" ") / 20.0
+    lines, x = 1, 0.0
+    for w in words:
+        width, run, kind = 0.0, "", None
+        for ch, k in w:
+            if k != kind and run:
+                width += run_width(run, kind)
+                run = ""
+            run, kind = run + ch, k
+        width += run_width(run, kind) if run else 0.0
+        if x and x + space + width > avail:
+            lines, x = lines + 1, width
+        else:
+            x = x + (space if x else 0.0) + width
+    return lines
+
+
 def bullets_height(bullets, width_emu, size):
-    h = 0
+    """Height of the bullet paragraphs as PowerPoint lays them out in the body placeholder, top inset included."""
+    h = BODY_INSET
     for segs in bullets:
-        chars = sum(len(plain(t)) for _, t in segs)
-        h += lines_for(chars, width_emu - 342900, size) * size * 1.2 * EMU_PT + 6 * EMU_PT
-    return int(h + 91440)
+        h += 6 * EMU_PT + segment_lines(segs, size, width_emu) * size * LINE_EM * EMU_PT
+    return int(h)
 
 
 def lead_height(lead, width_emu, size=14):
@@ -454,7 +513,8 @@ def lead_height(lead, width_emu, size=14):
 
 WINDOW_PARTS = ["CodeWindow", "WinBar", "WinDot 0", "WinDot 1", "WinDot 2", "TextBox 8", "TextBox 7"]
 OFF = {"WinBar": 265176, "WinDot 0": 82296, "WinDot 1": 82296, "WinDot 2": 82296, "TextBox 8": 41148, "TextBox 7": 329184}
-LIGHT_PLUS = {"key": "0451A5", "str": "A31515", "num": "098658", "kw": "0000FF", "com": "008000", "plain": "000000", "raw": "1F1F1F"}
+LIGHT_PLUS = {"key": "0451A5", "str": "A31515", "num": "098658", "kw": "0000FF", "com": "008000", "plain": "000000", "raw": "1F1F1F",
+              "var": "001080", "fn": "795E26", "ctl": "AF00DB", "type": "267F99"}
 
 
 def yaml_tokens(line):
@@ -479,23 +539,121 @@ def yaml_tokens(line):
     return [(t, "plain" if role == "str" and not t.strip() else role) for t, role in out]
 
 
+def merge_roles(tokens):
+    """Adjacent tokens of one role as one run."""
+    merged = []
+    for t, role in tokens:
+        if merged and merged[-1][1] == role:
+            merged[-1] = (merged[-1][0] + t, role)
+        else:
+            merged.append((t, role))
+    return merged
+
+
+PY_CONTROL = {"return", "if", "elif", "else", "for", "while", "try", "except", "finally", "raise", "import", "from", "with", "as",
+              "pass", "continue", "break", "yield", "await", "in"}
+PY_KEYWORD = {"def", "class", "lambda", "None", "True", "False", "and", "or", "not", "is", "async", "global", "nonlocal"}
+PY_TYPES = {"str", "int", "float", "bool", "list", "dict", "tuple", "set", "bytes", "object", "TypedDict", "Path",
+            "ValueError", "ToolError", "MCPServer", "CLDK"}
+PY_TOKEN = re.compile(r"""(\#.*$)|([rbfRBF]{0,2}"(?:[^"\\]|\\.)*"|[rbfRBF]{0,2}'(?:[^'\\]|\\.)*')|(@[\w.]+)|(\b\d[\d_]*(?:\.\d+)?\b)"""
+                      r"""|([A-Za-z_]\w*)|(\s+)|(.)""")
+
+
+def python_tokens(line):
+    """VS Code Light+ roles for one line of Python: comments, strings, decorators, numbers, control and other keywords,
+    types (builtins and CapWords names), function names (defined or called), and every other name as a variable."""
+    out, prev = [], ""
+    for m in PY_TOKEN.finditer(line):
+        com, string, deco, num, name, space, other = m.groups()
+        if com:
+            out.append((com, "com"))
+        elif string:
+            out.append((string, "str"))
+        elif deco:
+            out.append((deco, "fn"))
+        elif num:
+            out.append((num, "num"))
+        elif name:
+            if name in PY_CONTROL:
+                role = "ctl"
+            elif name in PY_KEYWORD:
+                role = "kw"
+            elif prev == "class" or name in PY_TYPES or (name[0].isupper() and not name.isupper()):
+                role = "type"
+            elif prev == "def" or line[m.end():m.end() + 1] == "(":
+                role = "fn"
+            else:
+                role = "var"
+            out.append((name, role))
+        else:
+            out.append((space or other, "plain"))
+        if not space:
+            prev = name or ""
+    return merge_roles(out)
+
+
+TOML_TOKEN = re.compile(r"""(\#.*$)|("(?:[^"\\]|\\.)*")(?=\s*:)|("(?:[^"\\]|\\.)*")|(^\s*\[[\w.]+\])|([A-Za-z_][\w-]*)(?=\s*=)"""
+                        r"""|\b(true|false|null)\b|((?<![\w.])-?\d+(?:\.\d+)?(?![\w.]))|(.)""")
+
+
+def toml_tokens(line):
+    """VS Code Light+ roles for a line of TOML or JSON: comments, keys (JSON keys, TOML tables and bare keys), strings,
+    constants and numbers; punctuation in plain black."""
+    out = []
+    for m in TOML_TOKEN.finditer(line):
+        com, jkey, string, table, bare, const, num, other = m.groups()
+        if com:
+            out.append((com, "com"))
+        elif jkey or table or bare:
+            out.append((jkey or table or bare, "key"))
+        elif string:
+            out.append((string, "str"))
+        elif const:
+            out.append((const, "kw"))
+        elif num:
+            out.append((num, "num"))
+        else:
+            out.append((other, "plain"))
+    return merge_roles(out)
+
+
+TOKENIZERS = {"yaml": yaml_tokens, "python": python_tokens, "toml": toml_tokens, "out": lambda line: [(line, "plain")]}
+CODE_SIZES = tuple(float(x) for x in os.environ.get("CODE_SIZES", "8.0").split(","))
+OUTPUT_GAP = 64000  # lecture 4, slide 196: stacked windows 64000 EMU apart
+
+
 def window_height(n_lines, size):
     return int(329184 + n_lines * size * 1.221 * EMU_PT + 90000)
 
 
-def add_window(slide, top, label, lines, size, lang):
-    tokenizer = yaml_tokens if lang == "yaml" else (lambda line: [(line, "raw")])
+def windows_height(windows, size):
+    """Height of a stack of windows (the code, then its output) at one code size."""
+    return sum(window_height(len(w["lines"]), size) for w in windows) + OUTPUT_GAP * (len(windows) - 1)
+
+
+def add_window(slide, top, label, lines, size, lang, suffix=""):
+    """A code window from the base deck's slide 10 at top; suffix renames its shapes so that a second, stacked window (the
+    output) can be found and hidden by its own click."""
+    tokenizer = TOKENIZERS.get(lang, lambda line: [(line, "raw")])
+    per_line = int(5724144 / EMU_PT / (0.6 * size))  # Aptos Mono advances 0.6 em; the code box has no insets and no wrap
+    for line in lines:
+        if len(line) > per_line:
+            warn(f"{slide.shapes.title.text_frame.text!r}: code line of {len(line)} characters runs past the code box at "
+                 f"{size} pt ({per_line} fit): {line[:40]!r}")
     import_shapes(slide, T_WINDOW, WINDOW_PARTS)
+    if suffix:
+        for name in WINDOW_PARTS:
+            shape(slide, name, -1).name = name + suffix
     height = window_height(len(lines), size)
-    set_xfrm(shape(slide, "CodeWindow"), y=top, h=height)
+    set_xfrm(shape(slide, "CodeWindow" + suffix), y=top, h=height)
     for name, off in OFF.items():
-        set_xfrm(shape(slide, name), y=top + off)
-    set_single_run(shape(slide, "TextBox 8"), label)
+        set_xfrm(shape(slide, name + suffix), y=top + off)
+    set_single_run(shape(slide, "TextBox 8" + suffix), label)
     paras = []
     for line in lines:
         runs = [run(t, rpr(size, False, LIGHT_PLUS[role], mono=True)) for t, role in tokenizer(line)] or [run(" ", rpr(size, False, mono=True))]
         paras.append(para(None, runs))
-    code = shape(slide, "TextBox 7")
+    code = shape(slide, "TextBox 7" + suffix)
     set_paragraphs(code, paras)
     set_xfrm(code, h=int(len(lines) * size * 1.221 * EMU_PT + 20000))
     return top + height
@@ -886,6 +1044,20 @@ def content_bottom(slide, measured=None):
     return max(bottoms, default=BODY_TOP)
 
 
+def measured_body_bottom(slide, spec):
+    """The bottom of the body text as PowerPoint laid it out in the measured build, or None without a current measurement.
+    The body's words and size come from the estimates in both passes, so the measurement stays valid; only the figure or
+    window under the text moves to keep GAP from it."""
+    m = MEASURED.get(spec["id"], {}).get(("Content Placeholder 2", 0))
+    ph = [sp for sp in slide.shapes if sp.name == "Content Placeholder 2"]
+    if m is None or not ph:
+        return None
+    if ph[0].text_frame.text != m[0]:
+        warn(f"{spec['id']}: body text changed since the measured build; the middle stays at its estimated place")
+        return None
+    return m[1]
+
+
 def add_skip_link(slide, target_id):
     """A small "skip" at the foot of an optional item's slides, linked to the first slide after the optional run."""
     n = NUMBERS["new_first"].get(target_id)
@@ -966,7 +1138,8 @@ def plan_steps(spec):
     if spec.get("steps"):
         out = []
         for st in spec["steps"]:
-            out.append({"b": st.get("b", nb), "fig": st.get("fig", stages), "rows": st.get("rows", nr), "close": bool(st.get("close", False))})
+            out.append({"b": st.get("b", nb), "fig": st.get("fig", stages), "rows": st.get("rows", nr), "close": bool(st.get("close", False)),
+                        "out": bool(st.get("out", True))})
         return out
     steps = []
     single = stages == 1
@@ -1041,6 +1214,9 @@ def show_step(slide, spec, step, final_geom):
             est = ROW_HEIGHTS.get(spec["id"])
             if est:
                 gf.height = sum(est[:1 + step["rows"]])
+    if not step.get("out", True):
+        for name in WINDOW_PARTS:
+            drop(slide, name + " out")
     if not step["close"]:
         drop(slide, "Rectangle 4")
 
@@ -1069,15 +1245,26 @@ def build_final(spec):
         ROW_HEIGHTS[spec["id"]] = list(LAST_ROWS)
     elif kind == "window":
         w = spec["window"]
-        n_lines = len(w["lines"])
+        stack = [w] + ([dict(w["output"], lang="out")] if w.get("output") else [])
         h_bul = (lead_height(spec["lead"], COL_W) if spec.get("lead") else 0) + bullets_height(spec.get("bullets", []), COL_W, 11.0)
-        size = 8.0
-        for cand in (8.0, 7.5, 7.0):
+        size = CODE_SIZES[0]
+        for cand in CODE_SIZES:
             size = cand
-            if BODY_TOP + h_bul + 150000 + window_height(n_lines, cand) <= floor:
+            if BODY_TOP + h_bul + 150000 + windows_height(stack, cand) <= floor:
                 break
-        bottom = body_block(s, spec, COL_W, floor - window_height(len(w["lines"]), size) - 150000)
-        end = add_window(s, bottom + 150000, w["label"], w["lines"], size, w["lang"])
+        bottom = body_block(s, spec, COL_W, floor - windows_height(stack, size) - 150000)
+        top = bottom + 150000
+        measured = measured_body_bottom(s, spec)
+        if measured is not None:  # PowerPoint's own text bottom: the window starts GAP under it, at the largest size that fits
+            top = max(top, measured + GAP)
+            for cand in CODE_SIZES:
+                size = cand
+                if top + windows_height(stack, cand) <= floor:
+                    break
+        end = top
+        for k, win in enumerate(stack):
+            end = add_window(s, end + (OUTPUT_GAP if k else 0), win["label"], win["lines"], size, win["lang"],
+                             " out" if k else "")
         if size < 8.0:
             print(f"  window at {size} pt: {spec['title'][:50]}")
         if end > floor + 40000:
@@ -1122,10 +1309,15 @@ def build_final(spec):
                     break
                 width -= 80000
             fig_h = int(width * ar)
-            if width < 0.9 * COL_W:
-                warn(f"{spec['id']}: figure scaled to {100 * width / COL_W:.0f}% of the column to fit; its labels shrink with it")
             bottom = body_block(s, spec, COL_W, floor - fig_h - 90000) if has_text else BODY_TOP
             top = bottom + max(60000, (floor - bottom - fig_h) // 2)   # centred in the free band under the bullets
+            measured = measured_body_bottom(s, spec) if has_text else None
+            if measured is not None:  # PowerPoint's own text bottom: the figure takes the band from GAP under it to the floor
+                width = min(COL_W, int((floor - measured - GAP) / ar))
+                fig_h = int(width * ar)
+                top = measured + max(GAP, (floor - measured - fig_h) // 2)
+            if width < 0.9 * COL_W:
+                warn(f"{spec['id']}: figure scaled to {100 * width / COL_W:.0f}% of the column to fit; its labels shrink with it")
             geom = (int(COL_L + (COL_W - width) / 2), top, width, fig_h)
         if not has_text:
             drop(s, "Content Placeholder 2")
@@ -1200,8 +1392,9 @@ def build(spec):
 
 # ================================================================ route and dividers
 
-LECTURE_TITLE = "HW2: two agents over CLDK"
-ROUTE_ROWS = ["The CLDK SDK", "An MCP server over CLDK", "HW2: what you build", "HW2: the guardrails", "HW2: contracts, rubric, dates"]
+LECTURE_TITLE = "HW2: CLDK, MCP, and the brief"
+ROUTE_ROWS = ["CLDK essentials", "Moves on the analysis object", "An MCP server over CLDK", "The MCP and code-action agents",
+              "The brief"]
 ROW_TOP = {0: 2045919, 1: 2521407, 2: 2996896, 3: 3472383, 4: 3947872}
 ROW_H = 338553
 
@@ -1271,7 +1464,8 @@ TITLE_PARTS = [("Title 1", 'type="ctrTitle"', '<a:r><a:rPr lang="en-US" b="1"/><
 TITLE_SP = ('<p:sp xmlns:a="{A}" xmlns:p="{P}"><p:nvSpPr><p:cNvPr id="{id}" name="{name}"/><p:cNvSpPr><a:spLocks noGrp="1"/>'
             '</p:cNvSpPr><p:nvPr><p:ph {ph}/></p:nvPr></p:nvSpPr><p:spPr bwMode="auto"/><p:txBody><a:bodyPr/><a:lstStyle/><a:p>'
             '<a:pPr><a:defRPr/></a:pPr>{runs}<a:endParaRPr b="1"/></a:p></p:txBody></p:sp>')
-TITLE_NOTES = "HW2 release: the CLDK SDK, the MCP server over it, and the assignment."
+TITLE_NOTES = ("Introduce Lecture 6, HW2 part: the CLDK essentials for a Python project, an MCP server over CLDK's API, the "
+               "MCP agent and the code-action agent that call it, and then the brief.")
 
 
 def title_slide():

@@ -1,0 +1,1 @@
+2463 entry points; frameworks_detected=['click', 'flask'] rulesets=['shipped'] unresolved={'app.route': 2460} errors=[] diagnostics=[]

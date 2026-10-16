@@ -1,0 +1,1566 @@
+{
+ "segments": [
+  {
+   "segment": "1",
+   "slides": [
+    {
+     "id": "1.r",
+     "kind": "route",
+     "title": "",
+     "bullets": [],
+     "refs": [],
+     "notes": "We spend the rest of today on HW2. We learn the CLDK calls that answer questions about a Python project, wrap them as MCP tools, call them from the MCP agent and from a code-action script, and then walk through the brief."
+    },
+    {
+     "id": "1.d",
+     "kind": "divider",
+     "title": "",
+     "heading": "CLDK essentials",
+     "legible": [
+      0
+     ],
+     "bullets": [],
+     "refs": [],
+     "notes": "We start with what CLDK is, how it attaches to a checkout, and what each analysis level can answer."
+    },
+    {
+     "id": "1.1",
+     "kind": "window",
+     "title": "CLDK answers questions about Python code.",
+     "bullets": [
+      [
+       [
+        "b",
+        "One Python API"
+       ],
+       [
+        "r",
+        " runs static analysis over Java, Python and TypeScript code (Krishna et al."
+       ],
+       [
+        "m",
+        "[1]"
+       ],
+       [
+        "r",
+        ", 2025)."
+       ]
+      ],
+      [
+       [
+        "c",
+        "pip install cldk"
+       ],
+       [
+        "r",
+        " installs it on Python 3.11 or newer."
+       ]
+      ],
+      [
+       [
+        "b",
+        "For Python,"
+       ],
+       [
+        "r",
+        " the engine is "
+       ],
+       [
+        "c",
+        "codeanalyzer-python"
+       ],
+       [
+        "r",
+        ", built on Jedi and the standard library's "
+       ],
+       [
+        "c",
+        "ast"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ],
+      [
+       [
+        "b",
+        "HW2's project"
+       ],
+       [
+        "r",
+        " is the OWASP BenchmarkPython checkout that HW1 scanned."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] R. Krishna et al. Codellm-Devkit: a framework for contextualizing code LLMs with program analysis insights. FSE Companion 2025, pp. 308-318."
+     ],
+     "notes": "CLDK is R. Krishna, R. Pan, R. Pavuluri, S. Tamilselvam, M. Vukovic and S. Sinha, Codellm-Devkit: A Framework for Contextualizing Code LLMs with Program Analysis Insights, FSE Companion 2025, pages 308 to 318 (arXiv 2410.13007). We use cldk 2.0.0 from PyPI, whose package metadata requires Python 3.11 or newer; for a Python project it runs codeanalyzer-python 1.5.3. The window is section 1 of cldk-mcp.ipynb, and its output was captured on 2026-10-15 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0): 3710 callables in 11 s, read from the cache that the first attach left in cldk-demo/owasp/.codeanalyzer. The checkout is OWASP BenchmarkPython at f1291485, the commit HW1 used.\n\nClick by click.\n1. CLDK is one Python API over static analysis of three languages, from the paper by Krishna and colleagues at FSE 2025.\n2. Installing it is one pip command, and it needs Python 3.11 or newer.\n3. For a Python project the analyzer is codeanalyzer-python: Jedi resolves the names and ast gives the structure.\n4. The project is HW1's OWASP checkout. The output arrives: 3,710 callables, attached from the cache in 11 seconds.\n5. The closing: one object per checkout, and every question we ask is a method call on it.",
+     "window": {
+      "label": "cldk-mcp.ipynb, section 1: attach the analysis to the checkout",
+      "lang": "python",
+      "lines": [
+       "import time",
+       "from cldk import CLDK",
+       "t = time.time()",
+       "an = CLDK.python(project_path=\"cldk-demo/owasp\", analysis_level=\"program_dependency_graph\")",
+       "print(len(an.get_callables_overview()), \"callables,\", f\"{time.time()-t:.0f} s\")"
+      ],
+      "output": {
+       "label": "output: a warm attach, read from the cache in cldk-demo/owasp/.codeanalyzer",
+       "lines": [
+        "3710 callables, 11 s"
+       ]
+      }
+     },
+     "steps": [
+      {
+       "b": 1,
+       "out": false
+      },
+      {
+       "b": 2,
+       "out": false
+      },
+      {
+       "b": 3,
+       "out": false
+      },
+      {
+       "b": 4,
+       "out": true
+      },
+      {
+       "b": 4,
+       "out": true,
+       "close": true
+      }
+     ],
+     "closing": "Every question is a method on one cached object per checkout."
+    },
+    {
+     "id": "1.2",
+     "kind": "window",
+     "title": "The analysis level sets what CLDK answers.",
+     "bullets": [
+      [
+       [
+        "c",
+        "symbol_table"
+       ],
+       [
+        "r",
+        " knows what is declared, and "
+       ],
+       [
+        "c",
+        "call_graph"
+       ],
+       [
+        "r",
+        " who calls whom."
+       ]
+      ],
+      [
+       [
+        "c",
+        "program_dependency_graph"
+       ],
+       [
+        "r",
+        " adds flow inside each callable, and "
+       ],
+       [
+        "c",
+        "system_dependency_graph"
+       ],
+       [
+        "r",
+        " adds flow across them."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "levels.py is in slides/hw2/captures. For each level it copies cldk-demo/owasp without its analysis cache and attaches once, so each row is a first attach. Measured on 2026-10-15 on this Mac with cldk 2.0.0 and codeanalyzer-python 1.5.3: symbol table 182 s, call graph 219 s, program dependency graph 220 s, system dependency graph 222 s, 3,710 callables at every level. An earlier run the same evening, also with other work on the machine, gave 135 s, 131 s, 158 s, 217 s for the same four levels. On this project the levels differ less than their names suggest; every first attach also creates a virtualenv for the analyzer inside the copy's cache folder. The specification's earlier measurement, with 2.0.0rc8, was 241 s at call-graph level and 151 s at the dependency level. From the cache an attach takes seconds (11 s on the previous slide). The notebook and HW2's server use program_dependency_graph, the lowest level with dataflow.\n\nClick by click.\n1. The two cheap levels: the symbol table knows what is declared, and the call graph knows who calls whom.\n2. The two dependency levels add flow, inside a callable and across callables. The output arrives: every first attach took minutes on this Mac, the system dependency graph the longest.\n3. The closing: choose the level the questions need, pay once, and read the cache after that.",
+     "window": {
+      "label": "levels.py: the first attach at each level, each on a fresh copy of the checkout",
+      "lang": "python",
+      "lines": [
+       "for level in [\"symbol_table\", \"call_graph\", \"program_dependency_graph\",",
+       "              \"system_dependency_graph\"]:",
+       "    fresh = shutil.copytree(\"cldk-demo/owasp\", f\"{out}/{level}\",",
+       "                            ignore=shutil.ignore_patterns(\".codeanalyzer\", \".git\"))",
+       "    t = time.time()",
+       "    ans[level] = CLDK.python(project_path=fresh, analysis_level=level)",
+       "    print(f\"{level:<25} {len(ans[level].get_callables_overview())} callables \"",
+       "          f\"{time.time() - t:4.0f} s\", flush=True)"
+      ],
+      "output": {
+       "label": "output: the first attach at each level on this Mac, 2026-10-15",
+       "lines": [
+        "symbol_table              3710 callables  182 s",
+        "call_graph                3710 callables  219 s",
+        "program_dependency_graph  3710 callables  220 s",
+        "system_dependency_graph   3710 callables  222 s"
+       ]
+      }
+     },
+     "steps": [
+      {
+       "b": 1,
+       "out": false
+      },
+      {
+       "b": 2,
+       "out": true
+      },
+      {
+       "b": 2,
+       "out": true,
+       "close": true
+      }
+     ],
+     "closing": "Choose the level your questions need, and pay for it once."
+    },
+    {
+     "id": "1.3",
+     "kind": "window",
+     "title": "A question above the level raises an error.",
+     "bullets": [
+      [
+       [
+        "c",
+        "get_ddg"
+       ],
+       [
+        "b",
+        " on a symbol-table analysis"
+       ],
+       [
+        "r",
+        " raises "
+       ],
+       [
+        "c",
+        "CodeanalyzerUsageException"
+       ],
+       [
+        "r",
+        ", which names both levels."
+       ]
+      ],
+      [
+       [
+        "b",
+        "An empty answer there"
+       ],
+       [
+        "r",
+        " would look like a callable with no data dependence, so CLDK refuses to give one."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "The same run of levels.py, after the four attaches, asks the symbol-table analysis for the data-dependence graph of BenchmarkTest00099_post. The window shows the exception exactly as it printed; its message is CLDK's own. This is the rule the agent API follows everywhere: an answer that could mean two things is refused, and the refusal says what to do instead.\n\nClick by click.\n1. get_ddg needs the program dependency graph. Asked of a symbol-table analysis, it raises, and the message names the level asked for and the level built.\n2. Why it raises: an empty list would look exactly like a callable with no dependence, so the library refuses rather than mislead.\n3. The closing: below the level a question needs, the answer is an error, never an empty result.",
+     "window": {
+      "label": "levels.py, continued: a dataflow question to the symbol-table analysis",
+      "lang": "python",
+      "lines": [
+       "try:",
+       "    ans[\"symbol_table\"].get_ddg(\"BenchmarkTest00099_post\")",
+       "except Exception as e:",
+       "    print(f\"{type(e).__name__}: {e}\")"
+      ],
+      "output": {
+       "label": "output",
+       "lines": [
+        "CodeanalyzerUsageException: control and data flow need",
+        "  analysis_level='program_dependency_graph' or deeper (analyzer level 3); this analysis was",
+        "  built at 'symbol_table' (analyzer level 1), where the analyzer emits no cfg/cdg/ddg at",
+        "  all. Returning an empty result would be indistinguishable from a callable that has no",
+        "  dependence, so this raises instead. Rebuild with CLDK.python(...,",
+        "  analysis_level='system_dependency_graph')."
+       ]
+      }
+     },
+     "steps": [
+      {
+       "b": 1,
+       "out": true
+      },
+      {
+       "b": 2,
+       "out": true
+      },
+      {
+       "b": 2,
+       "out": true,
+       "close": true
+      }
+     ],
+     "closing": "Below the level it needs, a question raises an error."
+    }
+   ]
+  },
+  {
+   "segment": "2",
+   "slides": [
+    {
+     "id": "2.d",
+     "kind": "divider",
+     "title": "",
+     "heading": "Moves on the analysis object",
+     "legible": [
+      1
+     ],
+     "bullets": [],
+     "refs": [],
+     "notes": "We take one Bandit alert, B608 at line 46 of BenchmarkTest00099.py, through the moves a classifier needs: locate, read, callers and callees, and dataflow."
+    },
+    {
+     "id": "2.1",
+     "kind": "window",
+     "title": "Move 1: locate the callable that holds a line.",
+     "bullets": [
+      [
+       [
+        "b",
+        "In:"
+       ],
+       [
+        "r",
+        " a "
+       ],
+       [
+        "c",
+        "path"
+       ],
+       [
+        "r",
+        " and a "
+       ],
+       [
+        "c",
+        "line"
+       ],
+       [
+        "r",
+        ", which is what a Bandit alert gives."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Out:"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "callable.signature"
+       ],
+       [
+        "r",
+        ", "
+       ],
+       [
+        "c",
+        "callable.name"
+       ],
+       [
+        "r",
+        " and "
+       ],
+       [
+        "c",
+        "module"
+       ],
+       [
+        "r",
+        ", and the callable's text in "
+       ],
+       [
+        "c",
+        "source"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Outside any callable,"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "callable"
+       ],
+       [
+        "r",
+        " is "
+       ],
+       [
+        "c",
+        "None"
+       ],
+       [
+        "r",
+        " and a diagnostic names the case: "
+       ],
+       [
+        "c",
+        "module_scope"
+       ],
+       [
+        "r",
+        ", or "
+       ],
+       [
+        "c",
+        "file_not_in_graph"
+       ],
+       [
+        "r",
+        " for a file the analyzer never saw."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "The window is section 2 of cldk-mcp.ipynb, captured on 2026-10-15 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). Bandit 1.9.4 reports B608 at line 46 of testcode/BenchmarkTest00099.py, the f-string that builds the SQL query, and locate returns the enclosing handler with its full signature. The two other outcomes come from hw2/captures/checks.py, run the same day: line 1 of app.py gives callable None and the diagnostic module_scope, \"line 1 is at module scope in app.py.\", and a file that does not exist gives callable None and file_not_in_graph, \"is not covered by any analysed module\". The result also carries node_id, the statement's own id, which the next slide uses.\n\nClick by click.\n1. The input is exactly what a scanner alert carries: a path relative to the checkout and a line number.\n2. The output arrives: the full signature, testcode.BenchmarkTest00099.init.BenchmarkTest00099_post, because the handler is nested in init, and the source starts at its def line.\n3. Outside any callable the answer is still unambiguous: callable is None, and a diagnostic says module scope or file not in the graph.\n4. The closing: an alert's file and line become the name that the rest of the API takes.",
+     "window": {
+      "label": "cldk-mcp.ipynb, section 2: the callable that holds line 46",
+      "lang": "python",
+      "lines": [
+       "hit = an.locate(\"testcode/BenchmarkTest00099.py\", 46)",
+       "print(hit.callable.signature); print(hit.source[:400])"
+      ],
+      "output": {
+       "label": "output: the signature, then the first lines of source",
+       "lines": [
+        "testcode.BenchmarkTest00099.init.BenchmarkTest00099_post",
+        "def BenchmarkTest00099_post():",
+        "        RESPONSE = \"\"",
+        "",
+        "        param = request.form.get(\"BenchmarkTest00099\")"
+       ]
+      }
+     },
+     "steps": [
+      {
+       "b": 1,
+       "out": false
+      },
+      {
+       "b": 2,
+       "out": true
+      },
+      {
+       "b": 3,
+       "out": true
+      },
+      {
+       "b": 3,
+       "out": true,
+       "close": true
+      }
+     ],
+     "closing": "Locate turns an alert's file and line into a callable's name."
+    },
+    {
+     "id": "2.2",
+     "kind": "window",
+     "title": "Move 2: read the body by signature.",
+     "bullets": [
+      [
+       [
+        "c",
+        "get_method_bodies"
+       ],
+       [
+        "r",
+        " maps each signature to its body."
+       ]
+      ],
+      [
+       [
+        "b",
+        "A signature with no body"
+       ],
+       [
+        "r",
+        " is absent, so test "
+       ],
+       [
+        "c",
+        "key in result"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ],
+      [
+       [
+        "c",
+        "get_source(node_id)"
+       ],
+       [
+        "r",
+        " returns one statement, such as line 46."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "The window is section 2 of cldk-mcp.ipynb, captured on 2026-10-15 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0); the output is the first eight of the body's 28 lines, and the SQL string is line 19 of the body, line 46 of the file. From hw2/captures/checks.py, the same day: get_method_bodies of an unknown signature returns {}, an empty dict, and get_source with the node_id that locate returned gives sql = f'SELECT username from USERS where password = \\'{bar}\\''. The body is what the agent should read: HW1's read rule allows the open case and no other, and the whole file would also carry the GET handler.\n\nClick by click.\n1. get_method_bodies is a bulk call: a list of signatures in, a dict keyed by signature out. The output shows the handler's first lines.\n2. A signature without a body is left out of the dict rather than mapped to None, so the agent tests membership first.\n3. Below the callable, get_source with the node id from locate returns the single statement, here the f-string at line 46.\n4. The closing: the agent reads the function the alert names and nothing else, which is HW1's read rule.",
+     "window": {
+      "label": "cldk-mcp.ipynb, section 2: the body of the handler, by its signature",
+      "lang": "python",
+      "lines": [
+       "print(an.get_method_bodies([hit.callable.signature])[hit.callable.signature])"
+      ],
+      "output": {
+       "label": "output: the first eight lines of the body",
+       "lines": [
+        "def BenchmarkTest00099_post():",
+        "        RESPONSE = \"\"",
+        "",
+        "        param = request.form.get(\"BenchmarkTest00099\")",
+        "        if not param:",
+        "            param = \"\"",
+        "",
+        "        import configparser"
+       ]
+      }
+     },
+     "steps": [
+      {
+       "b": 1,
+       "out": true
+      },
+      {
+       "b": 2,
+       "out": true
+      },
+      {
+       "b": 3,
+       "out": true
+      },
+      {
+       "b": 3,
+       "out": true,
+       "close": true
+      }
+     ],
+     "closing": "The agent reads the one function the alert names."
+    },
+    {
+     "id": "2.3",
+     "kind": "window",
+     "title": "Move 3: callers and callees by name.",
+     "bullets": [
+      [
+       [
+        "c",
+        "callers_of"
+       ],
+       [
+        "b",
+        " covers declared callables,"
+       ],
+       [
+        "r",
+        " and "
+       ],
+       [
+        "c",
+        "callees_of"
+       ],
+       [
+        "r",
+        " adds externals."
+       ]
+      ],
+      [
+       [
+        "b",
+        "An ambiguous name"
+       ],
+       [
+        "r",
+        " raises "
+       ],
+       [
+        "c",
+        "AmbiguousName"
+       ],
+       [
+        "r",
+        ", and "
+       ],
+       [
+        "c",
+        "in_module="
+       ],
+       [
+        "r",
+        " narrows it."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "The window is section 2 of cldk-mcp.ipynb, captured on 2026-10-15 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). callees_of lists what BenchmarkTest00099_post calls: an external callee comes back with an empty file and line 0, and the two in the checkout carry their file and line. 74 callables call get_safe_value, the helper in helpers/separate_request.py that returns the constant \"bar\", so a case that takes its value from it is safe. From hw2/captures/checks.py, the same day: callers_of('execute') raises SelectorNotInGraph: 1 of 1 callable not in graph: 'execute', and callers_of('init') raises AmbiguousName because 1,230 callables match, with the hint to narrow by in_module or more of the dotted path.\n\nClick by click.\n1. callers_of answers for callables declared in the checkout, and an external name raises. callees_of includes externals: Cursor.execute is the sink Bandit worried about. Then the callers line: 74 handlers call the helper.\n2. A bare name such as init matches 1,230 callables, one per case, so CLDK raises with the candidates instead of picking one.\n3. The closing: one call tells the agent which cases depend on the constant helper.",
+     "window": {
+      "label": "cldk-mcp.ipynb, section 2: what the handler calls, and who calls a helper",
+      "lang": "python",
+      "lines": [
+       "for c in an.callees_of(hit.callable.name): print(c.file, c.line, c.callable)",
+       "print(len(an.callers_of(\"get_safe_value\")),",
+       "      \"callers of the helper HW1's false positives share\")"
+      ],
+      "output": {
+       "label": "output: file, line and callee, then the callers of get_safe_value",
+       "lines": [
+        " 0 builtins.Connection.close",
+        " 0 builtins.Connection.cursor",
+        " 0 builtins.Cursor.execute",
+        " 0 configparser.ConfigParser.__init__",
+        " 0 configparser.RawConfigParser.add_section",
+        " 0 configparser.RawConfigParser.get",
+        " 0 configparser.RawConfigParser.set",
+        "helpers/db_sqlite.py 30 helpers.db_sqlite.get_connection",
+        "helpers/db_sqlite.py 33 helpers.db_sqlite.results",
+        " 0 werkzeug.datastructures.structures.TypeConversionDict.get",
+        "74 callers of the helper HW1's false positives share"
+       ]
+      }
+     },
+     "steps": [
+      {
+       "b": 1,
+       "out": true
+      },
+      {
+       "b": 2,
+       "out": true
+      },
+      {
+       "b": 2,
+       "out": true,
+       "close": true
+      }
+     ],
+     "closing": "One call lists the 74 handlers that use the constant helper."
+    },
+    {
+     "id": "2.4",
+     "kind": "text",
+     "title": "Move 4: dataflow answers the taint question.",
+     "bullets": [
+      [
+       [
+        "b",
+        "Bandit flags B608"
+       ],
+       [
+        "r",
+        " on 00099, 00011 and 00012, and only 00099 is true."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In 00099"
+       ],
+       [
+        "r",
+        " the request value reaches the f-string through "
+       ],
+       [
+        "c",
+        "configparser"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In 00011"
+       ],
+       [
+        "r",
+        " it reaches only the parameter tuple of "
+       ],
+       [
+        "c",
+        "cur.execute"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ],
+      [
+       [
+        "c",
+        "get_ddg"
+       ],
+       [
+        "r",
+        " gives the edges by line, and a path search answers it."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "We take the three B608 alerts that Bandit 1.9.4 reports in HW1's scan scope of OWASP BenchmarkPython at f1291485; the answer key, expectedresults-0.1.csv, marks 00099 true and 00011 and 00012 false. The edges in the figure are those of get_ddg at the program-dependency-graph level, measured on 2026-10-15 with CLDK 2.0.0rc8 and again with 2.0.0 (codeanalyzer-python 1.5.3), which gave identical edges (slides/figures/hw2/src/check-dataflow.py asserts them). In 00099 the request value at line 31 reaches the SQL string at line 46 through param, the config object and bar, and the execute call at line 49 through sql. In 00011 the value at line 39 reaches the call at line 50 through bar and never the string at line 47; 00012 behaves the same through its string slicing. The next slide is the code that finds these paths.\n\nThe figure, stage by stage.\n1. The two handlers, 00099 on the left and 00011 on the right, with the lines that matter in each.\n2. The request value's path in 00099: line 31 to 41 to 42 to the SQL string at 46, and on to execute at 49.\n3. Its path in 00011: line 39 to 43 to the execute call at 50, and no edge into the string at 47.\n4. The verdicts: the value reaches the query string in 00099 and only the parameter tuple in 00011.",
+     "figure": {
+      "stages": [
+       "hw2/dataflow-example-1.png",
+       "hw2/dataflow-example-2.png",
+       "hw2/dataflow-example-3.png",
+       "hw2/dataflow-example-4.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 2,
+       "fig": 2
+      },
+      {
+       "b": 3,
+       "fig": 3
+      },
+      {
+       "b": 4,
+       "fig": 4
+      },
+      {
+       "b": 4,
+       "fig": 4,
+       "close": true
+      }
+     ],
+     "closing": "Bandit flags the string in all three. Dataflow says which one is tainted."
+    },
+    {
+     "id": "2.5",
+     "kind": "window",
+     "title": "The reaches helper finds a path in the edges.",
+     "bullets": [
+      [
+       [
+        "b",
+        "Node ids end in "
+       ],
+       [
+        "c",
+        "@line:col"
+       ],
+       [
+        "b",
+        ","
+       ],
+       [
+        "r",
+        " so the helper keys the graph by line."
+       ]
+      ],
+      [
+       [
+        "b",
+        "For a local such as "
+       ],
+       [
+        "c",
+        "bar"
+       ],
+       [
+        "b",
+        ","
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "get_ddg"
+       ],
+       [
+        "r",
+        " is the dependable call."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "The window is the reaches function of cldk-mcp.ipynb, section 2; the output is its four calls in sections 2 and 3, captured on 2026-10-15 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). Each DDG edge names a source node and a target node, whose ids end in @line:col, and the variable that flows; reaches keeps the line, builds a networkx DiGraph and asks for a path. The four calls printed: 00099: request (31) -> sql string (46): (['31', '41', '42', '46'], ['param', 'conf52528.get', 'bar']); 00099: request (31) -> execute (49):    (['31', '41', '42', '46', '49'], ['param', 'conf52528.get', 'bar', 'sql']); 00011: request (39) -> sql string (47): (None, None); 00011: request (39) -> execute (50):    (['39', '43', '50'], ['param', 'bar']). The window shows the two that ask about the SQL string. CLDK's value-name predicates (resolve_value, flows_to_argument, taint) resolve parameters, captured globals and closure captures, so for a local variable such as bar the per-callable get_ddg is the dependable call. CLDK's own reaches method answers a different question, whether one callable can call another.\n\nClick by click.\n1. The code: the helper takes a handler and two lines, keys the dependence edges by line, and asks networkx for a path.\n2. The output arrives: 00099 has a path from the request to the SQL string, 00011 has none, and both reach their execute call.\n3. Why not a higher-level predicate: resolve_value and flows_to_argument resolve parameters, globals and captures, and bar is a local.\n4. The closing: the classifier's question is a path search, and only the true positive has the path.",
+     "window": {
+      "label": "cldk-mcp.ipynb, sections 2 and 3: reaches, a path over a handler's dependence edges",
+      "lang": "python",
+      "lines": [
+       "def reaches(handler, src_line, dst_line):",
+       "    g = nx.DiGraph()",
+       "    for e in an.get_ddg(handler, page_size=500).edges:",
+       "        g.add_edge(e.src.split(\"@\")[-1].split(\":\")[0],",
+       "                   e.dst.split(\"@\")[-1].split(\":\")[0], var=e.var)",
+       "    s, d = str(src_line), str(dst_line)",
+       "    if s in g and d in g and nx.has_path(g, s, d):",
+       "        p = nx.shortest_path(g, s, d); return p, [g[a][b][\"var\"] for a, b in zip(p, p[1:])]",
+       "    return None, None"
+      ],
+      "output": {
+       "label": "output: the calls that ask whether the request reaches the SQL string",
+       "lines": [
+        "00099: request (31) -> sql string (46): (['31', '41', '42', '46'], ['param',",
+        "  'conf52528.get', 'bar'])",
+        "00011: request (39) -> sql string (47): (None, None)"
+       ]
+      }
+     },
+     "steps": [
+      {
+       "b": 1,
+       "out": false
+      },
+      {
+       "b": 1,
+       "out": true
+      },
+      {
+       "b": 2,
+       "out": true
+      },
+      {
+       "b": 2,
+       "out": true,
+       "close": true
+      }
+     ],
+     "closing": "The classifier's question becomes a path search over the edges."
+    },
+    {
+     "id": "2.6",
+     "kind": "window",
+     "title": "An empty answer is ambiguous until checked.",
+     "bullets": [
+      [
+       [
+        "b",
+        "On this checkout"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "get_entrypoints"
+       ],
+       [
+        "r",
+        " finds 2,463 entry points, and the coverage marks 2,460 "
+       ],
+       [
+        "c",
+        "app.route"
+       ],
+       [
+        "r",
+        " decorators unresolved."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Read the diagnostics"
+       ],
+       [
+        "r",
+        " before concluding that nothing was found."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Check "
+       ],
+       [
+        "c",
+        "has_resolution_edges"
+       ],
+       [
+        "r",
+        " before reading a "
+       ],
+       [
+        "c",
+        "None"
+       ],
+       [
+        "r",
+        " callee from "
+       ],
+       [
+        "c",
+        "get_callsites_for"
+       ],
+       [
+        "r",
+        " as unresolved."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "The window is section 4 of cldk-mcp.ipynb, captured on 2026-10-15 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). get_entrypoints returns 2,463 entry points, and get_entrypoint_coverage reports the frameworks it detected, click and flask, and 2,460 app.route decorators it could not resolve; its own docstring says the detection pass under-approximates by design, so silence is its failure mode. An empty list from get_entrypoints cannot tell \"none\" from \"missed\", and the coverage can. has_resolution_edges says whether get_callsites_for can resolve call sites on this backend; checks.py prints True on the local backend, and the flag is false only on a Neo4j graph built below the level where resolution runs.\n\nClick by click.\n1. The output: thousands of entry points, and nearly as many route decorators left unresolved, so a short list would say little.\n2. The rule: read the diagnostics and the coverage before an empty answer becomes a no.\n3. The same rule for call sites: has_resolution_edges explains a None callee before the agent reads it as unresolved.\n4. The closing: an answer that could mean two things is a defect, so the agent asks which.",
+     "window": {
+      "label": "cldk-mcp.ipynb, section 4: the entry points and the report on how they were found",
+      "lang": "python",
+      "lines": [
+       "cov = an.get_entrypoint_coverage(); eps = an.get_entrypoints()",
+       "print(len(eps), \"entry points;\", cov)"
+      ],
+      "output": {
+       "label": "output",
+       "lines": [
+        "2463 entry points; frameworks_detected=['click', 'flask'] rulesets=['shipped']",
+        "  unresolved={'app.route': 2460} errors=[] diagnostics=[]"
+       ]
+      }
+     },
+     "steps": [
+      {
+       "b": 1,
+       "out": true
+      },
+      {
+       "b": 2,
+       "out": true
+      },
+      {
+       "b": 3,
+       "out": true
+      },
+      {
+       "b": 3,
+       "out": true,
+       "close": true
+      }
+     ],
+     "closing": "An empty result that could mean two things is a defect, so the agent asks why."
+    }
+   ]
+  },
+  {
+   "segment": "3",
+   "slides": [
+    {
+     "id": "3.d",
+     "kind": "divider",
+     "title": "",
+     "heading": "An MCP server over CLDK",
+     "legible": [
+      2
+     ],
+     "bullets": [],
+     "refs": [],
+     "notes": "We serve the same moves as MCP tools, the pattern each team's server follows in HW2."
+    },
+    {
+     "id": "3.1",
+     "kind": "window",
+     "title": "A tool is a function with a contract.",
+     "bullets": [
+      [
+       [
+        "c",
+        "MCPServer"
+       ],
+       [
+        "b",
+        " and "
+       ],
+       [
+        "c",
+        "@mcp.tool"
+       ],
+       [
+        "r",
+        " publish each tool's name, description and argument schema, and the result schema from "
+       ],
+       [
+        "c",
+        "Located"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ],
+      [
+       [
+        "c",
+        "ToolError"
+       ],
+       [
+        "r",
+        " is a refusal that the client receives as an error result."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "The window is cldk-demo/server.py as section 5 of cldk-mcp.ipynb writes it, on the MCP Python SDK 2.3.0 (MCPServer from mcp.server, ToolError from mcp.server.mcpserver.exceptions), blank lines left out. The server builds one CLDK object, AN, when it starts. checked() resolves a path against the checkout and raises ToolError for anything outside it or not a file. The SDK derives the input schema from the signature (path a string, line an integer) and, because the return type is the TypedDict Located, an output schema titled Located; tools/list carries both, as the Inspector shows. Lecture 5's rule holds: only argument and result shapes are enforced, and the description is text for the model.\n\nClick by click.\n1. MCPServer and the decorator: the function's name, its description string and its typed signature become the tool's contract, and Located becomes the result schema.\n2. ToolError: the path check refuses a path outside the checkout, and the client sees an error result instead of a crash.\n3. The closing: the server checks shapes, and nothing checks what the description promises.",
+     "window": {
+      "label": "cldk-demo/server.py: the server, the path check and the locate tool",
+      "lang": "python",
+      "lines": [
+       "mcp = MCPServer(\"cldk\")",
+       "def checked(path: str) -> str:",
+       "    p = (TARGET / path).resolve()",
+       "    if not p.is_relative_to(TARGET) or not p.is_file():",
+       "        raise ToolError(f\"refused: {path} is not a file of the target\")",
+       "    return p.relative_to(TARGET).as_posix()",
+       "class Located(TypedDict):",
+       "    signature: str | None",
+       "    name: str | None",
+       "    module: str",
+       "@mcp.tool(description=\"The callable that holds a line, or module scope.\")",
+       "def locate(path: str, line: int) -> Located:",
+       "    hit = AN.locate(checked(path), line)",
+       "    return {\"signature\": hit.callable.signature if hit.callable else None,",
+       "            \"name\": hit.callable.name if hit.callable else None,",
+       "            \"module\": hit.module.module_name}"
+      ]
+     },
+     "steps": [
+      {
+       "b": 1
+      },
+      {
+       "b": 2
+      },
+      {
+       "b": 2,
+       "close": true
+      }
+     ],
+     "closing": "The server checks shapes, and the description enforces nothing."
+    },
+    {
+     "id": "3.2",
+     "kind": "window",
+     "title": "The dataflow tool returns edges by line.",
+     "bullets": [
+      [
+       [
+        "b",
+        "Each dependence edge"
+       ],
+       [
+        "r",
+        " becomes "
+       ],
+       [
+        "c",
+        "from_line"
+       ],
+       [
+        "r",
+        ", "
+       ],
+       [
+        "c",
+        "to_line"
+       ],
+       [
+        "r",
+        " and "
+       ],
+       [
+        "c",
+        "var"
+       ],
+       [
+        "r",
+        ", the fields of "
+       ],
+       [
+        "c",
+        "Edge"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ],
+      [
+       [
+        "b",
+        "A line in no callable"
+       ],
+       [
+        "r",
+        " is a refusal."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "The window is the dataflow tool of cldk-demo/server.py; the Edge TypedDict above it in the file has the three fields the bullet names, so the output schema lists them. The tool addresses the callable by its full signature because a bare name such as init matches 1,230 callables. An edge whose end has no line, such as the entry node, is skipped. Called on line 46 of 00099 it returns 47 edges (hw2/captures/client.py, next segment). The agent does the path search over them, as reaches did, or a team adds a reaches tool on the same edges.\n\nClick by click.\n1. The tool: locate, then get_ddg by the full signature, one page of up to 2,000 edges, then each edge flattened to two line numbers and the variable, the three fields of the Edge TypedDict.\n2. Refusals: a line outside any callable raises ToolError. The search for a path stays with the agent, or with a tool you add.\n3. The closing: the four tools share one analysis object, and every answer points at lines of the checkout.",
+     "window": {
+      "label": "cldk-demo/server.py: the dataflow tool",
+      "lang": "python",
+      "lines": [
+       "@mcp.tool(description=\"Data-dependence edges of the callable that holds a line: \"",
+       "                      \"from-line, to-line, variable.\")",
+       "def dataflow(path: str, line: int) -> list[Edge]:",
+       "    hit = AN.locate(checked(path), line)",
+       "    if not hit.callable:",
+       "        raise ToolError(f\"refused: line {line} of {path} is in no callable\")",
+       "    # full signature: a bare name like init matches 1,230 callables",
+       "    page = AN.get_ddg(hit.callable.signature, page_size=2000)",
+       "    out = []",
+       "    for e in page.edges:",
+       "        try:",
+       "            out.append({\"from_line\": int(e.src.split(\"@\")[-1].split(\":\")[0]),",
+       "                        \"to_line\": int(e.dst.split(\"@\")[-1].split(\":\")[0]), \"var\": e.var})",
+       "        except ValueError:",
+       "            continue",
+       "    return out"
+      ]
+     },
+     "steps": [
+      {
+       "b": 1
+      },
+      {
+       "b": 2
+      },
+      {
+       "b": 2,
+       "close": true
+      }
+     ],
+     "closing": "Every tool reads the same analysis object, and every answer traces to a line."
+    },
+    {
+     "id": "3.3",
+     "kind": "window",
+     "title": "The Inspector runs the server from a catalog.",
+     "bullets": [
+      [
+       [
+        "b",
+        "The catalog"
+       ],
+       [
+        "r",
+        " names the interpreter and the server script."
+       ]
+      ],
+      [
+       [
+        "c",
+        "tools/list"
+       ],
+       [
+        "r",
+        " shows each tool's contract, and a path outside the checkout comes back as an error result."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "This is the live demonstration. Run section 1 of the notebook first: the server attaches when it starts, from the cache section 1 builds, in seconds, and the Inspector gives up on a server that takes longer than 30 seconds to answer (Inspector 2.10.1, its default connectionTimeout, checked on 2026-10-15). The catalog holds this Mac's absolute paths, which is why it is not committed. In the Inspector: tools/list, then locate on testcode/BenchmarkTest00099.py line 46, dataflow on the same line, and locate on ../expectedresults-0.1.csv, which returns an error result with \"refused: ../expectedresults-0.1.csv is not a file of the target\". That path leaves the checkout. The answer key inside the checkout, expectedresults-0.1.csv, passes this demo's check; in HW2 the team's server refuses it under the read rule, and the sandbox policy makes it unreadable.\n\nClick by click.\n1. The catalog: one stdio server, the lecture's Python and server.py. The second window is the command.\n2. tools/list shows the four tools with their input and output schemas, locate on line 46 returns the handler, and the refused path comes back as an error result, which is what the model would see.\n3. The closing: the Inspector is a host, so what it shows is what our agent's host gets.",
+     "window": {
+      "label": "cldk-demo/catalog.json, written by section 6 of the notebook",
+      "lang": "toml",
+      "lines": [
+       "{",
+       " \"mcpServers\": {",
+       "  \"cldk\": {",
+       "   \"type\": \"stdio\",",
+       "   \"command\": \"/Users/rkrsn/COMSE6998-019/lectures/lecture-6--2026-10-16/.venv/bin/python\",",
+       "   \"args\": [",
+       "    \"/Users/rkrsn/COMSE6998-019/lectures/lecture-6--2026-10-16/cldk-demo/server.py\"",
+       "   ]",
+       "  }",
+       " }",
+       "}"
+      ],
+      "output": {
+       "label": "terminal: start the Inspector",
+       "lines": [
+        "npx @modelcontextprotocol/inspector --web --catalog cldk-demo/catalog.json"
+       ]
+      }
+     },
+     "steps": [
+      {
+       "b": 1,
+       "out": true
+      },
+      {
+       "b": 2,
+       "out": true
+      },
+      {
+       "b": 2,
+       "out": true,
+       "close": true
+      }
+     ],
+     "closing": "What the Inspector shows is what your agent's host sees."
+    }
+   ]
+  },
+  {
+   "segment": "4",
+   "slides": [
+    {
+     "id": "4.d",
+     "kind": "divider",
+     "title": "",
+     "heading": "The MCP and code-action agents",
+     "legible": [
+      3
+     ],
+     "bullets": [],
+     "refs": [],
+     "notes": "We call the same API from the two agents HW2 asks for: through an MCP client, and from a script."
+    },
+    {
+     "id": "4.1",
+     "kind": "window",
+     "title": "The MCP agent calls tools through a client.",
+     "bullets": [
+      [
+       [
+        "b",
+        "The host"
+       ],
+       [
+        "r",
+        " starts the server from "
+       ],
+       [
+        "c",
+        "mcp.json"
+       ],
+       [
+        "r",
+        " and lists its tools."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Every call"
+       ],
+       [
+        "r",
+        " passes the HW1 dispatcher, and a refusal sets "
+       ],
+       [
+        "c",
+        "is_error"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "The window is hw2/captures/client.py, which starts cldk-demo/server.py over stdio with the SDK's Client (mcp 2.3.0), run on 2026-10-15 by hw2/captures/capture.py in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). It is the four-call check the server was tested with on 2026-10-15, printing its answers: the four tool names, the callable locate returns, 47 dataflow edges of which two leave line 31, and the refused path with is_error True (isError on the wire). In HW2 the MCP agent's host reads the same command from mcp.json, records a discovery event after tools/list, offers the model the list minus host-only tools such as set_alert, and sends every call through the HW1 dispatcher before the client.\n\nClick by click.\n1. The host side: mcp.json says how to start the server, and tools/list, minus the host-only tools, is what the model is offered.\n2. Every call goes through the dispatcher, then the client. The output arrives: names, the located handler, the edges from line 31, and the refusal as an error result.\n3. The closing: nothing of HW1's dispatcher is thrown away, and the client sits behind it.",
+     "window": {
+      "label": "client.py: list the tools, call locate and dataflow, send a refused path",
+      "lang": "python",
+      "lines": [
+       "async def main():",
+       "    async with Client(SERVER) as c:",
+       "        print([t.name for t in (await c.list_tools()).tools])",
+       "        print((await c.call_tool(\"locate\", CASE)).structured_content[\"name\"])",
+       "        edges = (await c.call_tool(\"dataflow\", CASE)).structured_content[\"result\"]",
+       "        from31 = [(e[\"to_line\"], e[\"var\"]) for e in edges if e[\"from_line\"] == 31]",
+       "        print(len(edges), \"edges; line 31 flows to\", from31)",
+       "        bad = await c.call_tool(\"locate\", {\"path\": \"../expectedresults-0.1.csv\", \"line\": 1})",
+       "        print(bad.is_error, bad.content[0].text)"
+      ],
+      "output": {
+       "label": "output",
+       "lines": [
+        "['locate', 'source', 'callers', 'dataflow']",
+        "BenchmarkTest00099_post",
+        "47 edges; line 31 flows to [(32, 'param'), (41, 'param')]",
+        "True Error executing tool locate: refused: ../expectedresults-0.1.csv is not a file of the",
+        "  target"
+       ]
+      }
+     },
+     "steps": [
+      {
+       "b": 1,
+       "out": false
+      },
+      {
+       "b": 2,
+       "out": true
+      },
+      {
+       "b": 2,
+       "out": true,
+       "close": true
+      }
+     ],
+     "closing": "Your HW1 dispatcher stays, and the MCP client sits behind it."
+    },
+    {
+     "id": "4.2",
+     "kind": "text",
+     "title": "The code-action agent acts in one process.",
+     "bullets": [
+      [
+       [
+        "b",
+        "The code-action agent's action"
+       ],
+       [
+        "r",
+        " is a script, run with "
+       ],
+       [
+        "c",
+        "exec"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The MCP agent's action"
+       ],
+       [
+        "r",
+        " is a tool call, sent as "
+       ],
+       [
+        "c",
+        "tools/call"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Only the server"
+       ],
+       [
+        "r",
+        " sees each call, so only it can check one."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "Each team builds both agents on its HW1 loop. The code-action agent has one tool, run_python(script): the harness runs the script with exec in a namespace that holds the CLDK object and the workspace path, the kernel of lecture 4 (slide 137), and the observation is what the script prints or raises. The MCP agent sends every call through the HW1 dispatcher and then the MCP client to the server, which runs in another process. The figure leaves out the MCP client and the sandbox on purpose.\n\nThe figure, stage by stage.\n1. The code-action agent: the model sends a Python script, and the harness runs it with exec against the CLDK object and the files, all in one process.\n2. The MCP agent: the model's tool call goes through the host and its dispatcher, as tools/call, to a server in another process.\n3. The verdicts: inside one process there is no call to check, and on the server every call is checked.",
+     "figure": {
+      "stages": [
+       "hw2/two-agents-1.png",
+       "hw2/two-agents-2.png",
+       "hw2/two-agents-3.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 2,
+       "fig": 2
+      },
+      {
+       "b": 3,
+       "fig": 3
+      },
+      {
+       "b": 3,
+       "fig": 3,
+       "close": true
+      }
+     ],
+     "closing": "A tool call crosses a boundary that can check it."
+    },
+    {
+     "id": "4.3",
+     "kind": "window",
+     "title": "The script asks the same dataflow question.",
+     "bullets": [
+      [
+       [
+        "b",
+        "No dispatcher"
+       ],
+       [
+        "r",
+        " sees the calls inside one script."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The sandbox"
+       ],
+       [
+        "r",
+        " is the only fence, as lecture 4 found (slide 154)."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The read, write and network rules"
+       ],
+       [
+        "r",
+        " apply to both agents."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "hw2/captures/codeact.py holds lecture 4's kernel (kernel.py, lecture 4 slide 137: exec with stdout redirected, a traceback on error) with namespace {\"an\": an}, the analysis object of the notebook, and runs this script through it (run on 2026-10-15 by hw2/captures/capture.py in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0)). The script locates both alerts, builds each handler's dependence graph by line and asks for a path: 00099 prints the same path as reaches, ['31', '41', '42', '46'], and 00011 prints False. Our first draft converted the node ids to integers and the kernel returned a ValueError traceback on the node 'entry'; that is the observation a model would have read and fixed. Lecture 4, slide 154, asked where CodeAct can confine writes, and the answer was the operating system.\n\nClick by click.\n1. The harness sees one script, so none of the calls inside it passes a dispatcher. The observation arrives: the path for 00099 and False for 00011.\n2. The only place left to confine the script is below the interpreter, the sandbox, as lecture 4 concluded.\n3. The brief's rules, read, write and network, bind both agents, and only the MCP agent has a server to hold the per-alert parts.\n4. The closing: a script cannot be checked call by call, so both agents run inside OpenShell.",
+     "window": {
+      "label": "the model's script, run by lecture 4's kernel with namespace {\"an\": an}",
+      "lang": "python",
+      "lines": [
+       "import networkx as nx",
+       "line = lambda node: node.split(\"@\")[-1].split(\":\")[0]",
+       "CASES = [(\"testcode/BenchmarkTest00099.py\", \"31\", \"46\"),",
+       "         (\"testcode/BenchmarkTest00011.py\", \"39\", \"47\")]",
+       "for path, src, dst in CASES:",
+       "    hit = an.locate(path, int(dst))",
+       "    g = nx.DiGraph()",
+       "    for e in an.get_ddg(hit.callable.signature, page_size=500).edges:",
+       "        g.add_edge(line(e.src), line(e.dst))",
+       "    print(hit.callable.name, nx.has_path(g, src, dst) and nx.shortest_path(g, src, dst))"
+      ],
+      "output": {
+       "label": "observation: what the script printed",
+       "lines": [
+        "BenchmarkTest00099_post ['31', '41', '42', '46']",
+        "BenchmarkTest00011_post False"
+       ]
+      }
+     },
+     "steps": [
+      {
+       "b": 1,
+       "out": true
+      },
+      {
+       "b": 2,
+       "out": true
+      },
+      {
+       "b": 3,
+       "out": true
+      },
+      {
+       "b": 3,
+       "out": true,
+       "close": true
+      }
+     ],
+     "closing": "Nothing checks a script's calls, so both agents run in OpenShell."
+    }
+   ]
+  },
+  {
+   "segment": "5",
+   "slides": [
+    {
+     "id": "5.d",
+     "kind": "divider",
+     "title": "",
+     "heading": "The brief",
+     "legible": [
+      4
+     ],
+     "bullets": [],
+     "refs": [],
+     "notes": "We close the HW2 part by walking through the brief, released today."
+    },
+    {
+     "id": "5.1",
+     "kind": "text",
+     "title": "The brief, section by section",
+     "bullets": [
+      [
+       [
+        "b",
+        "What you build:"
+       ],
+       [
+        "r",
+        " the code-action agent and the MCP agent, the server with its analysis, text and write tools, and the stages both agents run."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The guardrails:"
+       ],
+       [
+        "r",
+        " the read, write and network rules, the prompt, server and kernel that hold them, and the policy you run under."
+       ]
+      ],
+      [
+       [
+        "b",
+        "How they are tested:"
+       ],
+       [
+        "r",
+        " your five live runs under a planted injection, and our driver against your server and sandbox."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Contracts, rubric and dates:"
+       ],
+       [
+        "r",
+        " 18 rubric items, one point each. Due Friday, November 13, 2026, before 11:59 pm, with six late days per student per semester, at most three on one assignment."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "We now walk through the PDF. HW2 is released Friday, October 16, 2026, and due Friday, November 13, 2026, before 11:59 pm. Six late days per student per semester, at most three on one assignment. The rubric has 18 items, one point each, scaled to the assignment's 20 percent of the course grade. The sections follow the HW2 specification, section 3: what teams build (the two agents, the server and its tool groups, the stages), the guardrails (the three rules, the places that hold them, the OpenShell policy), how they are tested (the team's live runs under fixtures/injection.patch and the staff driver), the report, the contracts, the rubric, and the dates and platform. After class the repository also gets cldk-mcp.ipynb and cldk-demo/server.py as the reference pattern.\n\nClick by click.\n1. What you build: both agents from your HW1 loop, the server with its three tool groups, and discovery, classification and remediation.\n2. The guardrails: read, write and network, each held at the prompt, the server or the kernel, and the policy file.\n3. How they are tested: five runs of each agent under the planted injection, and our driver on your server and inside your sandbox.\n4. Contracts, rubric and dates, verbatim: 18 items of one point, November 13 before 11:59 pm, six late days and at most three per assignment.\n5. The closing: the repository is released today, and we open the PDF.",
+     "closing": "HW2 is released today in comse6998-019/hw2-tool-boundary, with the brief, schemas, examples and fixtures."
+    }
+   ]
+  }
+ ]
+}
