@@ -1,0 +1,117 @@
+% components-lifecycle: the components build and the lifecycle build merged into one figure (2026-10-16, after the two builds were
+% interleaved: "Merge the figures so the transitions are not jarring. After the figure on gateway, just add a box from next slide
+% above it"). The components drawing is components.tikz unchanged, at the same coordinates; the canvas grows from 5.8 to 7.0 cm so
+% a band above its top row holds the lifecycle's four steps, each arriving on the click after the component that performs it.
+% Canvas 16.5 x 7.0 cm. Stages:
+%   1 Client.  2 Gateway.  3 record persisted (by the gateway).  4 Compute driver.  5 Provisioning (by the driver).
+%   6 Sandbox runtime.  7 Trusted supervisor.  8 supervisor hello (to the gateway).  9 Ready (through the API).
+%   10 Approved external service.  11 In action, components: our terminal, Docker on Colima, cyberbird and bandit, the model
+%   server, "admits only the model server".  12 In action, phases: the record cyberbird with its UUID, Docker on Colima and the
+%   image cyberbird:1, the captured condition "Supervisor session connected", and sandbox list showing Ready.
+% Sources: components.tikz and lifecycle.tikz (their source notes hold every citation; the phase names and their movers are
+% lifecycle.tikz's: the gateway persists the record, the driver provisions, the supervisor connects out with its hello, the gateway
+% publishes Ready). Stage 12 strings are lifecycle.tikz stage 6's captures of 2026-10-15.
+% Left out on purpose, kept in the notes: lifecycle.tikz's lower row (Error, Deleting, Stopped) and its note that Ready says
+% nothing about the agent, for which the canvas has no room at the house maximum height with three bullets above it.
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \useasboundingbox (0,0) rectangle (16.5,7.0);
+  \hyphenpenalty=10000 \exhyphenpenalty=10000 \frenchspacing
+  % the stage on which each component is highlighted, and the in-action stage
+  \def\sClient{1}\def\sGateway{2}\def\sRecord{3}\def\sDriver{4}\def\sProv{5}\def\sRuntime{6}\def\sSuper{7}\def\sHello{8}\def\sReady{9}\def\sService{10}\def\sAction{11}\def\sPhases{12}
+  \tikzset{
+    ghostbox/.style={draw=ibmfg!25, text=ibmfg!35, fill=white, dashed},
+    ghflow/.style={-{Stealth[length=2.2mm]}, thick, draw=ibmfg!25, dashed},
+    ghflow2/.style={{Stealth[length=2.2mm]}-{Stealth[length=2.2mm]}, thick, draw=ibmfg!25, dashed},
+    flow2/.style={flow, {Stealth[length=2.2mm]}-{Stealth[length=2.2mm]}},
+    % outer sep 0: an anchor sits on the outline's centre whatever its width, so a highlight moves no arrow
+    toprow/.style={minimum height=1.45cm, outer sep=0pt},
+    botrow/.style={minimum height=1.45cm, outer sep=0pt},
+    alab/.style={lab, font=\sffamily\footnotesize},
+  }
+  % \inst{text}: an instance line of stage 7, in navy
+  \newcommand{\inst}[1]{\textcolor{deckNavy}{\bfseries #1}}
+  % \comp{name}{stage}{style}{geometry}{(x,y)}{generic text}{in-action text}: a ghost before its stage, highlighted on it,
+  % its own style after it; on the in-action stage it prints the in-action text
+  \newcommand{\comp}[7]{%
+    \ifnum\stage<#2 \node[#3, #4, ghostbox] (#1) at #5 {#6};\fi
+    \ifnum\stage=#2 \node[#3, #4, hl] (#1) at #5 {#6};\fi
+    \ifnum\stage>#2 \ifnum\stage<\sAction \node[#3, #4] (#1) at #5 {#6};\fi\fi
+    \ifnum\stage>#2 \ifnum\stage<\sAction \else \node[#3, #4] (#1) at #5 {#7};\fi\fi}
+  % \phase{name}{stage}{x}{title}{generic line}{in-action lines}: a lifecycle step in the band above the top row, a ghost before
+  % its stage, highlighted on it, settled after it, and from stage \sPhases on with the run's own lines in navy
+  \tikzset{phasebox/.style={gnode, minimum width=2.85cm, text width=2.57cm, minimum height=1.4cm, outer sep=0pt}}
+  \newcommand{\phase}[6]{%
+    \ifnum\stage<#2 \node[phasebox, ghostbox] (#1) at (#3,6.2) {\textbf{#4}\\{\footnotesize #5}};\fi
+    \ifnum\stage=#2 \node[phasebox, hl] (#1) at (#3,6.2) {\textbf{#4}\\{\footnotesize #5}};\fi
+    \ifnum\stage>#2 \ifnum\stage<\sPhases \node[phasebox] (#1) at (#3,6.2) {\textbf{#4}\\{\footnotesize #5}};\fi\fi
+    \ifnum\stage<\sPhases \else \node[phasebox] (#1) at (#3,6.2) {\textbf{#4}\\{\footnotesize #6}};\fi}
+  % \link{style}{ghost style}{stage}{path}: an arrow, a ghost before its stage
+  \newcommand{\link}[4]{\ifnum\stage<#3 \draw[#2] #4;\else \draw[#1] #4;\fi}
+
+  % heading
+  \ifnum\stage<\sAction
+    \node[lab, anchor=west, text=deckGrey] at (0.05,6.8) {standard Linux path};
+  \else
+    \node[zonelab, anchor=west, inner sep=1pt] at (0.05,6.8) {in action: Cyberbird};
+  \fi
+  \node[lab, anchor=west, text=deckGrey, align=left] at (0.05,6.05) {a sandbox's phases,\\left to right};
+  % the band of phases: x 2.95 to 16.21, four boxes 2.85 by 1.4 cm, 0.62 cm apart, centred at y 6.2 (5.5 to 6.9), so the
+  % three lines of stage 12 fit the box and no box changes size
+  \newcommand{\instt}[1]{\textcolor{deckNavy}{\texttt{#1}}}
+  \phase{rec}{\sRecord}{4.375}{record persisted}{by the gateway}{\inst{cyberbird}, UUID\\\instt{86d1c2e9-\ldots}}
+  \phase{prov}{\sProv}{7.845}{Provisioning}{by the driver}{\inst{Docker on Colima},\\image \instt{cyberbird:1}}
+  \phase{hello}{\sHello}{11.315}{supervisor hello}{to the gateway}{\inst{Supervisor session}\\\inst{connected}}
+  \phase{ready}{\sReady}{14.785}{Ready}{through the API}{\texttt{sandbox list}\\shows \inst{Ready}}
+  \link{flow}{ghflow}{\sProv}{(rec.east) -- (prov.west)}
+  \link{flow}{ghflow}{\sHello}{(prov.east) -- (hello.west)}
+  \link{flow}{ghflow}{\sReady}{(hello.east) -- (ready.west)}
+
+  % columns: A client and agent (0.2 to 2.95), B runtime (3.27 to 6.12), C gateway and supervisor (8.25 to 11.88), D driver and
+  % service (13.45 to 16.45); rows: the control plane at y 4.575, the workload row at y 1.35
+  % the upper row: the control plane
+  \comp{client}{\sClient}{gnode}{toprow, minimum width=2.75cm, text width=2.47cm}{(1.575,4.575)}
+    {\textbf{Client}\\CLI / TUI / SDK}{\textbf{Client}\\\inst{our terminal}}
+  \comp{gateway}{\sGateway}{mnode}{toprow, minimum width=3.63cm, text width=3.35cm}{(10.065,4.575)}
+    {\textbf{Gateway}\\Identity and records\\Configuration}{\textbf{Gateway}\\Identity and records\\Configuration}
+  \comp{driver}{\sDriver}{gnode}{toprow, minimum width=3.0cm, text width=2.72cm}{(14.95,4.575)}
+    {\textbf{Compute driver}\\Platform provisioning}{\textbf{Compute driver}\\\inst{Docker on Colima}}
+
+  % the lower row: the untrusted workload, the supervisor, the service
+  \draw[zone] (0.05,0.475) rectangle (6.22,2.325);
+  \node[zonelab, anchor=east] at (6.07,2.325) {untrusted workload};
+  % the agent and tools are the frame: drawn from stage 1, never highlighted
+  \ifnum\stage<\sAction
+    \node[rnode, botrow, minimum width=2.75cm, text width=2.47cm] (agent) at (1.575,1.35)
+      {\textbf{Agent and tools}\\Workload\\processes};
+  \else
+    \node[rnode, botrow, minimum width=2.75cm, text width=2.47cm] (agent) at (1.575,1.35)
+      {\textbf{Agent and tools}\\\inst{\texttt{cyberbird}}\\\inst{and \texttt{bandit}}};
+  \fi
+  \comp{runtime}{\sRuntime}{rnode}{botrow, minimum width=2.85cm, text width=2.6cm}{(4.695,1.35)}
+    {\textbf{Sandbox runtime}\\Process control\\Mediation}{\textbf{Sandbox runtime}\\Process control\\Mediation}
+  \comp{super}{\sSuper}{mnode}{botrow, minimum width=3.63cm, text width=3.35cm}{(10.065,1.35)}
+    {\textbf{Trusted supervisor}\\Policy and credentials\\Upstream connections}{\textbf{Trusted supervisor}\\Policy and credentials\\Upstream connections}
+  \comp{service}{\sService}{tnode}{minimum width=3.0cm, minimum height=1.45cm, text width=2.6cm, inner xsep=-0.35cm, outer sep=0pt, align=center}{(14.95,1.35)}
+    {Approved\\external service}{\inst{the model server}}
+
+  % arrows on the upper row
+  \link{flow}{ghflow}{\sClient}{(client.east) -- (gateway.west)}
+  \atstage{\sClient}{\node[alab, above=3pt] at ($(client.east)!0.5!(gateway.west)$) {management requests};}
+  \link{flow}{ghflow}{\sGateway}{(gateway.east) -- (driver.west)}
+  \atstage{\sDriver}{%
+    \node[alab, anchor=north] at (14.9,3.8) {provisions workload and\\supervisor placement};
+    \node[note, anchor=north east, text width=5.0cm, align=right, inner sep=0pt] at (16.45,2.98)
+      {placement: on which host or node the workload and its supervisor run};}
+
+  % arrows on the lower row
+  \link{flow}{ghflow}{\sRuntime}{(agent.east) -- (runtime.west)}
+  \link{flow2}{ghflow2}{\sSuper}{(runtime.east) -- (super.west)}
+  \atstage{\sSuper}{\node[alab, anchor=south] at (7.25,1.46) {authenticated\\runtime\\channel};}
+  \link{back}{ghflow}{\sSuper}{(super.north) -- (gateway.south)}
+  \atstage{\sSuper}{\node[alab, anchor=east] at (9.9,3.15) {supervisor-initiated\\control session};}
+  \link{flow2}{ghflow2}{\sService}{(super.east) -- (service.west)}
+  \atstage{\sService}{\node[alab, anchor=north] at (12.665,1.24) {permitted\\traffic and\\responses};}
+
+  % in action: the supervisor's rule for Cyberbird
+  \atstage{\sAction}{\node[font=\sffamily\footnotesize, anchor=north, inner sep=1pt] at (9.9,0.44) {\inst{admits only the model server}};}
+\end{tikzpicture}%
