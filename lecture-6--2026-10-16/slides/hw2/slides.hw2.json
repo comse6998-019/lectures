@@ -96,7 +96,7 @@
      "refs": [
       "[1] R. Krishna et al. Codellm-Devkit: a framework for contextualizing code LLMs with program analysis insights. FSE Companion 2025, pp. 308-318."
      ],
-     "notes": "CLDK is R. Krishna, R. Pan, R. Pavuluri, S. Tamilselvam, M. Vukovic and S. Sinha, Codellm-Devkit: A Framework for Contextualizing Code LLMs with Program Analysis Insights, FSE Companion 2025, pages 308 to 318 (arXiv 2410.13007). We use cldk 2.0.0 from PyPI, whose package metadata requires Python 3.11 or newer; for a Python project it runs codeanalyzer-python 1.5.3. The window is section 1 of cldk-mcp.ipynb, and its output was captured on 2026-10-16 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0): 3710 callables in 9 s, read from the cache that the first attach left in cldk-demo/owasp/.codeanalyzer. The checkout is OWASP BenchmarkPython at f1291485, the commit HW1 used.\n\nClick by click.\n1. CLDK is one Python API over static analysis of three languages, from the paper by Krishna and colleagues at FSE 2025.\n2. Installing it is one pip command, and it needs Python 3.11 or newer.\n3. For a Python project the analyzer is codeanalyzer-python: Jedi resolves the names and ast gives the structure.\n4. The project is HW1's OWASP checkout. The output arrives: 3,710 callables, attached from the cache in 9 seconds.\n5. The closing: one object per checkout, and every question we ask is a method call on it.",
+     "notes": "CLDK is R. Krishna, R. Pan, R. Pavuluri, S. Tamilselvam, M. Vukovic and S. Sinha, Codellm-Devkit: A Framework for Contextualizing Code LLMs with Program Analysis Insights, FSE Companion 2025, pages 308 to 318 (arXiv 2410.13007). We use cldk 2.0.0 from PyPI, whose package metadata requires Python 3.11 or newer; for a Python project it runs codeanalyzer-python 1.5.3. The window is section 1 of cldk-mcp.ipynb, and its output was captured on 2026-10-16 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0): 3710 callables in 7 s, read from the cache that the first attach left in cldk-demo/owasp/.codeanalyzer. The checkout is OWASP BenchmarkPython at f1291485, the commit HW1 used.\n\nClick by click.\n1. CLDK is one Python API over static analysis of three languages, from the paper by Krishna and colleagues at FSE 2025.\n2. Installing it is one pip command, and it needs Python 3.11 or newer.\n3. For a Python project the analyzer is codeanalyzer-python: Jedi resolves the names and ast gives the structure.\n4. The project is HW1's OWASP checkout. The output arrives: 3,710 callables, attached from the cache in 7 seconds.\n5. The closing: one object per checkout, and every question we ask is a method call on it.",
      "window": {
       "label": "cldk-mcp.ipynb, section 1: attach the analysis to the checkout",
       "lang": "python",
@@ -110,7 +110,7 @@
       "output": {
        "label": "output: a warm attach, read from the cache in cldk-demo/owasp/.codeanalyzer",
        "lines": [
-        "3710 callables, 9 s"
+        "3710 callables, 7 s"
        ]
       }
      },
@@ -182,7 +182,7 @@
       ]
      ],
      "refs": [],
-     "notes": "levels.py is in slides/hw2/captures. For each level it copies cldk-demo/owasp without its analysis cache and attaches once, so each row is a first attach. Measured on 2026-10-15 on this Mac with cldk 2.0.0 and codeanalyzer-python 1.5.3: symbol table 182 s, call graph 219 s, program dependency graph 220 s, system dependency graph 222 s, 3,710 callables at every level. An earlier run the same evening, also with other work on the machine, gave 135 s, 131 s, 158 s, 217 s for the same four levels. On this project the levels differ less than their names suggest; every first attach also creates a virtualenv for the analyzer inside the copy's cache folder. The specification's earlier measurement, with 2.0.0rc8, was 241 s at call-graph level and 151 s at the dependency level. From the cache an attach takes seconds (9 s on the previous slide). The notebook and HW2's server use program_dependency_graph, the lowest level with dataflow.\n\nClick by click.\n1. The two cheap levels: the symbol table knows what is declared, and the call graph knows who calls whom.\n2. The two dependency levels add flow, inside a callable and across callables. The output arrives: every first attach took minutes on this Mac, the system dependency graph the longest.\n3. The closing: choose the level the questions need, pay once, and read the cache after that.",
+     "notes": "levels.py is in slides/hw2/captures. For each level it copies cldk-demo/owasp without its analysis cache and attaches once, so each row is a first attach. Measured on 2026-10-15 on this Mac with cldk 2.0.0 and codeanalyzer-python 1.5.3: symbol table 182 s, call graph 219 s, program dependency graph 220 s, system dependency graph 222 s, 3,710 callables at every level. An earlier run the same evening, also with other work on the machine, gave 135 s, 131 s, 158 s, 217 s for the same four levels. On this project the levels differ less than their names suggest; every first attach also creates a virtualenv for the analyzer inside the copy's cache folder. The specification's earlier measurement, with 2.0.0rc8, was 241 s at call-graph level and 151 s at the dependency level. From the cache an attach takes seconds (7 s on the previous slide). The notebook and HW2's server use program_dependency_graph, the lowest level with dataflow.\n\nClick by click.\n1. The two cheap levels: the symbol table knows what is declared, and the call graph knows who calls whom.\n2. The two dependency levels add flow, inside a callable and across callables. The output arrives: every first attach took minutes on this Mac, the system dependency graph the longest.\n3. The closing: choose the level the questions need, pay once, and read the cache after that.",
      "window": {
       "label": "levels.py: the first attach at each level, each on a fresh copy of the checkout",
       "lang": "python",
@@ -310,18 +310,18 @@
      "id": "2.d",
      "kind": "divider",
      "title": "",
-     "heading": "Moves on the analysis object",
+     "heading": "Actions on the analysis object",
      "legible": [
       1
      ],
      "bullets": [],
      "refs": [],
-     "notes": "We take one Bandit alert, B608 at line 46 of BenchmarkTest00099.py, through the moves a classifier needs: locate, read, callers and callees, and dataflow."
+     "notes": "We take one Bandit alert, B608 at line 46 of BenchmarkTest00099.py, through the actions a classifier needs: locate, read, callers and callees, and dataflow."
     },
     {
      "id": "2.1",
      "kind": "window",
-     "title": "Move 1: locate the callable that holds a line.",
+     "title": "Action 1: locate the callable that holds a line.",
      "bullets": [
       [
        [
@@ -478,7 +478,7 @@
     {
      "id": "2.2",
      "kind": "window",
-     "title": "Move 2: read the body by signature.",
+     "title": "Action 2: read the body by signature.",
      "bullets": [
       [
        [
@@ -565,7 +565,7 @@
     {
      "id": "2.3",
      "kind": "window",
-     "title": "Move 3: callers and callees by name.",
+     "title": "Action 3: callers and callees by name.",
      "bullets": [
       [
        [
@@ -617,9 +617,9 @@
       ]
      ],
      "refs": [],
-     "notes": "The window is hw2/captures/move3.py, run on 2026-10-16 by hw2/captures/capture.py in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). Its for line is the move 3 cell of cldk-mcp.ipynb, section 2, verbatim, and it runs on the same analysis object after the same locate. callees_of lists what BenchmarkTest00099_post calls: an external callee comes back with an empty file and line 0, and the two in the checkout carry their file and line. 74 callables call get_safe_value, the helper in helpers/separate_request.py that returns the constant \"bar\", so the value a case takes from it carries nothing from the request. checks.py lists them: the _post handlers of BenchmarkTest01103 to BenchmarkTest01230. None is in HW1's scan scope, BenchmarkTest000*.py, so the notebook's own label for this count, \"callers of the helper HW1's false positives share\", is wrong, and move3.py prints the count under a label that names the helper. From hw2/captures/checks.py, the same day: callers_of('execute') raises SelectorNotInGraph: 1 of 1 callable not in graph: 'execute', and callers_of('init') raises AmbiguousName because 1,230 callables match, with the hint to narrow by in_module or more of the dotted path.\n\nClick by click.\n1. callers_of answers for callables declared in the checkout, and an external name raises. callees_of includes externals: Cursor.execute is the sink Bandit worried about. Then the callers line: 74 handlers call the helper.\n2. A bare name such as init matches 1,230 callables, one per case, so CLDK raises with the candidates instead of picking one.\n3. The closing: one call tells the agent which cases depend on the constant helper.",
+     "notes": "The window is the action 3 cell of cldk-mcp.ipynb, section 2, captured on 2026-10-16 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). It runs on the same analysis object after the same locate. callees_of lists what BenchmarkTest00099_post calls: an external callee comes back with an empty file and line 0, and the two in the checkout carry their file and line. 74 callables call get_safe_value, the helper in helpers/separate_request.py that returns the constant \"bar\", so the value a case takes from it carries nothing from the request. checks.py lists them: the _post handlers of BenchmarkTest01103 to BenchmarkTest01230. None is in HW1's scan scope, BenchmarkTest000*.py. From hw2/captures/checks.py, the same day: callers_of('execute') raises SelectorNotInGraph: 1 of 1 callable not in graph: 'execute', and callers_of('init') raises AmbiguousName because 1,230 callables match, with the hint to narrow by in_module or more of the dotted path.\n\nClick by click.\n1. callers_of answers for callables declared in the checkout, and an external name raises. callees_of includes externals: Cursor.execute is the sink Bandit worried about. Then the callers line: 74 handlers call the helper.\n2. A bare name such as init matches 1,230 callables, one per case, so CLDK raises with the candidates instead of picking one.\n3. The closing: one call tells the agent which cases depend on the constant helper.",
      "window": {
-      "label": "move3.py: what the handler calls, and who calls a helper",
+      "label": "cldk-mcp.ipynb, section 2: what the handler calls, and who calls a helper",
       "lang": "python",
       "lines": [
        "for c in an.callees_of(hit.callable.name): print(c.file, c.line, c.callable)",
@@ -663,7 +663,7 @@
     {
      "id": "2.4",
      "kind": "text",
-     "title": "Move 4: dataflow answers the taint question.",
+     "title": "Action 4: dataflow answers the taint question.",
      "bullets": [
       [
        [
@@ -979,7 +979,7 @@
      ],
      "bullets": [],
      "refs": [],
-     "notes": "We serve the same moves as MCP tools, the pattern each team's server follows in HW2."
+     "notes": "We serve the same actions as MCP tools, the pattern each team's server follows in HW2."
     },
     {
      "id": "3.1",

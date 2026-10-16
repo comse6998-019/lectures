@@ -1393,7 +1393,7 @@ def build(spec):
 # ================================================================ route and dividers
 
 LECTURE_TITLE = "HW2: CLDK, MCP, and the brief"
-ROUTE_ROWS = ["CLDK essentials", "Moves on the analysis object", "An MCP server over CLDK", "The MCP and code-action agents",
+ROUTE_ROWS = ["CLDK essentials", "Actions on the analysis object", "An MCP server over CLDK", "The MCP and code-action agents",
               "The brief"]
 ROW_TOP = {0: 2045919, 1: 2521407, 2: 2996896, 3: 3472383, 4: 3947872}
 ROW_H = 338553

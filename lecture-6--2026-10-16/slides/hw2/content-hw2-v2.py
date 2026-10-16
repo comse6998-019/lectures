@@ -6,12 +6,12 @@ builds. It replaces content-hw2.py, whose spec is kept as slides.hw2.v1.json.
 
 Rahul, 2026-10-15 23:15: "HW2 must quite simply teach CLDK's bare essentials for HW's python projects so that the students
 can write an MCP over CLDK's APIs and call that. The students then also do codeact over CLDK's APIs. The rest of HW2 will be
-me walking through the brief." Five segments: CLDK essentials, the moves on the analysis object, an MCP server over CLDK,
+me walking through the brief." Five segments: CLDK essentials, the actions on the analysis object, an MCP server over CLDK,
 the two agents that call it, and the hand-over to the brief.
 
 Every code window quotes a real file and every output window a real capture:
   - code comes from cldk-mcp.ipynb (found by the start of its cell), cldk-demo/server.py (found by its first and last line)
-    and the scripts in hw2/captures/ (levels.py, move3.py, client.py, codeact.py), read at generation time;
+    and the scripts in hw2/captures/ (levels.py, client.py, codeact.py), read at generation time;
   - a line longer than the window holds at 8 pt (WIDTH characters of Aptos Mono) is shown broken inside its brackets, or
     with its trailing comment on the line above, and the shown lines must parse to the same Python syntax tree as the
     source lines (same_code), so the window shows the program that ran;
@@ -293,11 +293,7 @@ LEVELS_CODE = code(span(script("levels.py"), "for level in", "    print("))
 REFUSAL_CODE = code(span(script("levels.py"), "try:", "    print("))
 LOCATE_CODE = code(cell("hit = an.locate("))
 BODY_CODE = code(cell("print(an.get_method_bodies("))
-# Move 3 is quoted from captures/move3.py: its for line is the notebook's move 3 cell verbatim, and its print line gives the
-# callers count a label that says what it is (the cell's own label, "callers of the helper HW1's false positives share",
-# is wrong: the 74 callers are BenchmarkTest01103 to 01230, outside HW1's scan scope BenchmarkTest000*.py).
-MOVE3_CODE = code(span(script("move3.py"), "for c in an.callees_of(", 'print(len(an.callers_of("get_safe_value"))'))
-assert MOVE3_CODE[0] == cell("for c in an.callees_of(")[0], "move3.py's for line no longer matches the notebook's move 3 cell"
+ACTION3_CODE = code(cell("for c in an.callees_of("))
 
 REACHES_CODE = code(cell("import networkx as nx\ndef reaches(")[1:9])      # the function, without the import and the prints
 assert REACHES_CODE[0].startswith("def reaches(") and REACHES_CODE[-1] == "    return None, None", REACHES_CODE
@@ -388,13 +384,13 @@ SEG1 = [
               "The closing: below the level a question needs, the answer is an error, never an empty result."])),
 ]
 
-# ---------------------------------------------------------------- segment 2: the moves on the analysis object
+# ---------------------------------------------------------------- segment 2: the actions on the analysis object
 
 SEG2 = [
-    divider("2.d", "Moves on the analysis object", 1,
-            "We take one Bandit alert, B608 at line 46 of BenchmarkTest00099.py, through the moves a classifier needs: "
+    divider("2.d", "Actions on the analysis object", 1,
+            "We take one Bandit alert, B608 at line 46 of BenchmarkTest00099.py, through the actions a classifier needs: "
             "locate, read, callers and callees, and dataflow."),
-    item("2.1", "window", "Move 1: locate the callable that holds a line.",
+    item("2.1", "window", "Action 1: locate the callable that holds a line.",
          bullets=[B("In:", "a `path` and a `line`, which is what a Bandit alert gives."),
                   B("Out:", "`callable.signature`, `callable.name` and `module`, and the callable's text in `source`."),
                   B("Outside any callable,", "`callable` is `None` and a diagnostic names the case: `module_scope`, or "
@@ -417,7 +413,7 @@ SEG2 = [
               "Outside any callable the answer is still unambiguous: callable is None, and a diagnostic says module scope "
               "or file not in the graph.",
               "The closing: an alert's file and line become the name that the rest of the API takes."])),
-    item("2.2", "window", "Move 2: read the body by signature.",
+    item("2.2", "window", "Action 2: read the body by signature.",
          bullets=[B("`get_method_bodies`", "maps each signature to its body."),
                   B("A signature with no body", "is absent, so test `key in result`."),
                   B("`get_source(node_id)`", "returns one statement, such as line 46.")],
@@ -439,23 +435,22 @@ SEG2 = [
               "Below the callable, get_source with the node id from locate returns the single statement, here the f-string "
               "at line 46.",
               "The closing: the agent reads the function the alert names and nothing else, which is HW1's read rule."])),
-    item("2.3", "window", "Move 3: callers and callees by name.",
+    item("2.3", "window", "Action 3: callers and callees by name.",
          bullets=[B("`callers_of` covers declared callables,", "and `callees_of` adds externals."),
                   B("An ambiguous name", "raises `AmbiguousName`, and `in_module=` narrows it.")],
-         window=window("move3.py: what the handler calls, and who calls a helper", MOVE3_CODE,
+         window=window("cldk-mcp.ipynb, section 2: what the handler calls, and who calls a helper", ACTION3_CODE,
                        "output: file, line and callee, then the callers of get_safe_value",
                        output(capture("callees.txt") + capture("callers.txt"))),
          steps=steps((1, True), (2, True)),
          closing="One call lists the 74 handlers that use the constant helper.",
          notes=click_notes(
-             f"The window is hw2/captures/move3.py, {RUN_SCRIPT}. Its for line is the move 3 cell of cldk-mcp.ipynb, "
-             "section 2, verbatim, and it runs on the same analysis object after the same locate. callees_of lists what "
+             f"The window is the action 3 cell of cldk-mcp.ipynb, section 2, {RUN}. It runs on the same analysis object "
+             "after the same locate. callees_of lists what "
              "BenchmarkTest00099_post calls: an external callee comes back with an empty file and line 0, and the two in "
              f"the checkout carry their file and line. {N_CALLERS} callables call get_safe_value, the helper in "
              "helpers/separate_request.py that returns the constant \"bar\", so the value a case takes from it carries "
              f"nothing from the request. checks.py lists them: {CALLER_RANGE}. None is in HW1's scan scope, "
-             "BenchmarkTest000*.py, so the notebook's own label for this count, \"callers of the helper HW1's false "
-             "positives share\", is wrong, and move3.py prints the count under a label that names the helper. "
+             "BenchmarkTest000*.py. "
              "From hw2/captures/checks.py, the same day: "
              f"callers_of('execute') raises {EXTERNAL_ERR}, and callers_of('init') "
              "raises AmbiguousName because 1,230 callables match, with the hint to narrow by in_module or more of the "
@@ -465,7 +460,7 @@ SEG2 = [
               "A bare name such as init matches 1,230 callables, one per case, so CLDK raises with the candidates instead "
               "of picking one.",
               "The closing: one call tells the agent which cases depend on the constant helper."])),
-    item("2.4", "text", "Move 4: dataflow answers the taint question.",
+    item("2.4", "text", "Action 4: dataflow answers the taint question.",
          figure={"stages": stages("dataflow-example", 4), "placement": "below"},
          steps=paired(4),
          bullets=[B("Bandit flags B608", "on 00099, 00011 and 00012, and only 00099 is true."),
@@ -539,7 +534,7 @@ SEG2 = [
 
 SEG3 = [
     divider("3.d", "An MCP server over CLDK", 2,
-            "We serve the same moves as MCP tools, the pattern each team's server follows in HW2."),
+            "We serve the same actions as MCP tools, the pattern each team's server follows in HW2."),
     item("3.1", "window", "A tool is a function with a contract.",
          bullets=[B("`MCPServer` and `@mcp.tool`", "publish each tool's name, description and argument schema, and the "
                     "result schema from `Located`."),
