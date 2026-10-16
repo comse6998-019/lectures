@@ -1,0 +1,137 @@
+% policy-blocks: Cyberbird's policy built block by block, each block beside what it grants. For the build "Cyberbird's policy,
+% block by block" (lecture 6, 2026-10-16: "progressively build out the policy slides block by block section by section so that
+% the students can visualize it"). It replaces the build's code window, which showed the whole file at once.
+% Canvas 16.5 x 7.2 cm. Left, the policy text, one block darkening per stage with a navy bar beside it. Right, two panels: the
+% files the workload can touch, as Landlock enforces them in the kernel, and the connections, as the supervisor decides them.
+% Stages:
+%   1 The frame: the policy's version line; every other block, every path badge and every network box a ghost.
+%   2 filesystem_policy with read_only: the read badges, /app/runs included, because /app covers everything beneath it.
+%   3 read_write: /sandbox, /tmp, /dev/null and /app/runs become read and write.
+%   4 landlock: the kernel band under the files, and the unlisted paths refused.
+%   5 network_policies, the endpoint: the trusted supervisor and host.lima.internal:8080, protocol tcp.
+%   6 binaries: python3.12 reaches the model server through the supervisor.
+%   7 What the rule leaves out: curl to the model server and python3.12 to pypi.org:443, both denied.
+%   8 The answer key: readable, because /app covers it.
+% Sources. The policy: instructor-materials/hw2/feasibility/cyberbird-policy.yaml (the run of 2026-10-15), its three comment lines
+% left out and its two flow lists wrapped to fit, as the note says. The paths: cyberbird/Dockerfile beside it (Cyberbird at /app,
+% /app/runs owned by the agent user, the fixture under /app/fixtures) and the cyberbird repository (fixtures/owasp-benchmark-python/
+% src and ground-truth/expectedresults-0.1.csv). The outcomes, captured in the sandbox on 2026-10-15: probes.txt (4: the answer key
+% read; 5 and 6: a write into the fixture refused, writes into /app/runs and /tmp accepted; 7: /home/agent and /var/lib/dpkg/status
+% refused) and logs.txt (NET:OPEN ALLOWED /usr/local/bin/python3.12 -> host.lima.internal:8080 [policy:model_server]; DENIED
+% /usr/bin/curl -> host.lima.internal:8080, "binary '/usr/bin/curl' not allowed in policy 'model_server'"; DENIED
+% /usr/local/bin/python3.12 -> pypi.org:443, "endpoint pypi.org:443 is not allowed by any policy"). landlock hard_requirement:
+% the guide's chapter 10 (a list the kernel cannot enforce fails the start; best_effort continues with a finding).
+% Illustrative: nothing. Left out on purpose: include_workdir (the working directory, /sandbox, is in read_write already), the
+% effective policy's /var/log, and the middleware section, which the file does not set.
+% Colour: no magenta (no adversary in this run). Read badges in IBM blue at 15 percent, read-and-write badges navy with white text,
+% refused paths dashed grey with a cross. The newest element carries the hl outline; it settles on the next stage.
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \useasboundingbox (0,0) rectangle (16.5,7.2);
+  \frenchspacing
+  \tikzset{
+    yl/.style={anchor=base west, inner sep=0pt, font=\ttfamily\footnotesize},
+    path/.style={anchor=base west, inner sep=0pt, font=\ttfamily\footnotesize},
+    rd/.style={draw=ibmfg!60, fill=ibmblue!15, rounded corners=1.5pt, font=\sffamily\footnotesize, minimum width=1.75cm,
+               minimum height=0.36cm, inner sep=1pt, anchor=base west, text height=1.6ex, text depth=0.4ex},
+    rw/.style={rd, fill=deckNavy, draw=deckNavy, text=white},
+    no/.style={rd, fill=white, draw=ibmfg!45, dashed, text=ibmfg!60},
+    newest/.style={draw=deckNavy, line width=1.6pt},
+    plab/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy, anchor=base west, inner sep=0pt},
+    nbox/.style={gnode, font=\ttfamily\footnotesize, minimum height=0.62cm, inner sep=2pt},
+    ghostbox/.style={draw=ibmfg!25, text=ibmfg!35, fill=white, dashed},
+    okflow/.style={-{Stealth[length=2.2mm]}, line width=1.2pt, draw=deckNavy},
+    noflow/.style={-{Stealth[length=2.2mm]}, thick, draw=ibmfg!55},
+  }
+  % \blk{stage}{first line y}{last line y}{lines}: a block of the policy, grey before its stage, black with a navy bar on it, black after
+  \newcommand{\blk}[4]{%
+    \ifnum\stage<#1 \begin{scope}[every node/.style={text=ibmfg!30}]#4\end{scope}\else #4\fi
+    \ifnum\stage=#1 \draw[deckNavy, line width=2pt] (0.08,#2+0.27) -- (0.08,#3-0.1);\fi}
+  % \badge{stage}{style}{y}{text}: a badge in the files panel from its stage on, outlined in navy on its stage
+  \newcommand{\badge}[4]{\ifnum\stage<#1\else\ifnum\stage=#1 \node[#2, newest] at (12.95,#3) {#4};\else \node[#2] at (12.95,#3) {#4};\fi\fi}
+  \newcommand{\xmark}[1]{\draw[ibmfg!70, line width=1.4pt, line cap=round] #1 +(-0.11,-0.11) -- +(0.11,0.11) #1 +(-0.11,0.11) -- +(0.11,-0.11);}
+
+  % ---------------------------------------------------------------- left: the policy, one line every 0.36 cm
+  \node[note, anchor=base west, inner sep=0pt] at (0.25,6.95) {cyberbird-policy.yaml};
+  \node[yl] at (0.25,6.5) {version: 1};
+  \blk{2}{6.14}{4.70}{%
+    \node[yl] at (0.25,6.14) {filesystem\_policy:};
+    \node[yl] at (0.25,5.78) {\ \ include\_workdir: true};
+    \node[yl] at (0.25,5.42) {\ \ read\_only: [/bin, /usr, /lib, /etc,};
+    \node[yl] at (0.25,5.06) {\ \ \ \ /proc, /dev/urandom, /app,};
+    \node[yl] at (0.25,4.70) {\ \ \ \ /app/fixtures]};}
+  \blk{3}{4.34}{3.98}{%
+    \node[yl] at (0.25,4.34) {\ \ read\_write: [/sandbox, /tmp,};
+    \node[yl] at (0.25,3.98) {\ \ \ \ /dev/null, /app/runs]};}
+  \blk{4}{3.62}{3.26}{%
+    \node[yl] at (0.25,3.62) {landlock:};
+    \node[yl] at (0.25,3.26) {\ \ compatibility: hard\_requirement};}
+  \blk{5}{2.90}{1.10}{%
+    \node[yl] at (0.25,2.90) {network\_policies:};
+    \node[yl] at (0.25,2.54) {\ \ model\_server:};
+    \node[yl] at (0.25,2.18) {\ \ \ \ endpoints:};
+    \node[yl] at (0.25,1.82) {\ \ \ \ \ \ - host: host.lima.internal};
+    \node[yl] at (0.25,1.46) {\ \ \ \ \ \ \ \ port: 8080};
+    \node[yl] at (0.25,1.10) {\ \ \ \ \ \ \ \ protocol: tcp};}
+  \blk{6}{0.74}{0.38}{%
+    \node[yl] at (0.25,0.74) {\ \ \ \ binaries:};
+    \node[yl] at (0.25,0.38) {\ \ \ \ \ \ - path: /usr/local/bin/python3.12};}
+  \node[note, anchor=base west, inner sep=0pt] at (0.25,0.08) {lists wrapped to fit, comments left out};
+  \draw[ibmfg!20] (7.45,0.05) -- (7.45,7.15);
+
+  % ---------------------------------------------------------------- right, upper: the files, as the kernel enforces them
+  \node[plab] at (7.7,6.95) {files the workload can touch};
+  \node[path] at (7.7,6.5) {/bin /usr /lib /etc};
+  \node[path] at (7.7,6.1) {/proc /dev/urandom};
+  \node[path] at (7.7,5.7) {/app\textnormal{\sffamily\footnotesize\ \ Cyberbird's code}};
+  \node[path] at (7.7,5.3) {\ \ fixtures/\ldots/src};
+  \node[path] at (7.7,4.9) {\ \ fixtures/\ldots/ground-truth};
+  \node[path] at (7.7,4.5) {\ \ runs};
+  \node[path] at (7.7,4.1) {/sandbox /tmp /dev/null};
+  \node[path] at (7.7,3.7) {/home/agent /var/lib/dpkg};
+  \badge{2}{rd}{6.5}{read}
+  \badge{2}{rd}{6.1}{read}
+  \badge{2}{rd}{5.7}{read}
+  \badge{2}{rd}{5.3}{read}
+  \badge{2}{rd}{4.9}{read}
+  \ifnum\stage=2 \node[rd, newest] at (12.95,4.5) {read};\fi
+  \badge{3}{rw}{4.5}{read + write}
+  \badge{3}{rw}{4.1}{read + write}
+  \badge{4}{no}{3.7}{refused}
+  \atstage{4}{%
+    \ifnum\stage=4 \tikzset{kb/.style={draw=deckNavy, line width=1.6pt}}\else \tikzset{kb/.style={draw=deckNavy}}\fi
+    \node[kb, fill=deckLilac!45, rounded corners=2pt, minimum width=8.7cm, minimum height=0.5cm, anchor=west, font=\sffamily\footnotesize,
+          inner sep=2pt] at (7.7,3.14) {\textbf{kernel: Landlock} holds both lists; with no Landlock, no start};}
+  \atstage{8}{%
+    \draw[hl] (7.6,4.72) rectangle (14.8,5.13);
+    \node[font=\sffamily\footnotesize\bfseries, text=deckNavy, anchor=base west, inner sep=0pt] at (14.9,4.98) {answer key,};
+    \node[font=\sffamily\footnotesize\bfseries, text=deckNavy, anchor=base west, inner sep=0pt] at (14.9,4.66) {readable};}
+
+  % ---------------------------------------------------------------- right, lower: the connections, as the supervisor decides them
+  \node[plab] at (7.7,2.5) {connections the workload can open};
+  \ifnum\stage<6 \node[nbox, ghostbox] (py) at (8.55,1.75) {python3.12};\else
+    \ifnum\stage=6 \node[nbox, hl] (py) at (8.55,1.75) {python3.12};\else \node[nbox] (py) at (8.55,1.75) {python3.12};\fi\fi
+  \ifnum\stage<7 \node[nbox, ghostbox] (curl) at (8.55,0.6) {curl};\else
+    \ifnum\stage=7 \node[nbox, hl] (curl) at (8.55,0.6) {curl};\else \node[nbox] (curl) at (8.55,0.6) {curl};\fi\fi
+  \ifnum\stage<5 \node[mnode, minimum width=1.7cm, minimum height=1.75cm, font=\sffamily\footnotesize, align=center, ghostbox]
+      (sup) at (11.6,1.18) {trusted\\supervisor};\else
+    \node[mnode, minimum width=1.7cm, minimum height=1.75cm, font=\sffamily\footnotesize, align=center] (sup) at (11.6,1.18)
+      {trusted\\supervisor};\fi
+  \ifnum\stage<5 \node[nbox, ghostbox, anchor=west] (model) at (12.95,1.75) {host.lima.internal:8080};\else
+    \ifnum\stage=5 \node[nbox, hl, anchor=west] (model) at (12.95,1.75) {host.lima.internal:8080};\else
+      \node[nbox, anchor=west] (model) at (12.95,1.75) {host.lima.internal:8080};\fi\fi
+  \atstage{5}{\node[note, anchor=base west, inner sep=0pt] at (12.95,2.22) {the model server};}
+  \ifnum\stage<7 \node[nbox, ghostbox, anchor=west] (pypi) at (12.95,0.6) {pypi.org:443};\else
+    \ifnum\stage=7 \node[nbox, hl, anchor=west] (pypi) at (12.95,0.6) {pypi.org:443};\else
+      \node[nbox, anchor=west] (pypi) at (12.95,0.6) {pypi.org:443};\fi\fi
+  \atstage{6}{%
+    \draw[okflow] (py.east) -- (py.east -| sup.west);
+    \draw[okflow] (model.west -| sup.east) -- (model.west);
+    \node[font=\sffamily\footnotesize\bfseries, text=deckNavy, anchor=base, inner sep=0pt] at (9.93,1.9) {allowed};}
+  \atstage{7}{%
+    \draw[noflow] (curl.east) -- (curl.east -| sup.west);
+    \xmark{($(curl.east -| sup.west)+(-0.35,0)$)}
+    \draw[noflow] (pypi.west -| sup.east) -- (pypi.west);
+    \xmark{($(pypi.west)+(-0.35,0)$)}
+    \node[note, anchor=base west, inner sep=0pt] at (12.95,0.08) {no endpoint for it};
+    \node[note, anchor=base west, inner sep=0pt] at (8.0,0.08) {not in binaries};}
+\end{tikzpicture}%
