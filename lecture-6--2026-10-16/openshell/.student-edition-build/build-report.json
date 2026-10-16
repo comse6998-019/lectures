@@ -1,0 +1,252 @@
+{
+  "file": "/Users/rkrsn/COMSE6998-019/lectures/lecture-6--2026-10-16/openshell/openshell-student-edition.html",
+  "bytes": 637088,
+  "chapters": [
+    {
+      "id": "ch01",
+      "title": "What an agent needs, and who answers",
+      "words": 1792,
+      "prose_words": 1740,
+      "minutes": 9,
+      "subsections": [
+        [
+          "ch01-s1",
+          "The question this chapter answers"
+        ],
+        [
+          "ch01-s2",
+          "Files, processes and connections"
+        ],
+        [
+          "ch01-s3",
+          "The parts of OpenShell that answer"
+        ],
+        [
+          "ch01-s4",
+          "Cyberbird inside OpenShell"
+        ],
+        [
+          "ch01-s5",
+          "Worked example: the withheld case and the answer key"
+        ]
+      ]
+    }
+  ],
+  "figures": [
+    "three-needs",
+    "three-needs-cyberbird",
+    "architecture",
+    "architecture-cyberbird"
+  ],
+  "sources": [
+    "README.md:23",
+    "docs/about/architecture.mdx:20",
+    "crates/openshell-driver-docker/README.md:25",
+    "crates/openshell-sandbox/src/sandbox/linux/mod.rs:48",
+    "crates/openshell-sandbox/src/network_broker.rs:106",
+    "crates/openshell-sandbox-backend/src/runtime.rs:248",
+    "crates/openshell-server/src/supervisor_session.rs:1985",
+    "cyberbird/reactive/scan.py:117",
+    "cyberbird/reactive/workspace.py:98",
+    "cyberbird/reactive/workspace.py:24",
+    "cyberbird/reactive/dispatch.py:155",
+    "cyberbird/reactive/submit.py:138",
+    "fixtures/owasp-benchmark-python/fixture.toml:15"
+  ],
+  "exercises": 1,
+  "defined_terms": [
+    {
+      "term": "process",
+      "defined_in_block": 0,
+      "first_used_in_block": 0,
+      "first_use": "This edition assumes one fact: a process is a running program. Every other term is defined"
+    },
+    {
+      "term": "agent",
+      "defined_in_block": 1,
+      "first_used_in_block": 1,
+      "first_use": "An agent is a language model joined to a program. The language model, the model for short,"
+    },
+    {
+      "term": "model",
+      "defined_in_block": 1,
+      "first_used_in_block": 1,
+      "first_use": "An agent is a language model joined to a program. The language model, the model for short,"
+    },
+    {
+      "term": "sandbox",
+      "defined_in_block": 2,
+      "first_used_in_block": 2,
+      "first_use": "OpenShell is NVIDIA's open-source system for running agents under enforced limits. It runs"
+    },
+    {
+      "term": "Cyberbird",
+      "defined_in_block": 3,
+      "first_used_in_block": 3,
+      "first_use": "Each chapter answers one question. It draws the mechanism in the abstract first. It then s"
+    },
+    {
+      "term": "kernel",
+      "defined_in_block": 11,
+      "first_used_in_block": 11,
+      "first_use": "The program performs each action the model chooses, running as one or more processes. Each"
+    },
+    {
+      "term": "system call",
+      "defined_in_block": 11,
+      "first_used_in_block": 11,
+      "first_use": "The program performs each action the model chooses, running as one or more processes. Each"
+    },
+    {
+      "term": "authority",
+      "defined_in_block": 11,
+      "first_used_in_block": 11,
+      "first_use": "The program performs each action the model chooses, running as one or more processes. Each"
+    },
+    {
+      "term": "API",
+      "defined_in_block": 15,
+      "first_used_in_block": 15,
+      "first_use": "Connections. The agent calls connect() to reach its model's API, the network service that "
+    },
+    {
+      "term": "Bandit",
+      "defined_in_block": 18,
+      "first_used_in_block": 18,
+      "first_use": "In Cyberbird's case, the agent works on one alert from Bandit, a scanner that reports like"
+    },
+    {
+      "term": "fixture",
+      "defined_in_block": 18,
+      "first_used_in_block": 18,
+      "first_use": "In Cyberbird's case, the agent works on one alert from Bandit, a scanner that reports like"
+    },
+    {
+      "term": "tool call",
+      "defined_in_block": 18,
+      "first_used_in_block": 18,
+      "first_use": "In Cyberbird's case, the agent works on one alert from Bandit, a scanner that reports like"
+    },
+    {
+      "term": "workspace",
+      "defined_in_block": 19,
+      "first_used_in_block": 19,
+      "first_use": "Files. Cyberbird copies the fixture's src/ folder into a workspace under /tmp. Its tools r"
+    },
+    {
+      "term": "answer key",
+      "defined_in_block": 22,
+      "first_used_in_block": 22,
+      "first_use": "Cyberbird also withholds files from the model. Its workspace code moves the other benchmar"
+    },
+    {
+      "term": "client",
+      "defined_in_block": 27,
+      "first_used_in_block": 27,
+      "first_use": "Client. The client is the tool a person uses to manage sandboxes: the openshell command li"
+    },
+    {
+      "term": "gateway",
+      "defined_in_block": 28,
+      "first_used_in_block": 28,
+      "first_use": "Gateway. The gateway is OpenShell's management service. It checks who is calling and keeps"
+    },
+    {
+      "term": "policy",
+      "defined_in_block": 28,
+      "first_used_in_block": 28,
+      "first_use": "Gateway. The gateway is OpenShell's management service. It checks who is calling and keeps"
+    },
+    {
+      "term": "compute driver",
+      "defined_in_block": 29,
+      "first_used_in_block": 29,
+      "first_use": "Compute driver. The compute driver turns the gateway's record into running resources on Do"
+    },
+    {
+      "term": "virtual machine",
+      "defined_in_block": 29,
+      "first_used_in_block": 29,
+      "first_use": "Compute driver. The compute driver turns the gateway's record into running resources on Do"
+    },
+    {
+      "term": "placement",
+      "defined_in_block": 29,
+      "first_used_in_block": 29,
+      "first_use": "Compute driver. The compute driver turns the gateway's record into running resources on Do"
+    },
+    {
+      "term": "workload",
+      "defined_in_block": 30,
+      "first_used_in_block": 30,
+      "first_use": "Agent and tools. The dashed box is the workload: the agent with every process it starts. O"
+    },
+    {
+      "term": "untrusted",
+      "defined_in_block": 30,
+      "first_used_in_block": 30,
+      "first_use": "Agent and tools. The dashed box is the workload: the agent with every process it starts. O"
+    },
+    {
+      "term": "sandbox runtime",
+      "defined_in_block": 31,
+      "first_used_in_block": 31,
+      "first_use": "Sandbox runtime. The sandbox runtime is OpenShell's program inside the workload. Before th"
+    },
+    {
+      "term": "supervisor",
+      "defined_in_block": 32,
+      "first_used_in_block": 32,
+      "first_use": "Trusted supervisor. The supervisor is OpenShell's program outside the workload. It holds t"
+    },
+    {
+      "term": "credentials",
+      "defined_in_block": 32,
+      "first_used_in_block": 32,
+      "first_use": "Trusted supervisor. The supervisor is OpenShell's program outside the workload. It holds t"
+    },
+    {
+      "term": "trusted",
+      "defined_in_block": 32,
+      "first_used_in_block": 32,
+      "first_use": "Trusted supervisor. The supervisor is OpenShell's program outside the workload. It holds t"
+    },
+    {
+      "term": "authenticated runtime channel",
+      "defined_in_block": 33,
+      "first_used_in_block": 33,
+      "first_use": "The runtime and the supervisor talk over the authenticated runtime channel, a private conn"
+    },
+    {
+      "term": "supervisor-initiated control session",
+      "defined_in_block": 33,
+      "first_used_in_block": 33,
+      "first_use": "The runtime and the supervisor talk over the authenticated runtime channel, a private conn"
+    },
+    {
+      "term": "approved external service",
+      "defined_in_block": 34,
+      "first_used_in_block": 34,
+      "first_use": "Approved external service. An approved external service is a destination the policy permit"
+    },
+    {
+      "term": "containers",
+      "defined_in_block": 36,
+      "first_used_in_block": 36,
+      "first_use": "Placement is where the compute driver runs the workload and the supervisor, and how it kee"
+    },
+    {
+      "term": "host",
+      "defined_in_block": 36,
+      "first_used_in_block": 36,
+      "first_use": "Placement is where the compute driver runs the workload and the supervisor, and how it kee"
+    },
+    {
+      "term": "Landlock",
+      "defined_in_block": 50,
+      "first_used_in_block": 50,
+      "first_use": "The kernel. Before Cyberbird started, the sandbox runtime turned the policy's file lists i"
+    }
+  ],
+  "checks": "passed: no term before its defining paragraph, no sentence over 25 words, no semicolon or dash joining clauses, chapter length, figure order, source paths and lines at both commits, contents plan, balanced markup, unique IDs, internal anchors, no external assets"
+}

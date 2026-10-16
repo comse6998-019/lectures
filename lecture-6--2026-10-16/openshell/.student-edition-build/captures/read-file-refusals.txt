@@ -1,0 +1,12 @@
+# Cyberbird's own refusals, before any request reaches the kernel (2026-10-15 23:23 EDT, on the Mac).
+# Cyberbird at ead3421 (cyberbird/reactive/ unchanged from that commit), Python 3.12, langchain-core from PyPI.
+# Script: open AgentWorkspace(case='BenchmarkTest00283') as Cyberbird does for alert bc284c6b, then call the
+# read_file tool with three paths. <root> stands for the repository root (/app inside the cyberbird:1 image).
+# The dispatcher (cyberbird/reactive/dispatch.py:155-158) returns each exception to the model as a refusal
+# observation; a PathEscapeException gains the prefix "refused: ".
+read_file('testcode/BenchmarkTest00284.py')
+  ToolFault | no such file: testcode/BenchmarkTest00284.py
+read_file('../ground-truth/expectedresults-0.1.csv')
+  PathEscapeException | '../ground-truth/expectedresults-0.1.csv' resolves outside the workspace root
+read_file('<root>/fixtures/owasp-benchmark-python/ground-truth/expectedresults-0.1.csv')
+  PathEscapeException | '<root>/fixtures/owasp-benchmark-python/ground-truth/expectedresults-0.1.csv' resolves outside the workspace root

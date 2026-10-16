@@ -1,0 +1,19 @@
+# Cyberbird's policy of 2026-10-15 (instructor-materials hw2/feasibility/cyberbird-policy.yaml, commit c2ab5e3)
+# with one change: read_only lists Cyberbird's code, its virtual environment and the fixture's src/ folder
+# in place of all of /app, so the fixture's ground-truth/ folder, which holds the answer key, is on no list.
+# Used only for the student edition's probe of 2026-10-15 (probe-src-only.txt beside this file).
+version: 1
+filesystem_policy:
+  include_workdir: true
+  read_only: [/bin, /usr, /lib, /etc, /proc, /dev/urandom, /app/cyberbird, /app/.venv, /app/fixtures/owasp-benchmark-python/src]
+  read_write: [/sandbox, /tmp, /dev/null, /app/runs]
+landlock:
+  compatibility: hard_requirement
+network_policies:
+  model_server:
+    endpoints:
+      - host: host.lima.internal
+        port: 8080
+        protocol: tcp
+    binaries:
+      - path: /usr/local/bin/python3.12

@@ -1,0 +1,87 @@
+% architecture-cyberbird: the guide's architecture figure (openshell-figures/architecture.tikz) with
+% Cyberbird in action. Chapter 1 of the student edition, Figure 4; Figure 3 is the guide's figure itself.
+% The boxes, arrows and coordinates of architecture.tikz are kept; the labels become Cyberbird's names,
+% and a kernel band is added under the workload for the worked example.
+% Drawing bounds 14.3 cm x 9.6 cm (the guide's 8.2 cm plus the kernel band).
+% Sources of the strings:
+%   OpenShell commit be7af99: the Docker driver places the workload (openshell-sandbox is PID 1, network_mode=none)
+%     and a separate supervisor companion container on host networking (crates/openshell-driver-docker/README.md:25-46);
+%     the runtime installs the Landlock baseline and the user's filesystem rules before the agent runs
+%     (crates/openshell-sandbox/src/sandbox/linux/mod.rs:48).
+%   Cyberbird, commit ead3421: the agent runs python, bandit to scan, and on submit patch and bandit
+%     (cyberbird/reactive/scan.py, submit.py);
+%     the answer key is fixtures/owasp-benchmark-python/ground-truth/expectedresults-0.1.csv (fixture.toml).
+%   The policy's network rule (python3.12 to the model server) is the course's Cyberbird policy
+%     (instructor-materials hw2/feasibility/cyberbird-policy.yaml, commit c2ab5e3).
+%   The refusal is captured: under ../captures/cyberbird-policy-src-only.yaml, whose read_only lists /app/cyberbird,
+%     /app/.venv and the fixture's src/ in place of /app, `cat` of the answer key inside the sandbox printed
+%     "cat: /app/fixtures/owasp-benchmark-python/ground-truth/expectedresults-0.1.csv: Permission denied"
+%     (../captures/probe-src-only.txt, 2026-10-15 23:20 EDT, OpenShell 0.1.4, Docker in Colima). Under the course's
+%     policy, which lists all of /app, the same read succeeded; the figure draws the src-only policy.
+% Colima runs Docker's Linux VM on the instructor's Mac.
+% Requires the styles and TikZ libraries in the guide's standalone-style.tex.
+\definecolor{denied}{HTML}{800000}
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \path[use as bounding box] (0,-3.15) rectangle (14.3,6.45);
+
+  \node[lab,anchor=west,font=\sffamily\fontsize{8}{10}\selectfont]
+    at (0.1,6.25) {Cyberbird on Docker, in Colima's Linux VM};
+
+  \node[gnode,minimum width=2.6cm,minimum height=1.15cm] (client)
+    at (1.45,5.3) {\textbf{Client}\\\texttt{openshell} command in\\the operator's terminal};
+  \node[mnode,minimum width=3.05cm,minimum height=1.15cm] (gateway)
+    at (8.05,5.3) {\textbf{Gateway}\\record \texttt{cyberbird}\\and its policy};
+  \node[gnode,minimum width=3cm,minimum height=1.15cm] (driver)
+    at (12.2,5.3) {\textbf{Compute driver}\\Docker};
+
+  \draw[flow] (client.east) --
+    node[lab,above=3pt,font=\sffamily\fontsize{8}{10}\selectfont]
+      {\texttt{sandbox create}}
+    (gateway.west);
+  \draw[flow] (gateway.east) -- (driver.west);
+
+  \node[lab,font=\sffamily\fontsize{8}{10}\selectfont]
+    at (12.2,3.8)
+    {Places cyberbird's container\\and the supervisor's\\container side by side.};
+
+  \draw[draw=ibmfg!60,dashed,rounded corners=2pt]
+    (0.1,-0.55) rectangle (5.95,2.25);
+  \node[lab,font=\sffamily\fontsize{8}{10}\selectfont]
+    at (3.025,2.25) {Untrusted workload (no network)};
+  \node[rnode,minimum width=2.2cm,minimum height=1.4cm] (agent)
+    at (1.45,1) {\textbf{cyberbird}\\\texttt{python},\\\texttt{patch}, \texttt{bandit}};
+  \node[rnode,minimum width=2.2cm,minimum height=1.4cm] (runtime)
+    at (4.4,1) {\textbf{Sandbox}\\\textbf{runtime}\\set the rules,\\then started it};
+  \node[mnode,minimum width=3.05cm,minimum height=1.5cm] (supervisor)
+    at (8.05,1) {\textbf{Trusted supervisor}\\admits \texttt{python3.12}\\to the model server};
+  \node[tnode,align=center,minimum width=2.8cm,minimum height=1.2cm]
+    (service) at (12.2,1) {Model server};
+
+  \draw[flow] (agent.east) -- (runtime.west);
+  \draw[flow,{Stealth[length=2mm]}-{Stealth[length=2mm]}]
+    (runtime.east) -- (supervisor.west);
+  \draw[flow,{Stealth[length=2mm]}-{Stealth[length=2mm]}]
+    (supervisor.east) -- (service.west);
+
+  \node[lab,font=\sffamily\fontsize{8}{10}\selectfont]
+    at (6.1,-1.2) {Authenticated\\runtime channel};
+  \node[lab,font=\sffamily\fontsize{8}{10}\selectfont]
+    at (10.15,-1.2) {cyberbird's\\model calls};
+
+  \draw[back] (supervisor.north) --
+    node[lab,left=5pt,
+         font=\sffamily\fontsize{8}{10}\selectfont]
+      {Supervisor-initiated\\control session}
+    (gateway.south);
+
+  % The worked example: a file read goes straight to the kernel, which refuses it.
+  \node[rnode,minimum width=13.9cm,minimum height=0.8cm] (kernel) at (7.15,-2.45) {};
+  \node[font=\sffamily\fontsize{8}{10}\selectfont,anchor=center]
+    at (9.45,-2.45) {\textbf{Linux kernel} of the VM: Landlock rules that list the fixture's \texttt{src/} only};
+  \draw[flow,draw=denied] (agent.south) -- (1.45,-2.05);
+  \node[lab,anchor=west,align=left,font=\sffamily\fontsize{8}{10}\selectfont]
+    at (1.62,-1.3) {a process's \texttt{open()}\\on the answer key};
+  \draw[denied,very thick] (1.25,-1.85) -- (1.65,-2.25) (1.25,-2.25) -- (1.65,-1.85);
+  \node[anchor=west,align=left,text=denied,font=\sffamily\fontsize{8}{10}\selectfont]
+    at (1.8,-2.45) {refused:\\\texttt{Permission denied}};
+\end{tikzpicture}

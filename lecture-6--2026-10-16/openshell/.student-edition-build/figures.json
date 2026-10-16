@@ -1,0 +1,22 @@
+{
+  "three-needs": {
+    "root": "student",
+    "caption": "What an agent asks of the machine. Every request reaches the kernel as a system call, below the program that made it.",
+    "alt": "An agent box at the top sends three kinds of system call down to the Linux kernel at the bottom: files through open, read and write; processes through fork and execve; connections through connect. A dashed line just above the kernel marks where a rule can sit below the program."
+  },
+  "three-needs-cyberbird": {
+    "root": "student",
+    "caption": "Figure 1 with Cyberbird's names: its files, the processes it starts and its model calls.",
+    "alt": "The same layout as Figure 1 with Cyberbird's names: files are the case BenchmarkTest00283.py, the helpers folder and its workspace copy in /tmp; processes are python running the agent, which starts bandit to scan, then patch and bandit on submit; connections go to its model server on every step. The dashed line marks where OpenShell's rules for Cyberbird sit."
+  },
+  "architecture": {
+    "root": "guide",
+    "caption": "OpenShell's components on the standard Linux path.",
+    "alt": "The client calls the gateway, which uses a compute driver. The workload contains agent tools and the sandbox runtime. The runtime communicates with the trusted supervisor, which communicates with approved external services. A supervisor session connects back to the gateway."
+  },
+  "architecture-cyberbird": {
+    "root": "student",
+    "caption": "Figure 3 with Cyberbird's names, under a policy that lists only the fixture's src/ folder. The kernel refuses an open() of the answer key.",
+    "alt": "Figure 3 with Cyberbird's names. The client is the openshell command in the operator's terminal and sends sandbox create to the gateway, which keeps the record cyberbird and its policy. The compute driver is Docker, which places Cyberbird's container beside the supervisor's. Inside the untrusted workload, with no network, are cyberbird with python, patch and bandit, and the sandbox runtime, which set the rules and then started it. The trusted supervisor admits python3.12 to the model server. Below the workload, an arrow from cyberbird labelled a process's open on the answer key ends at the Linux kernel band with a cross and the words refused, Permission denied; the band reads Landlock rules that list the fixture's src only."
+  }
+}

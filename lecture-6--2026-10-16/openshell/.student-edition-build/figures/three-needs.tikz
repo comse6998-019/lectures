@@ -1,0 +1,36 @@
+% three-needs: what an agent asks of the machine, drawn in the abstract.
+% Chapter 1 of the student edition, Figure 1. Its instance is three-needs-cyberbird.tikz,
+% which keeps this geometry and changes only the words.
+% Drawing bounds 14.3 cm x 6.2 cm, as wide as the guide's architecture figure.
+% The agent (top) reaches the kernel (bottom) through system calls of three kinds:
+% files (open, read, write), processes (fork, execve) and connections (connect).
+% The dashed line is where a rule can sit below the program: every request crosses it.
+% Labels are the chapter's own words; the call names are the Linux system calls.
+% Requires the styles and TikZ libraries in the guide's standalone-style.tex.
+\begin{tikzpicture}[x=1cm,y=1cm,
+  need/.style={font=\sffamily\fontsize{8.5}{11}\selectfont, align=left,
+    text width=3.75cm, inner sep=0pt, anchor=north west},
+  call/.style={flow, shorten >=1pt}]
+  \path[use as bounding box] (0,0) rectangle (14.3,6.2);
+
+  \node[mnode, minimum width=13.9cm, minimum height=1.15cm,
+        font=\sffamily\fontsize{8.5}{11}\selectfont] (agent) at (7.15,5.45)
+    {\textbf{Agent}\\a model that chooses the next action, and a program that carries it out};
+
+  \node[rnode, minimum width=13.9cm, minimum height=0.85cm,
+        font=\sffamily\fontsize{8.5}{11}\selectfont] (kernel) at (7.15,0.55)
+    {\textbf{Linux kernel}: it controls files, processes, memory and the network};
+
+  % One column per need: the system call runs down the arrow, the need beside it.
+  \foreach \x/\what/\calls/\examples in {
+      0.75/Files/{\texttt{open()}, \texttt{read()}, \texttt{write()}}/{the repository it reads, a key it must never read, the workspace it writes},
+      5.50/Processes/{\texttt{fork()}, \texttt{execve()}}/{a shell, Python, a scanner, each a new process with the agent's authority},
+      10.25/Connections/{\texttt{connect()}}/{the model's API, GitHub, a package index, anything on the network}} {
+    \draw[call] (\x,4.85) -- (\x,1.0);
+    \node[need] at (\x+0.3,4.55) {\textbf{\what}\\\calls\\[3pt]\examples};
+  }
+
+  \draw[draw=ibmfg!60, dashed] (0.2,1.55) -- (14.1,1.55);
+  \node[lab, anchor=south east, align=right, font=\sffamily\fontsize{8.5}{11}\selectfont]
+    at (14.1,1.62) {where a rule can sit\\below the program};
+\end{tikzpicture}

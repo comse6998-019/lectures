@@ -1,0 +1,38 @@
+% three-needs-cyberbird: the instance of three-needs.tikz, with Cyberbird in action.
+% Chapter 1 of the student edition, Figure 2. Same geometry as three-needs.tikz; only the words change.
+% Drawing bounds 14.3 cm x 6.2 cm.
+% Every name is Cyberbird's own (github.com/comse6998-019/cyberbird, commit ead3421):
+%   the agent is `uv run cyberbird reactive --alert-id bc284c6b`, the SQL injection at line 46 of
+%   testcode/BenchmarkTest00283.py (cyberbird/reactive/config.py, runs/findings.json);
+%   files: read_file and search work in a copy of fixtures/owasp-benchmark-python/src made by
+%   tempfile.mkdtemp(prefix="mini-swe-agent-") (cyberbird/reactive/workspace.py, tools.py);
+%   processes: the scan node runs `bandit -r .` over the fixture (cyberbird/reactive/scan.py:117), and submit runs
+%   `patch -p1 --dry-run` and `bandit` as child processes (cyberbird/reactive/submit.py);
+%   connections: every step calls the model named by --model (cyberbird/reactive/llm.py).
+% Requires the styles and TikZ libraries in the guide's standalone-style.tex.
+\begin{tikzpicture}[x=1cm,y=1cm,
+  need/.style={font=\sffamily\fontsize{8.5}{11}\selectfont, align=left,
+    text width=3.75cm, inner sep=0pt, anchor=north west},
+  call/.style={flow, shorten >=1pt}]
+  \path[use as bounding box] (0,0) rectangle (14.3,6.2);
+
+  \node[mnode, minimum width=13.9cm, minimum height=1.15cm,
+        font=\sffamily\fontsize{8.5}{11}\selectfont] (agent) at (7.15,5.45)
+    {\textbf{cyberbird}\\the model picks each tool call, and the \texttt{cyberbird} Python process carries it out};
+
+  \node[rnode, minimum width=13.9cm, minimum height=0.85cm,
+        font=\sffamily\fontsize{8.5}{11}\selectfont] (kernel) at (7.15,0.55)
+    {\textbf{Linux kernel} of the Docker host: it controls files, processes, memory and the network};
+
+  \foreach \x/\what/\calls/\examples in {
+      0.75/Files/{\texttt{open()}, \texttt{read()}, \texttt{write()}}/{the case\\\texttt{BenchmarkTest00283.py},\\the \texttt{helpers/} folder, and its\\workspace copy in \texttt{/tmp}},
+      5.50/Processes/{\texttt{fork()}, \texttt{execve()}}/{\texttt{python} runs the agent.\\It starts \texttt{bandit} to scan,\\then \texttt{patch} and \texttt{bandit}\\on submit},
+      10.25/Connections/{\texttt{connect()}}/{its model server, on every step of the run}} {
+    \draw[call] (\x,4.85) -- (\x,1.0);
+    \node[need] at (\x+0.3,4.55) {\textbf{\what}\\\calls\\[3pt]\examples};
+  }
+
+  \draw[draw=ibmfg!60, dashed] (0.2,1.55) -- (14.1,1.55);
+  \node[lab, anchor=south east, align=right, font=\sffamily\fontsize{8.5}{11}\selectfont]
+    at (14.1,1.62) {where OpenShell's rules\\for cyberbird sit};
+\end{tikzpicture}
