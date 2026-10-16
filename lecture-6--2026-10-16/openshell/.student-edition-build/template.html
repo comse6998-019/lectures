@@ -34,10 +34,10 @@ dfn{font-style:normal;font-weight:bold}.plan>li{margin:.6em 0}.plan .question{di
 <p class="page-tools"><button class="text-button" id="open-search" type="button">Search this document</button> &middot; <button class="text-button" id="print" type="button">Print</button></p>
 <hr>
 <main id="main">
-<div class="intro"><p>This edition assumes one fact: a <dfn>process</dfn> is a running program. Every other term is defined where it first appears.</p>
+<div class="intro"><p>This edition assumes the common words of computing, such as operating system, file and port. One matters throughout: a <dfn>process</dfn> is a running program.</p>
 <p>An <dfn>agent</dfn> is a language model joined to a program. The language model, the <dfn>model</dfn> for short, chooses each next action and writes it as text. The program carries the action out.</p>
 <p>OpenShell is NVIDIA's open-source system for running agents under enforced limits. It runs the agent's program inside a <dfn>sandbox</dfn>, an environment that limits what the processes inside it may do.</p>
-<p>Each chapter answers one question. It draws the mechanism in the abstract first. It then shows the mechanism at work in <dfn>Cyberbird</dfn>, the course's own agent.</p>
+<p>Each chapter answers one question. It draws the mechanism in the abstract first. It then shows the mechanism at work in <dfn>Cyberbird</dfn>, the course's own agent. Every OpenShell and Cyberbird term is defined where it first appears.</p>
 <p>The edition describes OpenShell at commit <code>be7af99ff2eacba807d82b69adb0c3d4eaa32158</code>, studied on October 5, 2026. Its facts come from the course's longer guide to OpenShell, written at the same commit. Source links name that commit and a line. Chapter 1 is written, and the contents give the question of every later chapter.</p></div>
 {{CONTENT}}
 <footer><hr><p>Source edition: <code>be7af99ff2eacba807d82b69adb0c3d4eaa32158</code>. Cyberbird: <code>ead3421938e71c1ca42173899e2ee7e8eab8623f</code>. Chapter 1 written October 15, 2026.</p><p>The captured lines in Chapter 1 come from two Cyberbird sandboxes on October 15, 2026, both run with OpenShell 0.1.4 on Docker in Colima and the model <code>qwen3.8-27b</code>. The first used the course's Cyberbird policy, which lists all of <code>/app</code> as readable. The second listed only Cyberbird's code, its Python environment and the fixture's <code>src/</code> folder. Both runs fixed alert <code>bc284c6b</code>.</p></footer>

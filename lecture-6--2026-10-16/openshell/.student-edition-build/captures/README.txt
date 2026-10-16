@@ -16,3 +16,8 @@ The second sandbox is this folder's:
 
 Image cyberbird:1 (e3caafbbdf8c) is Task 4.6's (instructor-materials hw2/feasibility/cyberbird/Dockerfile). The probe
 sandbox se-cbprobe was deleted at 23:21 EDT; nothing of it is left.
+
+Chapter 1 also says that HW2's example policy (hw2-tool-boundary/examples/policy.example.yaml, which lists
+/target/testcode, /target/helpers and /target/app.py and not the key) refuses the answer key the same way. That rests on
+staff's capture in instructor-materials/hw2/feasibility/kernel-results.txt, lines 1 and 2:
+cat /target/expectedresults-0.1.csv -> Permission denied (rc 1), also reported in hw2-tool-boundary/briefs/hw2.tex.

@@ -1,12 +1,12 @@
 {
   "file": "/Users/rkrsn/COMSE6998-019/lectures/lecture-6--2026-10-16/openshell/openshell-student-edition.html",
-  "bytes": 637088,
+  "bytes": 637259,
   "chapters": [
     {
       "id": "ch01",
       "title": "What an agent needs, and who answers",
-      "words": 1792,
-      "prose_words": 1740,
+      "words": 1796,
+      "prose_words": 1744,
       "minutes": 9,
       "subsections": [
         [
@@ -59,7 +59,7 @@
       "term": "process",
       "defined_in_block": 0,
       "first_used_in_block": 0,
-      "first_use": "This edition assumes one fact: a process is a running program. Every other term is defined"
+      "first_use": "This edition assumes the common words of computing, such as operating system, file and por"
     },
     {
       "term": "agent",
@@ -161,55 +161,61 @@
       "term": "compute driver",
       "defined_in_block": 29,
       "first_used_in_block": 29,
-      "first_use": "Compute driver. The compute driver turns the gateway's record into running resources on Do"
+      "first_use": "Compute driver. The compute driver turns the gateway's record into running resources. It c"
+    },
+    {
+      "term": "containers",
+      "defined_in_block": 29,
+      "first_used_in_block": 29,
+      "first_use": "Compute driver. The compute driver turns the gateway's record into running resources. It c"
     },
     {
       "term": "virtual machine",
       "defined_in_block": 29,
       "first_used_in_block": 29,
-      "first_use": "Compute driver. The compute driver turns the gateway's record into running resources on Do"
+      "first_use": "Compute driver. The compute driver turns the gateway's record into running resources. It c"
     },
     {
       "term": "placement",
       "defined_in_block": 29,
       "first_used_in_block": 29,
-      "first_use": "Compute driver. The compute driver turns the gateway's record into running resources on Do"
+      "first_use": "Compute driver. The compute driver turns the gateway's record into running resources. It c"
     },
     {
       "term": "workload",
       "defined_in_block": 30,
       "first_used_in_block": 30,
-      "first_use": "Agent and tools. The dashed box is the workload: the agent with every process it starts. O"
+      "first_use": "Agent and tools. The agent and every process it starts form the workload. OpenShell treats"
     },
     {
       "term": "untrusted",
       "defined_in_block": 30,
       "first_used_in_block": 30,
-      "first_use": "Agent and tools. The dashed box is the workload: the agent with every process it starts. O"
+      "first_use": "Agent and tools. The agent and every process it starts form the workload. OpenShell treats"
     },
     {
       "term": "sandbox runtime",
       "defined_in_block": 31,
       "first_used_in_block": 31,
-      "first_use": "Sandbox runtime. The sandbox runtime is OpenShell's program inside the workload. Before th"
+      "first_use": "Sandbox runtime. The sandbox runtime is that OpenShell program. It starts the agent. Befor"
     },
     {
       "term": "supervisor",
       "defined_in_block": 32,
       "first_used_in_block": 32,
-      "first_use": "Trusted supervisor. The supervisor is OpenShell's program outside the workload. It holds t"
+      "first_use": "Trusted supervisor. The supervisor is OpenShell's program outside the dashed box. It holds"
     },
     {
       "term": "credentials",
       "defined_in_block": 32,
       "first_used_in_block": 32,
-      "first_use": "Trusted supervisor. The supervisor is OpenShell's program outside the workload. It holds t"
+      "first_use": "Trusted supervisor. The supervisor is OpenShell's program outside the dashed box. It holds"
     },
     {
       "term": "trusted",
       "defined_in_block": 32,
       "first_used_in_block": 32,
-      "first_use": "Trusted supervisor. The supervisor is OpenShell's program outside the workload. It holds t"
+      "first_use": "Trusted supervisor. The supervisor is OpenShell's program outside the dashed box. It holds"
     },
     {
       "term": "authenticated runtime channel",
@@ -228,12 +234,6 @@
       "defined_in_block": 34,
       "first_used_in_block": 34,
       "first_use": "Approved external service. An approved external service is a destination the policy permit"
-    },
-    {
-      "term": "containers",
-      "defined_in_block": 36,
-      "first_used_in_block": 36,
-      "first_use": "Placement is where the compute driver runs the workload and the supervisor, and how it kee"
     },
     {
       "term": "host",
