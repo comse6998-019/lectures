@@ -1,0 +1,15 @@
+\begin{tikzpicture}[node distance=7mm, every node/.append style={text=ibmfg}]
+  \node[rnode, text width=62mm] (n0) {denied request};
+  \node[rnode, text width=62mm, below=of n0] (n1) {draft proposed rule};
+  \draw[flow] (n0) -- (n1);
+  \node[mnode, text width=62mm, below=of n1] (n2) {gateway validates candidate effective\\policy};
+  \draw[flow] (n1) -- (n2);
+  \node[rnode, text width=62mm, below=of n2] (n3) {pending review or configured automatic\\approval};
+  \draw[flow] (n2) -- (n3);
+  \node[rnode, text width=62mm, below=of n3] (n4) {approved revision saved};
+  \draw[flow] (n3) -- (n4);
+  \node[rnode, text width=62mm, below=of n4] (n5) {supervisor loads revision};
+  \draw[flow] (n4) -- (n5);
+  \node[rnode, text width=62mm, below=of n5] (n6) {workload retries request};
+  \draw[flow] (n5) -- (n6);
+\end{tikzpicture}

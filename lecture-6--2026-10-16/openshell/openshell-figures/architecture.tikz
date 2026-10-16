@@ -1,0 +1,59 @@
+% Requires the styles and TikZ libraries in standalone-style.tex.
+% Drawing bounds: 14.3 cm x 8.2 cm; with its 8 pt standalone border,
+% the page is approximately 14.86 cm x 8.76 cm.
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \path[use as bounding box] (0,-1.75) rectangle (14.3,6.45);
+
+  \node[lab,anchor=west,font=\sffamily\fontsize{8}{10}\selectfont]
+    at (0.1,6.25) {Standard Linux path};
+
+  % The control plane occupies the upper row.
+  \node[gnode,minimum width=2.2cm,minimum height=1.15cm] (client)
+    at (1.45,5.3) {\textbf{Client}\\CLI / TUI / SDK};
+  \node[mnode,minimum width=3.05cm,minimum height=1.15cm] (gateway)
+    at (8.05,5.3) {\textbf{Gateway}\\Identity and records\\Configuration};
+  \node[gnode,minimum width=3cm,minimum height=1.15cm] (driver)
+    at (12.2,5.3) {\textbf{Compute driver}\\Platform provisioning};
+
+  \draw[flow] (client.east) --
+    node[lab,above=3pt,font=\sffamily\fontsize{8}{10}\selectfont]
+      {Management requests}
+    (gateway.west);
+  \draw[flow] (gateway.east) -- (driver.west);
+
+  \node[lab,font=\sffamily\fontsize{8}{10}\selectfont]
+    at (12.2,3.8)
+    {Provisions workload\\and supervisor\\placement.};
+
+  % Only the agent and sandbox runtime are inside the workload boundary.
+  \draw[draw=ibmfg!60,dashed,rounded corners=2pt]
+    (0.1,-0.55) rectangle (5.95,2.25);
+  \node[lab,font=\sffamily\fontsize{8}{10}\selectfont]
+    at (3.025,2.25) {Untrusted workload};
+  \node[rnode,minimum width=2.2cm,minimum height=1.4cm] (agent)
+    at (1.45,1) {\textbf{Agent and tools}\\Workload\\processes};
+  \node[rnode,minimum width=2.2cm,minimum height=1.4cm] (runtime)
+    at (4.4,1) {\textbf{Sandbox}\\\textbf{runtime}\\Process control\\Mediation};
+  \node[mnode,minimum width=3.05cm,minimum height=1.5cm] (supervisor)
+    at (8.05,1) {\textbf{Trusted supervisor}\\Policy and credentials\\Upstream connections};
+  \node[tnode,align=center,minimum width=2.8cm,minimum height=1.2cm]
+    (service) at (12.2,1) {Approved external\\service};
+
+  \draw[flow] (agent.east) -- (runtime.west);
+  \draw[flow,{Stealth[length=2mm]}-{Stealth[length=2mm]}]
+    (runtime.east) -- (supervisor.west);
+  \draw[flow,{Stealth[length=2mm]}-{Stealth[length=2mm]}]
+    (supervisor.east) -- (service.west);
+
+  \node[lab,font=\sffamily\fontsize{8}{10}\selectfont]
+    at (6.1,-1.2) {Authenticated\\runtime channel};
+  \node[lab,font=\sffamily\fontsize{8}{10}\selectfont]
+    at (10.15,-1.2) {Permitted traffic\\and responses};
+
+  % This vertical return edge meets the gateway without crossing another edge.
+  \draw[back] (supervisor.north) --
+    node[lab,left=5pt,
+         font=\sffamily\fontsize{8}{10}\selectfont]
+      {Supervisor-initiated\\control session}
+    (gateway.south);
+\end{tikzpicture}

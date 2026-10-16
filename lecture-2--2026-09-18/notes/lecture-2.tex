@@ -1,5 +1,7 @@
 % Week 2 lecture notes: COMS E6998-019, Design of Production Agentic Systems.
-% Part A: agent architectures. Part B is appended to this file later.
+% Agent architectures: slides 1 to 109 of lecture2.pptx, the part of the deck that Lecture 2 taught.
+% Slides 110 to 149 (execution machinery) were taught in Lectures 3 and 4; their sections are in
+% sections/taught-in-later-weeks/ and are not built.
 % Build: make (tectonic). VS Code: LaTeX Workshop recipe "tectonic" in .vscode/settings.json.
 
 % ---- Base class: plain article at 9pt, packed with savetrees in extreme mode --------------
@@ -44,6 +46,7 @@
 \newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
 \setlength{\tabcolsep}{3pt}
 \usepackage{tikz,adjustbox}
+\usepackage[section]{placeins}   % floats never cross into the next section
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,fit}
 
 % ---- Graph styles: one look for all five agent graphs ---------------------------
@@ -83,46 +86,33 @@
 \setlist[enumerate]{label=\arabic*.}
 
 % ---- Title -------------------------------------------------------------------------
-\title{Design of Production Agentic Systems\\Lecture 2: Agent architectures and execution machinery}
+\title{Designing Production Agentic Systems\\Lecture 2: Agent architectures}
 \author{Rahul Krishna\\Columbia University, COMS E6998-019, Fall 2026}
-\date{Draft of September 16, 2026, for the meeting of September 18, 2026}
+\date{Revised October 16, 2026, as reading for the midterm and the final, from the lecture of
+September 18, 2026}
 \begin{document}
 \maketitle
 \begin{abstract}
-These notes cover the first fifty-minute block of the Week 2 meeting: agent
-architectures. We build one patch-generation agent, \msa{}, through five preserved
-versions, from a fixed workflow to a reflective attempt loop, and we ask the same question of
-each version: which decisions did we make at design time, and which are deferred to the model
-at run time? The vocabulary is AIMA's; the mechanisms are those of the assigned papers, quoted
-from the versions each section's reading list names. Every section closes with exercises and
-the reading it rests on. Listings and traces that
-depend on demo code not yet built are marked as stubs naming the artifact expected there. Part~B
-turns to the machinery that carries a decision from one step to the next: the record the runtime
-keeps, the code that reads it to choose the next node or to stop, and the boundary at which a
-requested action becomes an executed one.
+These notes are the reading for Lecture~2, written for students preparing for the midterm and the
+final. They define the vocabulary of intelligent agents (rational agents, the task environment and
+its properties) and apply it to \msa{}, the course's running example, an agent that patches one
+reported security weakness at a time. They then take this agent through a fixed workflow, a reactive
+loop (ReAct), a planner and a validator, and ask of each architecture which decisions we make at
+design time and which the model makes at run time. The notes close with other architectures from a
+catalogue of agentic design patterns, and each numbered section ends with a list of key points for
+revision.
 \end{abstract}
 \tableofcontents
 
-% =====================================================================================
-% =====================================================================================
-\input{sections/00-recap.tex}
-
-% =====================================================================================
-\input{sections/01-agents.tex}
-
-% =====================================================================================
-\input{sections/02-fixed.tex}
-
-% =====================================================================================
+% ---- Intelligent agents and agent architectures (slides 1 to 109) ----------------------------
+\input{sections/00-logistics.tex}
+\input{sections/01-intelligent-agents.tex}
+\input{sections/02-fixed-workflows.tex}
 \input{sections/03-reactive.tex}
+\input{sections/04-planning-validation.tex}
+\input{sections/05-design-patterns.tex}
 
-% =====================================================================================
-\input{sections/04-planning.tex}
-
-% =====================================================================================
-
-% =====================================================================================
-\input{sections/07-patterns.tex}
+\clearpage
 \bibliographystyle{plainnat}
 \bibliography{references}
 \end{document}

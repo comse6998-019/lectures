@@ -1,0 +1,13 @@
+\begin{tikzpicture}[node distance=7mm, every node/.append style={text=ibmfg}]
+  \node[rnode, text width=62mm] (n0) {driver provisions resources};
+  \node[rnode, text width=62mm, below=of n0] (n1) {supervisor attaches to the boundary};
+  \draw[flow] (n0) -- (n1);
+  \node[mnode, text width=62mm, below=of n1] (n2) {backend confirms enforcement and identity};
+  \draw[flow] (n1) -- (n2);
+  \node[rnode, text width=62mm, below=of n2] (n3) {supervisor prepares networking};
+  \draw[flow] (n2) -- (n3);
+  \node[rnode, text width=62mm, below=of n3] (n4) {backend starts the agent};
+  \draw[flow] (n3) -- (n4);
+  \node[rnode, text width=62mm, below=of n4] (n5) {supervisor manages the running workload};
+  \draw[flow] (n4) -- (n5);
+\end{tikzpicture}

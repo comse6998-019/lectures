@@ -1,0 +1,454 @@
+{
+  "file": "/Users/rkrsn/workspace/imputed/brainstorm/openshell-guide.html",
+  "bytes": 949797,
+  "words": 16399,
+  "chapters": [
+    {
+      "id": "ch01",
+      "title": "Processes, authority, and isolation",
+      "words": 601,
+      "minutes": 3,
+      "subsections": [
+        [
+          "ch01-s1",
+          "Processes and operating-system resources"
+        ],
+        [
+          "ch01-s2",
+          "Action selection, authority, and execution"
+        ],
+        [
+          "ch01-s3",
+          "Scope and evidence"
+        ]
+      ]
+    },
+    {
+      "id": "ch02",
+      "title": "Architecture and trust boundaries",
+      "words": 462,
+      "minutes": 3,
+      "subsections": [
+        [
+          "ch02-s1",
+          "Control, data, and infrastructure"
+        ],
+        [
+          "ch02-s2",
+          "A mediated network request"
+        ],
+        [
+          "ch02-s3",
+          "The Windows deployment exception"
+        ]
+      ]
+    },
+    {
+      "id": "ch03",
+      "title": "Source structure and interface contracts",
+      "words": 489,
+      "minutes": 3,
+      "subsections": [
+        [
+          "ch03-s1",
+          "Rust types and concurrency"
+        ],
+        [
+          "ch03-s2",
+          "Tracing an operation across components"
+        ],
+        [
+          "ch03-s3",
+          "Public and private message contracts"
+        ]
+      ]
+    },
+    {
+      "id": "ch04",
+      "title": "Sandbox lifecycle",
+      "words": 1025,
+      "minutes": 5,
+      "subsections": [
+        [
+          "ch04-s1",
+          "Desired state, observed state, and readiness"
+        ],
+        [
+          "ch04-s2",
+          "Creation requires authorization and configuration validation"
+        ],
+        [
+          "ch04-s3",
+          "Persistence precedes provisioning"
+        ],
+        [
+          "ch04-s4",
+          "Supervisor sessions provide runtime access"
+        ],
+        [
+          "ch04-s5",
+          "Command execution uses a reverse relay"
+        ],
+        [
+          "ch04-s6",
+          "State retention across stop, start, and delete"
+        ]
+      ]
+    },
+    {
+      "id": "ch05",
+      "title": "Gateway authority and durable state",
+      "words": 1091,
+      "minutes": 5,
+      "subsections": [
+        [
+          "ch05-s1",
+          "Authentication and authorization"
+        ],
+        [
+          "ch05-s2",
+          "Method permissions and object permissions"
+        ],
+        [
+          "ch05-s3",
+          "Supervisor credential lifecycle"
+        ],
+        [
+          "ch05-s4",
+          "Persistence and conditional updates"
+        ],
+        [
+          "ch05-s5",
+          "Reconciliation of desired and observed state"
+        ],
+        [
+          "ch05-s6",
+          "Reconciliation leases and session ownership"
+        ]
+      ]
+    },
+    {
+      "id": "ch06",
+      "title": "Compute drivers and extension interfaces",
+      "words": 1167,
+      "minutes": 6,
+      "subsections": [
+        [
+          "ch06-s1",
+          "Compute-driver and isolation-backend contracts"
+        ],
+        [
+          "ch06-s2",
+          "Driver selection and process placement"
+        ],
+        [
+          "ch06-s3",
+          "Backend placement and retained resources"
+        ],
+        [
+          "ch06-s4",
+          "Resource admission and device assignment"
+        ],
+        [
+          "ch06-s5",
+          "Configuration precedence and deployment"
+        ],
+        [
+          "ch06-s6",
+          "Gateway interception of API writes"
+        ]
+      ]
+    },
+    {
+      "id": "ch07",
+      "title": "Linux containment and the trust boundary",
+      "words": 1084,
+      "minutes": 5,
+      "subsections": [
+        [
+          "ch07-s1",
+          "Processes, system calls, and the kernel"
+        ],
+        [
+          "ch07-s2",
+          "Provisioning, boundary operations, and process controls"
+        ],
+        [
+          "ch07-s3",
+          "Privilege reduction before execution"
+        ],
+        [
+          "ch07-s4",
+          "Landlock baseline and additional filesystem policy"
+        ],
+        [
+          "ch07-s5",
+          "Seccomp filtering and user notification"
+        ],
+        [
+          "ch07-s6",
+          "Launch order and type state"
+        ]
+      ]
+    },
+    {
+      "id": "ch08",
+      "title": "DNS and TCP mediation",
+      "words": 1201,
+      "minutes": 6,
+      "subsections": [
+        [
+          "ch08-s1",
+          "Kernel mediation and the outer network fence"
+        ],
+        [
+          "ch08-s2",
+          "Synthetic DNS addresses preserve hostname context"
+        ],
+        [
+          "ch08-s3",
+          "Paused system calls and socket identity"
+        ],
+        [
+          "ch08-s4",
+          "Executable identity and trust on first use"
+        ],
+        [
+          "ch08-s5",
+          "Authenticated transport, flow control, and recovery"
+        ]
+      ]
+    },
+    {
+      "id": "ch09",
+      "title": "L7 inspection, credentials, and middleware",
+      "words": 1072,
+      "minutes": 5,
+      "subsections": [
+        [
+          "ch09-s1",
+          "Connection admission and request enforcement"
+        ],
+        [
+          "ch09-s2",
+          "HTTPS inspection and separate TLS connections"
+        ],
+        [
+          "ch09-s3",
+          "Supported application protocols and their limits"
+        ],
+        [
+          "ch09-s4",
+          "Request processing before credential use"
+        ],
+        [
+          "ch09-s5",
+          "Middleware transformations and policy re-evaluation"
+        ]
+      ]
+    },
+    {
+      "id": "ch10",
+      "title": "Policy language and effective permissions",
+      "words": 1060,
+      "minutes": 5,
+      "subsections": [
+        [
+          "ch10-s1",
+          "Policy grants and their scope"
+        ],
+        [
+          "ch10-s2",
+          "A complete startup policy"
+        ],
+        [
+          "ch10-s3",
+          "Parsing, validation, and defaults"
+        ],
+        [
+          "ch10-s4",
+          "Base policy, composition, and global replacement"
+        ],
+        [
+          "ch10-s5",
+          "Mandatory and additional filesystem restrictions"
+        ]
+      ]
+    },
+    {
+      "id": "ch11",
+      "title": "Provider credentials and endpoint authority",
+      "words": 1179,
+      "minutes": 6,
+      "subsections": [
+        [
+          "ch11-s1",
+          "Profiles, instances, and attachments"
+        ],
+        [
+          "ch11-s2",
+          "Placeholder resolution and endpoint binding"
+        ],
+        [
+          "ch11-s3",
+          "Static rotation and continuous refresh"
+        ],
+        [
+          "ch11-s4",
+          "Credential storage, refresh, and on-demand grants"
+        ],
+        [
+          "ch11-s5",
+          "AWS signing, Google discovery, and native inference"
+        ]
+      ]
+    },
+    {
+      "id": "ch12",
+      "title": "Policy proposals and bounded verification",
+      "words": 1072,
+      "minutes": 5,
+      "subsections": [
+        [
+          "ch12-s1",
+          "Denials, proposals, and policy activation"
+        ],
+        [
+          "ch12-s2",
+          "Conditions for automatic approval"
+        ],
+        [
+          "ch12-s3",
+          "The proposal-risk model"
+        ],
+        [
+          "ch12-s4",
+          "Standalone policy containment"
+        ]
+      ]
+    },
+    {
+      "id": "ch13",
+      "title": "Clients, operations, and observations",
+      "words": 815,
+      "minutes": 4,
+      "subsections": [
+        [
+          "ch13-s1",
+          "Client implementations"
+        ],
+        [
+          "ch13-s2",
+          "Durable admission and uncertain outcomes"
+        ],
+        [
+          "ch13-s3",
+          "Connection, execution, and forwarding"
+        ],
+        [
+          "ch13-s4",
+          "Observation channels"
+        ],
+        [
+          "ch13-s5",
+          "Observation loss"
+        ]
+      ]
+    },
+    {
+      "id": "ch14",
+      "title": "Diagnosis by enforcement boundary",
+      "words": 486,
+      "minutes": 3,
+      "subsections": [
+        [
+          "ch14-s1",
+          "A diagnostic procedure"
+        ],
+        [
+          "ch14-s2",
+          "A simplified admission model"
+        ]
+      ]
+    },
+    {
+      "id": "ch15",
+      "title": "Controlled experiments",
+      "words": 758,
+      "minutes": 4,
+      "subsections": [
+        [
+          "ch15-s1",
+          "Experiment A: creation and durable state"
+        ],
+        [
+          "ch15-s2",
+          "Experiment B: network admission and request enforcement"
+        ],
+        [
+          "ch15-s3",
+          "Experiment C: a policy-containment counterexample"
+        ],
+        [
+          "ch15-s4",
+          "Experiment D: socket identity in a regression test"
+        ]
+      ]
+    },
+    {
+      "id": "ch16",
+      "title": "Exercises on system behavior",
+      "words": 639,
+      "minutes": 3,
+      "subsections": [
+        [
+          "ch16-s1",
+          "Reasoning from invariants and tests"
+        ]
+      ]
+    },
+    {
+      "id": "ch17",
+      "title": "Glossary",
+      "words": 411,
+      "minutes": 2,
+      "subsections": []
+    },
+    {
+      "id": "ch18",
+      "title": "Repository map and source references",
+      "words": 1647,
+      "minutes": 8,
+      "subsections": [
+        [
+          "ch18-s1",
+          "Scope of the source study"
+        ],
+        [
+          "ch18-s2",
+          "The 38 Rust crates"
+        ],
+        [
+          "ch18-s3",
+          "Other repository directories"
+        ],
+        [
+          "ch18-s4",
+          "Differences between documentation and implementation"
+        ],
+        [
+          "ch18-s5",
+          "Evidence and the scope of conclusions"
+        ],
+        [
+          "ch18-s6",
+          "Source ledger"
+        ]
+      ]
+    }
+  ],
+  "sources": 118,
+  "tikz_figures": 8,
+  "exercises": 24,
+  "structural_checks": "passed: balanced markup, unique IDs, internal anchors, source paths/lines, no external assets"
+}

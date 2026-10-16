@@ -1,0 +1,7 @@
+*.html
+!openshell-student-edition.html
+!openshell/.student-edition-build/*.html
+*tally*
+~*.pptx
+*.pptx.*
+lecture*.*.pptx

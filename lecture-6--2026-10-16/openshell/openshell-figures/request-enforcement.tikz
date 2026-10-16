@@ -1,0 +1,17 @@
+\begin{tikzpicture}[node distance=7mm, every node/.append style={text=ibmfg}]
+  \node[mnode, text width=62mm] (n0) {admit destination and executable};
+  \node[mnode, text width=62mm, below=of n0] (n1) {parse and validate the application request};
+  \draw[flow] (n0) -- (n1);
+  \node[mnode, text width=62mm, below=of n1] (n2) {evaluate application policy};
+  \draw[flow] (n1) -- (n2);
+  \node[mnode, text width=62mm, below=of n2] (n3) {run selected pre-credentials middleware};
+  \draw[flow] (n2) -- (n3);
+  \node[mnode, text width=62mm, below=of n3] (n4) {recheck policy-relevant transformations};
+  \draw[flow] (n3) -- (n4);
+  \node[mnode, text width=62mm, below=of n4] (n5) {resolve endpoint-bound credentials or sign\\the request};
+  \draw[flow] (n4) -- (n5);
+  \node[mnode, text width=62mm, below=of n5] (n6) {guard current policy and credential\\generations};
+  \draw[flow] (n5) -- (n6);
+  \node[rnode, text width=62mm, below=of n6] (n7) {send upstream and process the response};
+  \draw[flow] (n6) -- (n7);
+\end{tikzpicture}

@@ -1,0 +1,15 @@
+\begin{tikzpicture}[node distance=7mm, every node/.append style={text=ibmfg}]
+  \node[rnode, text width=62mm] (n0) {User requests a sandbox};
+  \node[mnode, text width=62mm, below=of n0] (n1) {gateway validates access, configuration,\\and providers};
+  \draw[flow] (n0) -- (n1);
+  \node[rnode, text width=62mm, below=of n1] (n2) {gateway stores a Provisioning resource};
+  \draw[flow] (n1) -- (n2);
+  \node[rnode, text width=62mm, below=of n2] (n3) {selected compute driver provisions platform\\resources};
+  \draw[flow] (n2) -- (n3);
+  \node[rnode, text width=62mm, below=of n3] (n4) {supervisor authenticates and establishes\\its session};
+  \draw[flow] (n3) -- (n4);
+  \node[mnode, text width=62mm, below=of n4] (n5) {gateway admits configuration and publishes\\readiness};
+  \draw[flow] (n4) -- (n5);
+  \node[rnode, text width=62mm, below=of n5] (n6) {user can exec through the supervisor relay};
+  \draw[flow] (n5) -- (n6);
+\end{tikzpicture}

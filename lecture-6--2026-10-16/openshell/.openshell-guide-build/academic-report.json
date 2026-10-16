@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "checks": [
+    "119 source anchors, all 15 executable code blocks, 17 tables, 24 exercises, and 27 glossary terms preserved",
+    "eight compiled TikZ SVG figures load offline with text alternatives",
+    "numbered subsection contents navigate to stable anchors",
+    "document search works",
+    "request walkthrough controls work",
+    "policy illustration retains independent admission checks",
+    "each figure offers self-contained downloadable TikZ source",
+    "no page overflow at desktop, 390px, or 320px widths",
+    "academic white-paper theme persists under dark system preference",
+    "print layout expands exercises and hides interactive controls",
+    "no script errors or network asset requests"
+  ],
+  "style": {
+    "font": "\"Times New Roman\", Times, serif",
+    "size": "16px",
+    "background": "rgb(255, 255, 255)",
+    "margin": "8px",
+    "color": "rgb(0, 0, 238)",
+    "position": "static"
+  }
+}
