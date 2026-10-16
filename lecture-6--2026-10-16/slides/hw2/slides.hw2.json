@@ -1184,18 +1184,18 @@
       ]
      ],
      "refs": [],
-     "notes": "This is the live demonstration. Run section 1 of the notebook first: the server attaches when it starts, from the cache section 1 builds, in seconds, and the Inspector gives up on a server that takes longer than 30 seconds to answer (Inspector 2.10.1, its default connectionTimeout, checked on 2026-10-15). The catalog holds this Mac's absolute paths, which is why it is not committed. In the Inspector: tools/list, then locate on testcode/BenchmarkTest00099.py line 46, dataflow on the same line, and locate on ../expectedresults-0.1.csv, which returns an error result with \"refused: ../expectedresults-0.1.csv is not a file of the target\". That path leaves the checkout. The answer key inside the checkout, expectedresults-0.1.csv, passes this demo's check; in HW2 the team's server refuses it under the read rule, and the sandbox policy makes it unreadable.\n\nClick by click.\n1. The catalog: one stdio server, the lecture's Python and server.py. The second window is the command.\n2. tools/list shows the four tools with their input and output schemas, locate on line 46 returns the handler, and the refused path comes back as an error result, which is what the model would see.\n3. The closing: the Inspector is a host, so what it shows is what our agent's host gets.",
+     "notes": "This is the live demonstration. Run section 1 of the notebook first: the server attaches when it starts, from the cache section 1 builds, in seconds, and the Inspector gives up on a server that takes longer than 30 seconds to answer (Inspector 2.10.1, its default connectionTimeout, checked on 2026-10-15). Section 6 resolves the two paths, so the catalog holds this Mac's absolute paths and is not committed. The window shows them relative to the lecture folder. In the Inspector: tools/list, then locate on testcode/BenchmarkTest00099.py line 46, dataflow on the same line, and locate on ../expectedresults-0.1.csv, which returns an error result with \"refused: ../expectedresults-0.1.csv is not a file of the target\". That path leaves the checkout. The answer key inside the checkout, expectedresults-0.1.csv, passes this demo's check; in HW2 the team's server refuses it under the read rule, and the sandbox policy makes it unreadable.\n\nClick by click.\n1. The catalog: one stdio server, the lecture's Python and server.py. The second window is the command.\n2. tools/list shows the four tools with their input and output schemas, locate on line 46 returns the handler, and the refused path comes back as an error result, which is what the model would see.\n3. The closing: the Inspector is a host, so what it shows is what our agent's host gets.",
      "window": {
-      "label": "cldk-demo/catalog.json, written by section 6 of the notebook",
+      "label": "cldk-demo/catalog.json, written by section 6 of the notebook, paths relative to the lecture folder",
       "lang": "toml",
       "lines": [
        "{",
        " \"mcpServers\": {",
        "  \"cldk\": {",
        "   \"type\": \"stdio\",",
-       "   \"command\": \"/Users/rkrsn/COMSE6998-019/lectures/lecture-6--2026-10-16/.venv/bin/python\",",
+       "   \"command\": \".venv/bin/python\",",
        "   \"args\": [",
-       "    \"/Users/rkrsn/COMSE6998-019/lectures/lecture-6--2026-10-16/cldk-demo/server.py\"",
+       "    \"cldk-demo/server.py\"",
        "   ]",
        "  }",
        " }",

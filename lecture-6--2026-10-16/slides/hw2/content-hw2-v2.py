@@ -300,8 +300,15 @@ assert REACHES_CODE[0].startswith("def reaches(") and REACHES_CODE[-1] == "    r
 COVERAGE_CODE = code(cell("cov = an.get_entrypoint_coverage()"))
 TOOL_CODE = code(span(SERVER, 'mcp = MCPServer("cldk")', '            "name": hit.callable.name'))
 DATAFLOW_CODE = code(span(SERVER, '@mcp.tool(description="Data-dependence', "    return out"))
-CATALOG_CODE = json.dumps(json.loads("\n".join(CATALOG)), indent=1).splitlines()  # the file at one-space indent, to fit
-assert json.loads("\n".join(CATALOG_CODE)) == json.loads("\n".join(CATALOG)) and max(map(len, CATALOG_CODE)) <= WIDTH
+# The file at one-space indent, to fit. Section 6 resolves its two paths, so the file holds this Mac's absolute paths; the window
+# shows them relative to the lecture folder, as section 6's source writes them, so no home directory reaches a slide.
+_CATALOG = json.loads("\n".join(CATALOG))
+_CLDK = _CATALOG["mcpServers"]["cldk"]
+assert _CLDK["command"] == os.path.join(LECTURE, ".venv/bin/python"), _CLDK["command"]
+assert _CLDK["args"] == [os.path.join(LECTURE, "cldk-demo/server.py")], _CLDK["args"]
+_CLDK["command"], _CLDK["args"] = ".venv/bin/python", ["cldk-demo/server.py"]
+CATALOG_CODE = json.dumps(_CATALOG, indent=1).splitlines()
+assert max(map(len, CATALOG_CODE)) <= WIDTH and not any(LECTURE in line or "/Users/" in line for line in CATALOG_CODE)
 INSPECTOR = "npx @modelcontextprotocol/inspector --web --catalog cldk-demo/catalog.json"
 assert INSPECTOR in "".join(c for cl in NB["cells"] for c in cl["source"]), "the notebook no longer gives this command"
 CLIENT_CODE = code(span(script("client.py"), "import asyncio", "asyncio.run(main())"))  # the whole program, docstring aside
@@ -578,7 +585,8 @@ SEG3 = [
          bullets=[B("The catalog", "names the interpreter and the server script."),
                   B("`tools/list`", "shows each tool's contract, and a path outside the checkout comes back as an error "
                     "result.")],
-         window=window("cldk-demo/catalog.json, written by section 6 of the notebook", CATALOG_CODE,
+         window=window("cldk-demo/catalog.json, written by section 6 of the notebook, paths relative to the lecture folder",
+                       CATALOG_CODE,
                        "terminal: start the Inspector", [INSPECTOR], lang="toml"),
          steps=steps((1, True), (2, True)),
          closing="What the Inspector shows is what your agent's host sees.",
@@ -586,7 +594,8 @@ SEG3 = [
              "This is the live demonstration. Run section 1 of the notebook first: the server attaches when it starts, "
              f"from the cache section 1 builds, in seconds, and the Inspector gives up on a server that "
              "takes longer than 30 seconds to answer (Inspector 2.10.1, its default connectionTimeout, checked on "
-             "2026-10-15). The catalog holds this Mac's absolute paths, which is why it is not committed. In the Inspector: "
+             "2026-10-15). Section 6 resolves the two paths, so the catalog holds this Mac's absolute paths and is not "
+             "committed. The window shows them relative to the lecture folder. In the Inspector: "
              "tools/list, then locate on testcode/BenchmarkTest00099.py line 46, dataflow on the same line, and locate on "
              "../expectedresults-0.1.csv, which returns an error result with \"refused: ../expectedresults-0.1.csv is not "
              "a file of the target\". That path leaves the checkout. The answer key inside the checkout, "
