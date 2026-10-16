@@ -6,21 +6,38 @@
 % are drawn lower (assets at 4.2, layers at 2.2, techniques from 0.95 down) so the canvas carries no empty band under them.
 % The two assets that OpenShell does not guard (definition text and response) have a ghost box that gives the reason;
 % its text is deckGrey rather than the style's 35 percent grey so the reason stays legible, as in lecture 5's exfiltration figure.
+% Every box opens and closes with a strut, so sibling boxes with the same number of lines share their baselines.
 % The newest asset is outlined in navy at 1.6 pt on its own stage and settles to the plain outline on the next.
 % Stage 1 definition text: none, text reaches the model; Definition poisoning.
 % Stage 2 implementation: filesystem policy, read-only code; Implementation poisoning.
-% Stage 3 response: none, text reaches the model; Response poisoning.
+% Stage 3 response: none, text reaches the model; Runtime-response poisoning.
 % Stage 4 stored credential: provider attachment, placeholder, not the key; Credentials from configuration.
 % Stage 5 outbound connection: supervisor, network policy, L7 enforce; Exfiltration via tool invocation.
 % Stage 6 kernel boundary: Landlock and seccomp baseline; Escape to Host.
-% Sources: the two tables of the lecture (Rahul's save of 2026-10-15, slides 104 to 114) and OpenShell's documentation of
-% its policy layers (slides 80 to 84). Left out on purpose: the tables' rows for agentic resource consumption, rug pull and
+% Sources: the two tables of the lecture (Rahul's save of 2026-10-15, slides 104 to 114) and OpenShell's own documentation
+% at commit be7af99 (/Users/rkrsn/workspace/imputed/openshell, the commit the HW2 spec cites):
+%   provider attachment: docs/security/best-practices.mdx, "The agent receives an opaque placeholder, not the real API key or
+%     access token", resolved only for the hosts, ports and paths the provider profile authorizes (docs/about/overview.mdx);
+%   supervisor, network policy, L7 enforce: docs/about/architecture.mdx (the supervisor "checks requests against policy,
+%     supplies credentials ... opens approved connections"); docs/how-it-works/policies/network-rules.mdx ("enforce blocks
+%     the request", audit "is the default");
+%   Landlock and seccomp baseline: docs/security/best-practices.mdx ("The sandbox installs a mandatory Landlock baseline");
+%     its seccomp filters block the syscalls that "support container escape (mount, pivot_root, move_mount, namespace
+%     creation)" and "raw kernel bypass (bpf, io_uring_setup, perf_event_open)";
+%   filesystem policy, read-only code: docs/how-it-works/policies/schema.mdx (read_only, read_write), with the HW2 policy's
+%     read_only grant on the target's code.
+% Techniques are the lecture's short names (its tables and notes) for ATLAS release 2026.09 entries: AI Agent Tool Poisoning:
+% Definition and Instructions (AML.T0110.000), : Implementation (AML.T0110.001), : Runtime Response (AML.T0110.002);
+% Credentials from AI Agent Configuration (AML.T0083); Exfiltration via AI Agent Tool Invocation (AML.T0086); Escape to Host
+% (AML.T0105), the last one exact. Checked in lecture-5--2026-10-07/slides/data/atlas-2026.09.yaml.
+% Left out on purpose: the tables' rows for agentic resource consumption, rug pull and
 % supply chain, and context poisoning, which are not among the lecture's six assets, and the ATLAS mitigation column.
 % No magenta: nothing here is drawn as content the adversary controls. Technique names only, no identifiers.
 \begin{tikzpicture}
   \canvas{16.5}{5.0}
   \tikzset{
-    words/.style={execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000\frenchspacing}},  % break at spaces only
+    words/.style={execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000\frenchspacing\strut},  % break at spaces only;
+                 execute at end node={\strut}},                                                  % struts: shared baselines
     asset/.style={gnode, words, text width=2.3cm, inner xsep=2pt, minimum height=11mm},
     newasset/.style={asset, draw=deckNavy, line width=1.6pt},
     guard/.style={rnode, words, font=\sffamily\footnotesize, text width=2.3cm, inner xsep=2pt, minimum height=17mm},
@@ -38,7 +55,7 @@
     }}
   \column{1}{1.4}{definition text}{noguard}{none:\\text reaches\\the model}{Definition poisoning}
   \column{2}{4.1}{implementation}{guard}{filesystem policy, read-only code}{Implementation poisoning}
-  \column{3}{6.8}{response}{noguard}{none:\\text reaches\\the model}{Response poisoning}
+  \column{3}{6.8}{response}{noguard}{none:\\text reaches\\the model}{Runtime-response poisoning}
   \column{4}{9.5}{stored credential}{guard}{provider attachment: placeholder, not the key}{Credentials from configuration}
   \column{5}{12.2}{outbound connection}{guard}{supervisor: network policy, L7 enforce}{Exfiltration via tool invocation}
   \column{6}{14.9}{kernel boundary}{guard}{Landlock and seccomp baseline}{Escape to Host}

@@ -10,9 +10,20 @@
 % Stage 2 landlock: required enforcement of that policy; fixed at startup.
 % Stage 3 process: the user and group that run the workload; fixed at startup.
 % Stage 4 network policies and middlewares: binaries, destinations, requests; changes while running.
-% Sources: the lecture's table and its notes (Rahul's save of 2026-10-15, slides 80 to 84): the filesystem and process layers
-% are locked at creation, network policy changes at run time (openshell policy update adds a rule to a running sandbox).
-% Left out on purpose: the table's provider-credentials row and its enforcement column. No magenta: no adversary here.
+% Sources: the layers are the top-level sections of an OpenShell policy file, as OpenShell's documentation at commit be7af99
+% gives them (/Users/rkrsn/workspace/imputed/openshell, the commit the HW2 spec cites). docs/how-it-works/policies/schema.mdx,
+% "Top-Level Fields": filesystem_policy "Paths the workload can read and write", Startup; landlock "Landlock enforcement
+% behavior", Startup; process "User and group that the workload runs as", Startup; network_policies "Which binaries can reach
+% which network endpoints", Live; network_middlewares "Middleware applied to allowed traffic", Live. docs/how-it-works/
+% policies/overview.mdx: "Filesystem, Landlock, and process settings are fixed once the sandbox starts. Network rules and
+% middleware can change while it runs." The band wording follows chapter 10 of the course's OpenShell guide
+% (openshell/openshell-guide.html, built from the same commit), whose table reads "Required enforcement of the additional
+% filesystem policy" for landlock; the HW2 policy sets compatibility: hard_requirement, which makes it required.
+% The two network sections share the fourth band because both change while the sandbox runs.
+% This differs from the lecture's table (Rahul's save of 2026-10-15, slides 80 to 84), whose four rows are the protection
+% layers of docs/about/overview.mdx (filesystem, network, process, provider credentials): landlock is a band of its own here,
+% and provider credentials are left out, being a provider attachment rather than a section of the policy file. The table's
+% enforcement column is left out too. No magenta: no adversary here.
 \begin{tikzpicture}
   \usetikzlibrary{bending}% an arrowhead that follows the arc of the change badge; loaded here, inside the picture,
   % because loaded before it the library's stray spaces widen the standalone page

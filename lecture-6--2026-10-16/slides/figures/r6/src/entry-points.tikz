@@ -8,26 +8,32 @@
 % three from above, labelled in magenta, enter through text the model reads or writes;
 % three from below, labelled in navy, enter through a process (its code, its environment, its privileges).
 % Stage 1 definition poisoning: into the return lane from host to model, where tools/list's definitions reach the model.
-% Stage 2 response poisoning: into the return lane from the tool, where the tool's output starts back to the host.
-% Stage 3 exfiltration via arguments: into the call lane from host to server, the arguments of tools/call.
+% Stage 2 runtime-response poisoning: into the return lane from the tool, where the tool's output starts back to the host.
+% Stage 3 exfiltration via tool invocation: into the call lane from host to server, the arguments of tools/call.
 % The two return-lane arrows cross the call lane above it and end on the dashed return line; the lanes are 0.4 cm apart so the
 % arrowhead sits between them.
 % Stage 4 implementation poisoning: into the server, the code that runs the call.
 % Stage 5 credentials from configuration: into the server from the left edge, the environment it starts with.
-% Stage 6 escape to host: into the kernel, from the process across the kernel boundary.
+% Stage 6 Escape to Host: into the kernel, from the process across the kernel boundary.
 % The newest arrow is drawn at 1.4 pt with a bold label; earlier ones settle to 0.9 pt and a regular label.
+% Every label opens and ends with a strut, so labels anchored at the same height share their first (from below) or last
+% (from above) baseline whatever its letters.
 % A key along the top says what the two label colours mean; its second entry arrives with the first process entry.
 % Geometry: the boxes sit at x = 1.0, 4.0, 8.6, 11.9, 15.0 rather than the evenly spread 1.5 ... 15.0, so the MCP hop is 3 cm
 % long and has room for its message names and, beside them, the exfiltration arrow.
 % Sources: the lecture's table and its notes (Rahul's save of 2026-10-15, slides 62 to 68), which place the techniques on the
 % steps of the sequence diagram; the closing box of slide 68 gives the split into text and process entries.
-% Technique names are the table's shortened ones, in lower case; no identifiers.
+% Technique names are the lecture's short names (its table on slides 62 to 68 and its notes), lower case as the notes write
+% them, with Escape to Host kept as the ATLAS name it is. Each names an entry of ATLAS release 2026.09
+% (lecture-5--2026-10-07/slides/data/atlas-2026.09.yaml): AI Agent Tool Poisoning: Definition and Instructions
+% (AML.T0110.000), Runtime Response (AML.T0110.002) and Implementation (AML.T0110.001); Exfiltration via AI Agent Tool
+% Invocation (AML.T0086); Credentials from AI Agent Configuration (AML.T0083); Escape to Host (AML.T0105). No identifiers.
 \begin{tikzpicture}
   \canvas{16.5}{5.8}
   \tikzset{
     box/.style={minimum width=16mm, minimum height=8mm, text height=1.6ex, text depth=0.3ex},  % one baseline for every name
     msg/.style={font=\ttfamily\footnotesize, inner sep=1pt, align=center},
-    elab/.style={font=\sffamily\footnotesize, inner sep=1pt, align=center},
+    elab/.style={font=\sffamily\footnotesize, inner sep=1pt, align=center, execute at begin node={\strut}, execute at end node={\strut}},  % one height and depth for every label
     keyline/.style={font=\sffamily\footnotesize, inner sep=0pt, anchor=base east},
   }
   % \entry{k}{path}: badflow, 1.4 pt on its own stage, 0.9 pt afterwards
@@ -57,9 +63,9 @@
   \entry{1}{(2.5,4.5) -- (2.5,2.84)}
   \elabel{1}{deckRose}{south}{(2.5,4.55)}{definition\\poisoning}
   \entry{2}{(10.25,4.5) -- (10.25,2.84)}
-  \elabel{2}{deckRose}{south}{(10.25,4.55)}{response\\poisoning}
+  \elabel{2}{deckRose}{south}{(10.25,4.55)}{runtime-response\\poisoning}
   \entry{3}{(7.25,4.5) -- (7.25,3.24)}
-  \elabel{3}{deckRose}{south}{(7.25,4.55)}{exfiltration via\\arguments}
+  \elabel{3}{deckRose}{south}{(7.25,4.55)}{exfiltration via\\tool invocation}
 
   % ---------------------------------------------------------------- process entries, from below
   \entry{4}{(8.95,1.0) -- (8.95,2.6)}
@@ -68,5 +74,5 @@
   \atstage{5}{\node[note, anchor=south west, inner sep=1pt] at (0.1,1.27) {environment};}
   \elabel{5}{deckNavy}{north}{(4.0,0.95)}{credentials from configuration}
   \entry{6}{(15.0,1.0) -- (15.0,2.6)}
-  \elabel{6}{deckNavy}{north}{(15.0,0.95)}{escape to host}
+  \elabel{6}{deckNavy}{north}{(15.0,0.95)}{Escape to Host}
 \end{tikzpicture}

@@ -20,6 +20,11 @@
 % Wording follows the lecture's table of the four places ("Each place has its own bypass."), whose last column gives the
 % technique for each bypass: LLM Prompt Injection and LLM Jailbreak; Modify AI Agent Configuration; Escape to Host; no
 % agent-specific technique in release 2026.09. The table's "(direct, indirect)" is left out. No ATLAS identifier is printed.
+% Checked against ATLAS release 2026.09 (lecture-5--2026-10-07/slides/data/atlas-2026.09.yaml, collection version 2026.09,
+% modified 2026-09-15), names exact: LLM Prompt Injection (AML.T0051), LLM Jailbreak (AML.T0054), Modify AI Agent
+% Configuration (AML.T0081), Escape to Host (AML.T0105). Card 4 says "agent-specific", as the table does, because the release
+% does have a hardware technique, AI Supply Chain Compromise: Hardware (AML.T0010.000), about the hardware supply chain of
+% GPUs and TPUs; no technique covers compromising an enforcing processor in the network path.
 \begin{tikzpicture}
   \canvas{16.5}{7.1}
   % ---------------------------------------------------------------- local styles and helpers
@@ -118,7 +123,7 @@
   % card 4, in hardware outside the host
   \card{4}{1.64}{0.10}
   \atstage{4}{
-    \cardtext{1.64}{4}{In hardware outside the host}{a processor in the network path, with its own trust domain}{compromising that processor}{no agent technique in release 2026.09}
+    \cardtext{1.64}{4}{In hardware outside the host}{a processor in the network path, with its own trust domain}{compromising that processor}{no agent-specific technique in release 2026.09}
     \node[tagout] at (14.97,1.64-0.41) {outside the agent's process};
     \verdictno{0.87}
   }
