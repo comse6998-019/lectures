@@ -102,3 +102,25 @@ All eleven pattern SVGs were downloaded from the paths listed above and rasteris
 returns 404: that pattern has no diagram on the page, and its slide carries none.
 Credit line used on every slide: "Google Cloud Architecture Center, agentic design
 patterns, CC BY 4.0."
+
+## Copied from the deck (2026-10-15)
+
+`deck/` holds the pictures exactly as they appear in `lecture2.pptx`, extracted from the deck
+itself, so the notes show what was on screen. Their sources are the TikZ files in
+`slides/figures/` (deck palette) and, for the patterns, the Google page listed above.
+
+| File | Slide | Source | Credit line in the caption |
+| --- | --- | --- | --- |
+| `deck/state-graph.png` | 16 | `slides/figures/state-graph.tikz` | ours |
+| `deck/run-compact.png` | 17–19 | `slides/figures/run-compact.tikz` | ours |
+| `deck/state-graph-annotated.png` | 34 | `slides/figures/state-graph-annotated.tikz` | ours |
+| `deck/agentless-phases.png` | 44 | `slides/figures/agentless-phases.tikz` | Redrawn after Figure 1 of Xia et al., FSE 2025 |
+| `deck/reactive-loop.png` | 54 | `slides/figures/reactive-loop-deck.tikz` | ours |
+| `deck/seq-loop-run.png` | 73 | `slides/figures/seq-loop-run-deck.tikz` | ours |
+| `deck/graph-plan-validate.png` | 78 | `slides/figures/graph-v2-deck.tikz` | ours |
+| `deck/gcp-*.png` (ten files) | 93–102 | Google Cloud, *Choose a design pattern for your agentic AI system* | Google Cloud Architecture Center, agentic design patterns, CC BY 4.0 |
+| `deck/state-transition.png` | 115 | `slides/figures/state-transition-deck.tikz` | ours |
+| `deck/graph-complete.png` | 128 | `slides/figures/graph-v4-deck.tikz` | ours |
+| `deck/dispatch-cycle.png` | 139 | `slides/figures/dispatch-cycle-deck.tikz` | ours |
+
+Slide 76 uses `adaplanner-fig1-closed-loop.png` from this folder (byte-identical to the deck's copy).

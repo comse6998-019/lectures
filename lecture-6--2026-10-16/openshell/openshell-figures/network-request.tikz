@@ -1,0 +1,61 @@
+% Conceptual allowed path; arrows aggregate stream events rather than wire packets.
+% Uses the lecture's standalone-style.tex definitions.
+\begin{tikzpicture}[
+  life/.style={densely dotted, draw=ibmfg!45},
+  lane/.style={minimum width=26mm, minimum height=10mm,
+    font=\sffamily\fontsize{8.5}{10}\selectfont},
+  elab/.style={lab, font=\sffamily\fontsize{8.5}{10}\selectfont,
+    align=center, inner sep=2pt},
+  action/.style={font=\sffamily\fontsize{8.5}{10}\selectfont,
+    minimum width=34mm, align=center, inner sep=4pt},
+  note/.style={lab, font=\sffamily\fontsize{8.5}{10}\selectfont,
+    align=center, inner sep=3pt}
+]
+  \node[rnode, lane] (tool) at (0,0) {Workload tool};
+  \node[rnode, lane] (broker) at (3.85,0) {Kernel +\\sandbox broker};
+  \node[mnode, lane] (supervisor) at (7.70,0) {Supervisor};
+  \node[gnode, lane] (upstream) at (11.55,0) {Upstream};
+
+  \foreach \n in {tool,broker,supervisor,upstream}
+    { \draw[life] (\n.south) -- (\n.south |- 0,-16.70); }
+
+  % TCP admission is based on destination and observed workload identity.
+  % Explicit line breaks avoid paragraph wrapping and automatic hyphenation.
+  \draw[flow] (0,-1.15) --
+    node[elab, above] {\texttt{connect(destination)}} (3.85,-1.15);
+  \node[tnode, font=\sffamily\fontsize{8.5}{10}\selectfont, inner sep=2pt]
+    at (3.85,-1.85) {Pause \texttt{connect()}};
+  \draw[flow] (3.85,-3.25) --
+    node[elab, above] {Destination; observed\\socket and executable\\evidence} (7.70,-3.25);
+  \node[mnode, action] at (7.70,-4.30)
+    {TCP admission:\\host + port; binary;\\policy generation};
+  \draw[back] (7.70,-6.00) --
+    node[elab, above] {Allow: relay\\may proceed} (3.85,-6.00);
+  \draw[back] (3.85,-7.00) --
+    node[elab, above] {Local relay ready;\\\texttt{connect()} completes} (0,-7.00);
+  \draw[flow] (7.70,-7.00) --
+    node[elab, above] {Open approved\\upstream TCP connection} (11.55,-7.00);
+
+  % An admitted TCP stream can then carry inspected HTTP over TLS.
+  \draw[flow] (0,-8.00) --
+    node[elab, above] {TLS / HTTP\\stream bytes} (3.85,-8.00);
+  \draw[flow] (3.85,-8.90) --
+    node[elab, above] {Relay stream bytes} (7.70,-8.90);
+  \node[mnode, action] at (7.70,-10.05)
+    {When inspected:\\terminate client TLS;\\L7 + middleware checks;\\credential binding};
+  \node[mnode, action] at (7.70,-12.25)
+    {If credentials apply:\\substitute or sign};
+  \draw[flow] (7.70,-13.85) --
+    node[elab, above] {Authorized HTTP request\\over upstream TLS} (11.55,-13.85);
+  \draw[back] (11.55,-14.85) --
+    node[elab, above] {Response} (7.70,-14.85);
+  \draw[back] (7.70,-15.70) --
+    node[elab, above] {Response stream bytes} (3.85,-15.70);
+  \draw[back] (3.85,-16.55) --
+    node[elab, above] {Response stream bytes} (0,-16.55);
+
+  \node[note] at (5.775,-17.50)
+    {Illustrative TCP/HTTP path; allowed branch shown. DNS and TLS handshake messages are omitted.\\
+     HTTP inspection and credential substitution depend on configuration.\\
+     The supervisor supplies real credentials only upstream.};
+\end{tikzpicture}

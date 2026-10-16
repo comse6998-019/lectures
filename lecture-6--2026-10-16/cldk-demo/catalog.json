@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "cldk": {
+      "type": "stdio",
+      "command": "/Users/rkrsn/COMSE6998-019/lectures/lecture-6--2026-10-16/.venv/bin/python",
+      "args": [
+        "/Users/rkrsn/COMSE6998-019/lectures/lecture-6--2026-10-16/cldk-demo/server.py"
+      ]
+    }
+  }
+}

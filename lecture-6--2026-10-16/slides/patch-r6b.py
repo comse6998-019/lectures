@@ -9,13 +9,19 @@ runs on the output of patch-r6.py (pass one, 164 slides) and
   3. renumbers: every slide-jump link text follows its target, and every slide number in the notes that names a slide at or after the
      insertion moves by the four new slides ("the removed slide N" names a slide of the 416-slide lecture 5 deck and stays).
 A figure that cannot sit under its build's text (another object holds the band, or it would shrink below MIN_SCALE) is skipped and
-logged, and its build keeps Rahul's geometry.
+logged, and its build keeps Rahul's geometry and text. Rahul's slide text never moves by default. Rahul's notes keep every paragraph
+and run as he saved them; the patch only adds paragraphs around them.
 
 usage:  SRC=<pass one> OUT=<pass two> [MEASURES=<json from tools-r3/measure-ppt.py of a previous OUT>] [MOVE=<title>:<k>[,<k>];...] \
         uv run --no-project --python 3.12 --with python-pptx,lxml,pillow python patch-r6b.py
 Without MEASURES each figure sits at a first-pass top; with PowerPoint's measurements of the first pass's output, a second run places
-each figure 3 pt under the measured body text and each closing box under the figure. Both runs start from SRC. MOVE adds paragraphs
-(0-based) to MOVE_TO_NOTES for a build, for a re-run in which Rahul wants a skipped build's text to make room.
+each figure 3 pt under the measured body text and each closing box under the figure. Both runs start from SRC, and both take the
+same MOVE. MOVE moves a build's paragraphs (0-based) from the slide to the top of its notes so that a skipped figure fits; it is for
+a run Rahul has asked for. OFFERED_MOVES lists the two tested offers, with the opening words each paragraph must have:
+  MOVE="OpenShell sandboxes an unmodified agent.:1,3"     runtime-startup at 95 percent
+  MOVE="OpenShell governs each sandbox on its own.:2"     interceptors at 81 percent
+Both together: MOVE="OpenShell sandboxes an unmodified agent.:1,3;OpenShell governs each sandbox on its own.:2". A reference-line
+entry whose marker leaves the slide with a moved paragraph goes to the notes with it.
 """
 import copy
 import importlib.util
@@ -103,17 +109,22 @@ FIGURES = {
 }
 STAGES = 4
 
-# Paragraphs that leave the slide for the notes so that the figure fits (0-based, as Rahul saved them). Only background and examples
-# move, never a paragraph the closing box rests on; the moved text opens the notes verbatim.
-MOVE_TO_NOTES = {
+# Paragraphs that could leave the slide for the notes so that a skipped figure fits (0-based, as Rahul saved them), each with the
+# words it must open with. Only background, examples or a paragraph the closing box does not rest on is offered. Nothing moves unless
+# MOVE names it: the brief does not authorize moving Rahul's text, so a build whose figure does not fit is skipped and offered.
+OFFERED_MOVES = {
     "OpenShell sandboxes an unmodified agent.": {
-        1: "NVIDIA announced OpenShell at GTC on March 16, 2026,",      # the announcement history
+        1: "NVIDIA announced OpenShell at GTC on March 16, 2026,",      # the announcement history, with the slide's only [2]
         3: "One agent, one sandbox:",                                   # the create command
     },
+    "OpenShell governs each sandbox on its own.": {
+        2: "Graduated enforcement.",                                    # the AgentKernel comparison, with the link to its slide
+    },
 }
+MOVE_TO_NOTES = {}
 for item in filter(None, os.environ.get("MOVE", "").split(";")):
     t, ks = item.rsplit(":", 1)
-    MOVE_TO_NOTES.setdefault(t, {}).update({int(k): None for k in ks.split(",")})
+    MOVE_TO_NOTES.setdefault(t, {}).update({int(k): OFFERED_MOVES.get(t, {}).get(int(k)) for k in ks.split(",")})
 
 # ----------------------------------------------------------------------------------------------- the new build
 AFTER = "Limits of OpenShell enforcement"
@@ -223,6 +234,99 @@ def stage_notes(lines, clicks):
     return "\n".join(out)
 
 
+def notes_para(text=None, runs=None):
+    """A notes paragraph: plain runs as python-pptx writes them, or (text, attrs) runs; an empty paragraph without either."""
+    p = etree.Element(qn("a:p"))
+    for t, attrs in (runs if runs is not None else ([(text, {})] if text else [])):
+        r = etree.SubElement(p, qn("a:r"))
+        if attrs:
+            etree.SubElement(r, qn("a:rPr"), attrs)
+        etree.SubElement(r, qn("a:t")).text = t
+    return p
+
+
+def body_to_notes(p):
+    """A moved body paragraph as a notes paragraph: its words verbatim with their weight and superscript markers; size, colour,
+    proofing marks and slide-jump links stay behind. Neighbouring runs of one style merge, so "(slide 147)" is one run and the
+    renumbering finds it."""
+    runs = []
+    for el in p:
+        if el.tag == qn("a:r"):
+            rpr = el.find(qn("a:rPr"))
+            attrs = {}
+            if rpr is not None and rpr.get("b") == "1":
+                attrs["b"] = "1"
+            if rpr is not None and rpr.get("baseline"):
+                attrs["baseline"] = rpr.get("baseline")
+            text = el.find(qn("a:t")).text or ""
+        elif el.tag == qn("a:br"):
+            attrs, text = {}, " "
+        else:
+            assert el.tag in (qn("a:pPr"), qn("a:endParaRPr")), el.tag
+            continue
+        if runs and runs[-1][1] == attrs:
+            runs[-1] = (runs[-1][0] + text, attrs)
+        else:
+            runs.append((text, attrs))
+    return notes_para(runs=runs)
+
+
+def extend_notes(slide, before, after):
+    """Rahul's notes keep every paragraph and run as he saved them (python-pptx's text setter would flatten his bold runs). The
+    paragraphs `before` open the notes and `after` close them, each block set off by an empty paragraph, as set_notes("\n\n") did."""
+    txBody = slide.notes_slide.notes_text_frame._txBody
+    old = txBody.findall(qn("a:p"))
+    blank = lambda p: not "".join(t.text or "" for t in p.iter(qn("a:t"))).strip()
+    while old and blank(old[-1]):           # trailing empty paragraphs, so the blocks join with one empty paragraph
+        txBody.remove(old.pop())
+    blocks = [[p] for p in before] + ([old] if old else []) + ([after] if after else [])
+    for p in list(txBody.findall(qn("a:p"))):
+        txBody.remove(p)                    # detached and re-appended in order; Rahul's elements are the same objects, untouched
+    for i, block in enumerate(blocks):
+        if i:
+            txBody.append(notes_para())
+        for p in block:
+            txBody.append(p)
+
+
+CITE_ENTRY = re.compile(r"\[(\d+)\] ")
+
+
+def trim_citations(slide):
+    """After paragraphs left the slide: a reference-line entry whose marker no longer appears on the slide leaves the line, and its
+    text is returned for the notes. Only trailing entries can leave, so the markers that stay keep their numbers."""
+    cit = named(slide, "Citations")
+    if not cit:
+        return []
+    marks = set()
+    for sh in slide.shapes:
+        if sh.has_text_frame and sh.name != "Citations":
+            marks |= set(re.findall(r"\[(\d+)\]", sh.text_frame.text))
+    p = cit[0].text_frame.paragraphs[0]._p
+    ts = [r.find(qn("a:t")) for r in p.findall(qn("a:r"))]
+    text = "".join(t.text or "" for t in ts)
+    entries = [(int(m.group(1)), m.start()) for m in CITE_ENTRY.finditer(text)]
+    gone = [n for n, _ in entries if str(n) not in marks]
+    if not gone:
+        return []
+    assert gone == [n for n, _ in entries][-len(gone):], ("only trailing entries may leave", gone, entries)
+    cut = entries[-len(gone)][1]
+    start = len(text[:cut].rstrip())
+    moved = [text[s:(entries[i + 1][1] if i + 1 < len(entries) else len(text))].strip()
+             for i, (n, s) in enumerate(entries) if n in gone]
+    pos = 0
+    for t in ts:                            # cut the text from `start` to the end across the runs, keeping each run's formatting
+        s = t.text or ""
+        keep = max(0, start - pos)
+        if keep < len(s):
+            t.text = s[:keep]
+        pos += len(s)
+    for r in p.findall(qn("a:r")):
+        if not (r.find(qn("a:t")).text or ""):
+            p.remove(r)
+    return moved
+
+
 def whiten(p):
     """Hidden until its click, as the r2 builder does it: transparent white runs and no bullet glyph; the paragraph keeps its place."""
     for el in list(p.iter(qn("a:rPr"))) + list(p.iter(qn("a:endParaRPr"))):
@@ -318,7 +422,7 @@ def place(prs, slides, name, notes_lines, moved=None, new=False):
     band = middle_band(last)
     if band:
         log(f"figures: SKIP {title!r}: {[sh.name for sh in band]} hold the band under the text; {name} is not placed")
-        return False
+        return None
     (wpx, hpx), (l, t, r, b) = crop_box(name)
     w = COL_WIDTH
     h = int(round(COL_WIDTH * (b - t) / (r - l)))
@@ -342,10 +446,13 @@ def place(prs, slides, name, notes_lines, moved=None, new=False):
             gap = min(GAP, FLOOR - bh - top - int(round(h * scale)))
     if tb is not None and gap < MIN_GAP:
         need = top + int(round(h * MIN_SCALE)) + MIN_GAP + bh - FLOOR
+        offer = OFFERED_MOVES.get(title) if not moved else None
         log(f"figures: SKIP {title!r}: {name} at {MIN_SCALE:.0%} would push the closing box {need / EMU_PT:.1f} pt below the floor "
-            f"(text ends at {tb}, box {bh} tall); the build keeps its geometry")
-        return False
+            f"(text ends at {tb}, box {bh} tall); the build keeps its geometry and text"
+            + (f"; offered: MOVE=\"{title}:{','.join(str(k) for k in sorted(offer))}\"" if offer else ""))
+        return None
     # the figure fits: the text moves, then the pictures go in
+    refs = []
     if moved:
         for s in slides:
             ps = body_of(s).text_frame._txBody.findall(qn("a:p"))
@@ -357,7 +464,9 @@ def place(prs, slides, name, notes_lines, moved=None, new=False):
                 p.getparent().remove(p)
                 for rid in rids:
                     drop_if_unused(s, rid)
-        log(f"figures: {title!r}: paragraphs {sorted(moved)} moved to the notes")
+            refs = trim_citations(s)
+        log(f"figures: {title!r}: paragraphs {sorted(moved)} moved to the notes (MOVE)"
+            + (f"; reference entries leave the slide with them: {[r[:40] for r in refs]}" if refs else ""))
     fw, fh = int(round(w * scale)), int(round(h * scale))
     left = COL_LEFT if scale == 1.0 else COL_AXIS - fw // 2
     box_top = top + fh + gap
@@ -380,7 +489,7 @@ def place(prs, slides, name, notes_lines, moved=None, new=False):
     where = f"top {top}" + (f" (3 pt under the measured text)" if tb is not None else " (first pass)")
     log(f"figures: {title!r}: slides {first}-{first + len(slides) - 1} show {name} stages {stages}, {where}, "
         f"{scale:.0%} ({fw} x {fh}, crop {l},{t},{r},{b} of {wpx}x{hpx} px), closing box at {box_top} ({gap / EMU_PT:.1f} pt under)")
-    return True
+    return refs
 
 
 def figures(prs, new_slides):
@@ -388,17 +497,18 @@ def figures(prs, new_slides):
     for title, (name, chapter, lines) in FIGURES.items():
         slides = [prs.slides[i] for i in build(prs, title)]
         moved = MOVE_TO_NOTES.get(title)
-        # read the texts before any change
-        moved_text = [] if not moved else ["".join(x.text or "" for x in body_of(slides[-1]).text_frame._txBody.findall(qn("a:p"))[k]
-                                                   .iter(qn("a:t"))) for k in sorted(moved)]
-        if not place(prs, slides, name, lines, moved):
+        # the moved paragraphs, read before any change (a build carries the whole text on every click)
+        moved_ps = [] if not moved else [copy.deepcopy(body_of(slides[-1]).text_frame._txBody.findall(qn("a:p"))[k])
+                                         for k in sorted(moved)]
+        refs = place(prs, slides, name, lines, moved)
+        if refs is None:
             continue
         for s in slides:
-            old = s.notes_slide.notes_text_frame.text if s.has_notes_slide else ""
-            parts = moved_text + [old.strip(), stage_notes(lines, len(slides))]
-            set_notes(s, "\n\n".join(x for x in parts if x))
+            before = [body_to_notes(p) for p in moved_ps] + [notes_para(r) for r in refs]
+            after = [notes_para(x) for x in stage_notes(lines, len(slides)).split("\n")]
+            extend_notes(s, before, after)
         placed.append(name)
-    assert place(prs, new_slides, "diagnosis", NEW_STAGES, new=True), "the new build must hold its figure"
+    assert place(prs, new_slides, "diagnosis", NEW_STAGES, new=True) is not None, "the new build must hold its figure"
     placed.append("diagnosis")
     log(f"figures placed: {placed}")
 

@@ -49,5 +49,5 @@ warning: gateway-authority.tikz:84: Requested font "[IBMPlexSans-Bold.otf]/OT:sc
 warning: gateway-authority.tikz:92: Requested font "[lmmono8-regular]:" at 8.0pt
 warning: warnings were issued by the TeX engine; use --print and/or --keep-logs for details.
 note: Running xdvipdfmx ...
-note: Writing `build/gateway-authority-5.pdf` (11.591796875 KiB)
+note: Writing `build/gateway-authority-5.pdf` (11.5185546875 KiB)
 note: Skipped writing 1 intermediate files (use --keep-intermediates to keep them)

@@ -30,10 +30,29 @@ class EditResult(TypedDict):
 )
 def edit(path: str, old: str, new: str) -> EditResult:
     target = (WORKSPACE / path).resolve()
+
+    # If the target is not within the workspace, refuse the operation
     if not target.is_relative_to(WORKSPACE):
         raise ToolError(f"refused: {path} is outside the workspace")
+
     text = target.read_text()
+
+    # If the old string does not appear exactly once, refuse the operation
     if text.count(old) != 1:
         raise ToolError(f"refused: old appears {text.count(old)} times in {path}")
+
+    # Perform the replacement and return the result
     target.write_text(text.replace(old, new, 1))
     return {"path": path, "replaced": 1}
+
+
+@mcp.tool()
+def slow(seconds: int) -> str:
+    """Block for the given number of seconds, then report."""
+    time.sleep(seconds)
+    (HERE / "slow.done").write_text(f"slept {seconds} s\n")
+    return f"slept {seconds} s"
+
+
+if __name__ == "__main__":
+    mcp.run()

@@ -1,0 +1,13 @@
+\begin{tikzpicture}[node distance=7mm, every node/.append style={text=ibmfg}]
+  \node[rnode, text width=62mm] (n0) {authenticate};
+  \node[rnode, text width=62mm, below=of n0] (n1) {decode the permitted operation view};
+  \draw[flow] (n0) -- (n1);
+  \node[rnode, text width=62mm, below=of n1] (n2) {modify\_operation};
+  \draw[flow] (n1) -- (n2);
+  \node[mnode, text width=62mm, below=of n2] (n3) {validate};
+  \draw[flow] (n2) -- (n3);
+  \node[rnode, text width=62mm, below=of n3] (n4) {normal gateway handler};
+  \draw[flow] (n3) -- (n4);
+  \node[rnode, text width=62mm, below=of n4] (n5) {post\_commit observation};
+  \draw[flow] (n4) -- (n5);
+\end{tikzpicture}

@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "checks": [
+    "18 chapters load",
+    "stepper advances, returns, and stops at bounds",
+    "simulator enforces independent destination, identity, request, and credential checks",
+    "search finds and navigates to text",
+    "reading progress persists",
+    "no document overflow at 1440, 390, or 320 pixels",
+    "mobile chapter navigation works",
+    "print uses light paper, hides controls, and expands answers",
+    "no JavaScript errors or network asset requests"
+  ],
+  "errors": [],
+  "requests": []
+}

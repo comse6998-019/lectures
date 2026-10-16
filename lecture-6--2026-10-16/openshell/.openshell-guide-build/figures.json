@@ -1,0 +1,92 @@
+{
+  "creation": {
+    "fragment": "gateway.html",
+    "original": "User requests a sandbox\n  \u2192 gateway validates access, configuration, and providers\n  \u2192 gateway stores a Provisioning resource\n  \u2192 selected compute driver provisions platform resources\n  \u2192 supervisor authenticates and establishes its session\n  \u2192 gateway admits configuration and publishes readiness\n  \u2192 user can exec through the supervisor relay",
+    "steps": [
+      "User requests a sandbox",
+      "gateway validates access, configuration, and providers",
+      "gateway stores a Provisioning resource",
+      "selected compute driver provisions platform resources",
+      "supervisor authenticates and establishes its session",
+      "gateway admits configuration and publishes readiness",
+      "user can exec through the supervisor relay"
+    ],
+    "caption": "Sandbox creation and readiness. The durable resource precedes platform provisioning; usable access requires the subsequent runtime and configuration steps."
+  },
+  "interceptors": {
+    "fragment": "gateway.html",
+    "original": "authenticate\n  \u2192 decode the permitted operation view\n  \u2192 modify_operation\n  \u2192 validate\n  \u2192 normal gateway handler\n  \u2192 post_commit observation",
+    "steps": [
+      "authenticate",
+      "decode the permitted operation view",
+      "modify_operation",
+      "validate",
+      "normal gateway handler",
+      "post_commit observation"
+    ],
+    "caption": "Gateway interception of an allowlisted write operation. Modification and validation precede the ordinary handler; post-commit observation follows it."
+  },
+  "runtime-startup": {
+    "fragment": "runtime.html",
+    "original": "driver provisions resources\n    \u2192 supervisor attaches to the boundary\n    \u2192 backend confirms enforcement and identity\n    \u2192 supervisor prepares networking\n    \u2192 backend starts the agent\n    \u2192 supervisor manages the running workload",
+    "steps": [
+      "driver provisions resources",
+      "supervisor attaches to the boundary",
+      "backend confirms enforcement and identity",
+      "supervisor prepares networking",
+      "backend starts the agent",
+      "supervisor manages the running workload"
+    ],
+    "caption": "Runtime startup. Confirmation of enforcement and identity precedes the launch of agent code."
+  },
+  "request-enforcement": {
+    "fragment": "runtime.html",
+    "original": "admit destination and executable\n    \u2192 parse and validate the application request\n    \u2192 evaluate application policy\n    \u2192 run selected pre-credentials middleware\n    \u2192 recheck policy-relevant transformations\n    \u2192 resolve endpoint-bound credentials or sign the request\n    \u2192 guard current policy and credential generations\n    \u2192 send upstream and process the response",
+    "steps": [
+      "admit destination and executable",
+      "parse and validate the application request",
+      "evaluate application policy",
+      "run selected pre-credentials middleware",
+      "recheck policy-relevant transformations",
+      "resolve endpoint-bound credentials or sign the request",
+      "guard current policy and credential generations",
+      "send upstream and process the response"
+    ],
+    "caption": "Request processing in the supervisor. Policy-relevant transformations require renewed evaluation before endpoint-bound credentials are supplied."
+  },
+  "credential-substitution": {
+    "fragment": "policy.html",
+    "original": "workload environment: GITHUB_TOKEN = opaque reference\n        \u2193 client builds HTTP request\nnetwork policy admits caller + destination + request\n        \u2193 credential binding admits host + port + path\nsupervisor substitutes real credential\n        \u2193\nauthorized upstream service",
+    "steps": [
+      "workload environment: GITHUB_TOKEN = opaque reference",
+      "client builds HTTP request",
+      "network policy admits caller + destination + request",
+      "credential binding admits host + port + path",
+      "supervisor substitutes real credential",
+      "authorized upstream service"
+    ],
+    "caption": "Managed static credential substitution. The workload supplies an opaque reference; the supervisor supplies the real value only for a request that passes the applicable checks."
+  },
+  "policy-review": {
+    "fragment": "policy.html",
+    "original": "denied request\n  \u2192 draft proposed rule\n  \u2192 gateway validates candidate effective policy\n  \u2192 pending review or configured automatic approval\n  \u2192 approved revision saved\n  \u2192 supervisor loads revision\n  \u2192 workload retries request",
+    "steps": [
+      "denied request",
+      "draft proposed rule",
+      "gateway validates candidate effective policy",
+      "pending review or configured automatic approval",
+      "approved revision saved",
+      "supervisor loads revision",
+      "workload retries request"
+    ],
+    "caption": "From denial to an applied policy revision. Approval and storage do not by themselves establish that the supervisor has loaded the revision."
+  },
+  "architecture": {
+    "caption": "Component placement on the standard Linux path. The gateway manages resources. The supervisor holds policy and credentials outside the workload boundary and mediates traffic to external services. Compute drivers provision the workload and supervisor placement.",
+    "alt": "The client calls the gateway, which uses a compute driver. The workload contains agent tools and the sandbox runtime. The runtime communicates with the trusted supervisor, which communicates with approved external services. A supervisor session connects back to the gateway."
+  },
+  "network-request": {
+    "caption": "An illustrative mediated TCP and HTTP exchange. Connection admission and request-level inspection are separate decisions. Managed credentials, where applicable, remain on the supervisor side. Arrows group protocol events; precise scheduling depends on the transport path. DNS and transport recovery are omitted.",
+    "alt": "A workload tool attempts a connection. The kernel pauses it and the sandbox broker reports socket and executable evidence to the supervisor. After connection admission, the supervisor inspects applicable HTTP requests and credential bindings, sends permitted traffic upstream, and relays the response."
+  }
+}

@@ -1,0 +1,56 @@
+const {chromium}=require('./browser-tools/node_modules/playwright');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+(async()=>{
+ const browser=await chromium.launch({headless:true});
+ const page=await browser.newPage({viewport:{width:1440,height:1050}});
+ const errors=[];const requests=[];const checks=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ page.on('request',r=>{if(/^https?:/.test(r.url()))requests.push(r.url())});
+ await page.goto('file://'+path.resolve('openshell-guide.html'));
+ await page.evaluate(()=>localStorage.clear());await page.reload();
+ assert.equal(await page.locator('.chapter').count(),18);checks.push('18 chapters load');
+ await page.screenshot({path:'.openshell-guide-build/desktop.png'});
+ assert(await page.locator('#flow-prev').isDisabled());
+ for(let i=0;i<5;i++)await page.locator('#flow-next').click();
+ assert(await page.locator('#flow-next').isDisabled());
+ assert.match(await page.locator('#flow-count').innerText(),/6 of 6/);
+ await page.locator('#flow-prev').click();assert.match(await page.locator('#flow-count').innerText(),/5 of 6/);checks.push('stepper advances, returns, and stops at bounds');
+ await page.locator('.architecture').first().screenshot({path:'.openshell-guide-build/architecture.png'});
+ await page.selectOption('#sim-method','POST');assert.match(await page.locator('#sim-result').innerText(),/Denied: REST/);
+ await page.selectOption('#sim-mode','audit');assert.match(await page.locator('#sim-result').innerText(),/Allowed with an audit/);
+ await page.selectOption('#sim-credential','mismatch');assert.match(await page.locator('#sim-result').innerText(),/Denied: credential/);
+ await page.selectOption('#sim-host','no');assert.match(await page.locator('#sim-result').innerText(),/Denied: destination/);
+ await page.selectOption('#sim-host','yes');await page.selectOption('#sim-binary','no');assert.match(await page.locator('#sim-result').innerText(),/Denied: executable/);
+ await page.selectOption('#sim-binary','yes');await page.selectOption('#sim-method','GET');await page.selectOption('#sim-mode','enforce');await page.selectOption('#sim-credential','bound');
+ assert.match(await page.locator('#sim-result').innerText(),/Allowed in this illustration/);checks.push('simulator enforces independent destination, identity, request, and credential checks');
+ await page.locator('#policy-explorer').screenshot({path:'.openshell-guide-build/simulator.png'});
+ await page.locator('#open-search').click();await page.locator('#search-input').fill('seccomp');
+ assert((await page.locator('#search-results li').count())>0);await page.locator('#search-results a').first().click();
+ assert(!(await page.locator('#search-dialog').evaluate(el=>el.open)));assert.match(page.url(),/#ch/);checks.push('search finds and navigates to text');
+ await page.locator('#ch01 .read-label input').check();await page.reload();
+ assert(await page.locator('#ch01 .read-label input').isChecked());assert.match(await page.locator('#read-progress').innerText(),/1 of 18/);checks.push('reading progress persists');
+ await page.locator('#theme-toggle').click();await page.locator('#theme-toggle').click();
+ assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');
+ await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:'.openshell-guide-build/dark.png'});
+ for(const width of [390,320]){
+  await page.setViewportSize({width,height:844});
+  await page.evaluate(()=>window.scrollTo(0,0));
+  const dim=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
+  assert(dim.scroll<=dim.client,JSON.stringify({width,...dim}));
+  if(width===390){await page.locator('#theme-toggle').click();await page.screenshot({path:'.openshell-guide-build/mobile.png'})}
+ }
+ checks.push('no document overflow at 1440, 390, or 320 pixels');
+ await page.locator('.mobile-nav summary').click();await page.locator('.mobile-nav a[href="#ch10"]').click();
+ assert(!(await page.locator('.mobile-nav details').evaluate(el=>el.open)));assert.match(page.url(),/#ch10$/);checks.push('mobile chapter navigation works');
+ await page.setViewportSize({width:1200,height:1000});
+ await page.evaluate(()=>{document.documentElement.dataset.theme='dark';window.dispatchEvent(new Event('beforeprint'));window.scrollTo(0,0)});
+ await page.emulateMedia({media:'print'});
+ const print=await page.evaluate(()=>({background:getComputedStyle(document.body).backgroundColor,toolbar:getComputedStyle(document.querySelector('.toolbar')).display,open:[...document.querySelectorAll('details.exercise')].every(x=>x.open)}));
+ assert.equal(print.background,'rgb(255, 255, 255)');assert.equal(print.toolbar,'none');assert(print.open);checks.push('print uses light paper, hides controls, and expands answers');
+ await page.screenshot({path:'.openshell-guide-build/print.png'});
+ assert.deepEqual(errors,[]);assert.deepEqual(requests,[]);checks.push('no JavaScript errors or network asset requests');
+ const report={passed:true,checks,errors,requests};fs.writeFileSync('.openshell-guide-build/browser-report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
+ await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});
