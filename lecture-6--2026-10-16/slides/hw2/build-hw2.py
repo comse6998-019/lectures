@@ -1,16 +1,27 @@
 #!/usr/bin/env python3
-"""Build the HW2 deck from a final slide spec: the base deck's title slide, then every built item, each a build as in lecture 4.
+"""Build the HW2 deck from a final slide spec: a title slide, then every built item, each a build as in lecture 4.
 
     cd slides && DECK=snapshots/lecture6.rahul-2026-10-08.pptx SPEC=hw2/slides.hw2.json OUT=../lecture6-hw2.pptx BACK_LINKS=0 \
         uv run --no-project --python 3.12 --with python-pptx,pillow,pyyaml,lxml python hw2/build-hw2.py
 
 A copy of the revision 2 builder (build-lecture6-r2.py). The base deck's 62 slides serve as templates (5 text, 10 code
-window, 40 table, 57 and 58 question, 61 route, 62 divider); only slide 1, retitled, stays in the deck, and the other 61
-are dropped before the save. Figure stages are paths under slides/figures/, such as "hw2/two-agents-1.png".
+window, 40 table, 57 and 58 question, 61 route, 62 divider) and are all dropped before the save. Slide 1 is the title
+slide on the TITLE layout, as on Rahul's lecture6.pptx; the route item that follows it carries the HW2 title and its rows.
+Figure stages are paths under slides/figures/, such as "hw2/two-agents-1.png".
+
+The closing box sits 251381 EMU under its content. Text counts at its estimated height unless the build reads PowerPoint's
+own layout of an earlier build of the same spec (lectures/CLAUDE.md: "PowerPoint is the measure"):
+
+    DECK=../lecture6-hw2.pptx OUT=<scratch>/hw2.measures.json uv run --no-project --python 3.12 --with python-pptx,lxml \
+        python tools-r3/measure-ppt.py
+    MEASURED=../lecture6-hw2.pptx MEASURES=<scratch>/hw2.measures.json DECK=... SPEC=... OUT=... python hw2/build-hw2.py
+
+MEASURED is the measured build (its .map.json says which slide holds each item); with it, plain text counts at the bottom of its
+text as PowerPoint laid it out, and every other shape at its declared box.
 
 Markup inside any text field of the spec (bullets, lead, closing, table cells; notes get the plain form):
   slide links    "slide ⟦s:6.2⟧" the last click of item 6.2 (its complete slide); ⟦sf:6.2⟧ its first click;
-                 ⟦sk:4.2#7⟧ its click 7; ⟦o:1⟧ the title slide, the one base slide the deck keeps.
+                 ⟦sk:4.2#7⟧ its click 7; ⟦o:1⟧ the title slide.
   ATLAS names    ⟦t:AML.T0110⟧ the technique's name from the ATLAS data, linked to atlas.mitre.org;
                  ⟦m:AML.M0030⟧ a mitigation, ⟦c:AML.CS0050⟧ a case study; "|text" overrides the shown words.
   other links    ⟦u:https://example.org|words⟧.
@@ -830,10 +841,47 @@ for _template in (T_TEXT, T_WINDOW, T_QR):
     magenta_box(shape(_template, "Rectangle 4"))
 
 
-def content_bottom(slide):
-    """The lowest declared edge of the content: every shape but the title, the closing box and the foot of the slide."""
+def plain_text_shape(sp):
+    """A shape whose visible bottom is the bottom of its text: a text body with no fill and no outline of its own (the body
+    placeholder, a note under a figure). A filled or outlined shape (a code window, a card) shows its whole box."""
+    el = sp._element
+    if el.tag != qn("p:sp") or not sp.has_text_frame:
+        return False
+    sppr = el.find(qn("p:spPr"))
+    fills = (qn("a:solidFill"), qn("a:gradFill"), qn("a:blipFill"), qn("a:pattFill"))
+    return sppr is None or (not any(sppr.find(f) is not None for f in fills) and sppr.find(qn("a:ln")) is None)
+
+
+def shape_keys(slide):
+    """(shape, (name, occurrence of that name on the slide)) in z-order, so a shape is found again in another build."""
+    seen = {}
+    for sp in slide.shapes:
+        k = seen.get(sp.name, 0)
+        seen[sp.name] = k + 1
+        yield sp, (sp.name, k)
+
+
+# PowerPoint's own layout of an earlier build (MEASURED, measured by tools-r3/measure-ppt.py into MEASURES): for each item,
+# {(name, occurrence): (text, text bottom in EMU)} of every plain text shape on its complete slide. The text is kept so that
+# a shape whose words changed since that build falls back to its estimated height.
+MEASURED = {}
+if os.environ.get("MEASURES"):
+    _meas = json.load(open(os.environ["MEASURES"]))
+    _first = Presentation(os.environ["MEASURED"])
+    for _item, _nums in json.load(open(os.environ["MEASURED"] + ".map.json"))["positions"].items():
+        _sl = _first.slides[_nums[-1] - 1]
+        _m = _meas.get(str(_nums[-1]), {})
+        MEASURED[_item] = {key: (sp.text_frame.text, int(round((_m[str(k)]["ttop"] + _m[str(k)]["theight"]) * EMU_PT)))
+                           for k, (sp, key) in enumerate(shape_keys(_sl), start=1)
+                           if plain_text_shape(sp) and _m.get(str(k), {}).get("theight")}
+    print(f"measures: {len(MEASURED)} items of {os.environ['MEASURED']}")
+
+
+def content_bottom(slide, measured=None):
+    """The lowest edge of the content: every shape but the title, the closing box and the foot of the slide. A shape in
+    measured ({key: text bottom}) counts at the bottom of its text as PowerPoint laid it out; everything else at its box."""
     title = slide.shapes.title
-    bottoms = [sp.top + sp.height for sp in slide.shapes
+    bottoms = [(measured or {}).get(key, sp.top + sp.height) for sp, key in shape_keys(slide)
                if sp.name not in NOT_CONTENT and (title is None or sp._element is not title._element)]
     return max(bottoms, default=BODY_TOP)
 
@@ -859,7 +907,13 @@ def finish(slide, spec):
         box = shape(slide, "Rectangle 4")
         set_rich_run(box, spec["closing"])
         h = closing_box(spec["closing"])[1]
-        bottom = content_bottom(slide)
+        if MEASURED and spec["id"] not in MEASURED:
+            warn(f"{spec['id']}: not in the measured build; its text counts at its estimated height")
+        measured = MEASURED.get(spec["id"], {})
+        stale = [key for sp, key in shape_keys(slide) if key in measured and measured[key][0] != sp.text_frame.text]
+        if stale:
+            warn(f"{spec['id']}: text changed since the measured build in {stale}; it counts at its estimated height")
+        bottom = content_bottom(slide, {key: m[1] for key, m in measured.items() if key not in stale})
         top = min(bottom + UNDER_CONTENT, BOX_FLOOR - h)
         if top - bottom < GAP:
             warn(f"{spec['title']!r}: closing box {(top - bottom) / EMU_PT:.0f} pt under its content")
@@ -1207,21 +1261,32 @@ def segment_slide(spec):
     return sl
 
 
-for n in (1, 61):
-    set_rows(S(n))
-    set_single_run(shape(S(n), "TextBox 2"), LECTURE_TITLE)
-S(1).notes_slide.notes_text_frame.text = "HW2 release: the CLDK SDK, the MCP server over it, and the assignment."
-S(61).notes_slide.notes_text_frame.text = (
-    "This roadmap returns after the break. The first half finished the protocol and ran an MCP server under the Inspector. The second half covers "
-    "OWASP and MITRE ATLAS, the enforcement point, and OpenShell and the sandbox research.")
-set_rows(S(2))
-overlay(S(2), [1, 2, 3, 4])
-set_rows(S(62))
-overlay(S(62), [0, 1])
-set_single_run(shape(S(62), "TextBox 2"), "Threats and the runtime boundary")
-set_xfrm(shape(S(62), "TextBox 2"), x=612648, y=278037, w=5645663, h=1310999)
-S(62).notes_slide.notes_text_frame.text = ("This half asks what a tool call may touch, and which process decides. The threats are named with "
-                                           "MITRE ATLAS; the enforcement is NVIDIA OpenShell.")
+# ================================================================ title slide
+
+# Rahul's title slide (lecture6.pptx slide 1 as saved 2026-10-15, lecture 4's slide 1 with the number changed): two
+# placeholders of the TITLE layout with bare bold runs, so the layout supplies the type, the colour and the place.
+TITLE_PARTS = [("Title 1", 'type="ctrTitle"', '<a:r><a:rPr lang="en-US" b="1"/><a:t>Designing Production Agentic Systems</a:t></a:r>'),
+               ("Subtitle 2", 'type="subTitle" idx="1"',
+                '<a:r><a:rPr b="1"/><a:t>Columbia · Fall 2026 · Lecture </a:t></a:r><a:r><a:rPr lang="en-US" b="1"/><a:t>6</a:t></a:r>')]
+TITLE_SP = ('<p:sp xmlns:a="{A}" xmlns:p="{P}"><p:nvSpPr><p:cNvPr id="{id}" name="{name}"/><p:cNvSpPr><a:spLocks noGrp="1"/>'
+            '</p:cNvSpPr><p:nvPr><p:ph {ph}/></p:nvPr></p:nvSpPr><p:spPr bwMode="auto"/><p:txBody><a:bodyPr/><a:lstStyle/><a:p>'
+            '<a:pPr><a:defRPr/></a:pPr>{runs}<a:endParaRPr b="1"/></a:p></p:txBody></p:sp>')
+TITLE_NOTES = "HW2 release: the CLDK SDK, the MCP server over it, and the assignment."
+
+
+def title_slide():
+    """Slide 1: the course title and 'Columbia · Fall 2026 · Lecture 6' on the TITLE layout (lectures/CLAUDE.md, Recap)."""
+    sl = prs.slides.add_slide(next(lo for lo in prs.slide_layouts if lo.name == "TITLE"))
+    tree = sl.shapes._spTree
+    for el in list(tree)[2:]:
+        tree.remove(el)
+    for k, (name, ph, runs) in enumerate(TITLE_PARTS, start=2):
+        tree.append(etree.fromstring(TITLE_SP.format(A=A, P=P, id=k, name=name, ph=ph, runs=runs)))
+    set_notes(sl, TITLE_NOTES)
+    return sl
+
+
+TITLE = title_slide()
 
 # ================================================================ order, numbers and assembly
 
@@ -1233,7 +1298,8 @@ for items_ in segs.values():
 
 
 def plan_order(segs):
-    """Deck order: ('old', 1) for the base deck's title slide, then ('new', id, clicks) for each built item, segment by segment."""
+    """Deck order: ('old', 1) for the title slide, which ⟦o:1⟧ names, then ('new', id, clicks) for each built item, segment by
+    segment."""
     def items(n):
         return [("new", sl["id"], n_steps(sl)) for sl in segs.get(n, [])]
 
@@ -1286,7 +1352,8 @@ for seg_id in sorted(segs):
 final = []
 for it in order:
     if it[0] == "old":
-        final.append(S(it[1]))
+        assert it[1] == 1, it
+        final.append(TITLE)
     else:
         group = built[it[1]]
         assert len(group) == it[2], (it, len(group))
@@ -1305,7 +1372,7 @@ for sl in final:
         if prs.part.related_part(el.rId) is sl.part:
             els.append(el)
             break
-orphan_els = [el for el in lst if el not in els]  # the base deck's other 61 slides, used only as templates
+orphan_els = [el for el in lst if el not in els]  # the base deck's 62 slides, used only as templates
 for el in list(lst):
     lst.remove(el)
 for el in els:
@@ -1322,4 +1389,4 @@ positions_out = {sid: [final.index(x) + 1 for x in group] for sid, group in buil
 json.dump({"positions": positions_out, "old_to_new": old_new, "warnings": warnings, "layout": log}, open(OUT + ".map.json", "w"), indent=1)
 if PLACEHOLDERS:
     print("PLACEHOLDERS:", sorted(set(PLACEHOLDERS)))
-print(f"saved {OUT}: {len(final)} slides ({len(final) - 1} new); {len(warnings)} warnings; map in {OUT}.map.json")
+print(f"saved {OUT}: {len(final)} slides (title and {len(final) - 1} built); {len(warnings)} warnings; map in {OUT}.map.json")
