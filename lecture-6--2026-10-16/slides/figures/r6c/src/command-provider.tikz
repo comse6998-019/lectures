@@ -1,0 +1,113 @@
+% command-provider: the command that creates a provider instance, first as an abstract shape, then as a real command read token by
+% token, then Cyberbird's use of it. For build 10, "Credentials stay at the gateway; the supervisor substitutes them."
+% Canvas 16.5 x 5.8 cm (\useasboundingbox), the slide column at about 1:1; token text 9 pt typewriter, callouts and notes 8 pt.
+% Order (Rahul, 2026-10-15 22:50): the abstract concept first, then the real instance. Here stage 1 is the shape of the command with
+% generic placeholders, stages 2 to 5 are one real command read token by token, and stage 5 adds Cyberbird's use of it.
+% Stages (Task 4.6, step 1, item 6):
+%   1 The shape: `openshell provider create --name <instance> --type <profile> --from-existing`, five token boxes in one line, the
+%     three placeholders in navy, and a callout under each: "an instance" (the name), "its profile" (the type), "its values"
+%     (--from-existing). Heading "the shape of the command".
+%   2 The real command, `openshell provider create --name my-claude --type claude-code --from-existing`, in the same five boxes.
+%     The first two tokens are highlighted and explained: `openshell` "the client, talking to the gateway", `provider create`
+%     "make a provider instance in this workspace". The three tokens not yet reached are dashed ghosts.
+%   3 `--name my-claude`: "the instance's name; sandbox create --provider my-claude attaches it".
+%   4 `--type claude-code`: "the profile it follows: its credential names, environment variables, endpoints and binaries".
+%   5 `--from-existing`: "read the values from those environment variables now, into the gateway's credential store; the sandbox
+%     sees a placeholder", and the in-action note under the row: Cyberbird with --model anthropic:claude-opus-5 and --provider
+%     my-claude sees ANTHROPIC_API_KEY as a placeholder, with the one captured line (see below). The heading becomes "in action:
+%     Cyberbird", as in components and three-needs.
+% Sources.
+%   Flags: instructor-materials/hw2/feasibility/help-provider-create.txt, `openshell provider create --help` of openshell 0.1.4:
+%     `--name <NAME>` "Provider name", `--type <PROVIDER_TYPE>` "Provider type", `--from-existing` "Load provider credentials/config
+%     from existing local state". All three are spelled as in the brief, so no token was corrected. (The same help lists --label,
+%     --credential, --from-gcloud-adc, --from-oidc-token, --runtime-credentials, --config and --global-profile; none is drawn.)
+%   `--provider my-claude`: help-sandbox-create.txt, "Attach a configured credential provider to the sandbox".
+%   Profile: the guide's 11.1 (a profile specifies "Credential names, endpoints, binaries, request rules, and optional refresh
+%     behavior"; the instance holds the concrete credential state; "an attachment explicitly connects the workload to that
+%     instance"). `claude-code` is a profile id in NVIDIA/OpenShell's providers/ directory at v0.1.4 (checked 2026-10-15: credential
+%     api_key with env_vars ANTHROPIC_API_KEY and CLAUDE_API_KEY, endpoints api.anthropic.com, statsig.anthropic.com and sentry.io,
+%     binaries /usr/bin/claude and /usr/local/bin/claude); the guide's 11.1 says a new gateway does not load that catalogue by
+%     itself, and the staff gateway holds only the `anthropic` profile, so a gateway needs `provider profile import` of it first.
+%     The brief names claude-code and my-claude, so the figure keeps them.
+%   `--from-existing`: results.md of the feasibility run, Step 1: it "reads only the environment variables the profile names";
+%     with the variable unset the command exits 1 and creates nothing. The credential store: the guide's 11.4 ("Credential storage
+%     holds secrets ... encrypts each credential"). The placeholder: the guide's 11.2 ("the environment value is an opaque
+%     placeholder").
+%   Cyberbird: the brief's running example, `--model anthropic:claude-opus-5` with the provider attached. The note states the
+%     configuration the brief describes. No Cyberbird run used a provider (its recorded sandbox was created with
+%     --no-auto-providers and the local model), so the line printed under it is the staff test sandbox's: results.md, Step 1, "The
+%     attachment with a dummy credential": `printenv ANTHROPIC_API_KEY | cut -c1-12` printed `openshell:re` (the variable held a
+%     61-character value beginning that way; the profile was `anthropic`, the credential a dummy). The figure says "a test
+%     sandbox", not Cyberbird's.
+% Illustrative: nothing beyond that. No secret is printed; the 12 characters are the placeholder's prefix.
+% Left out on purpose: the profile's contents (the guide's Figure 7 and build 11 show what the supervisor does with the placeholder),
+% the other create flags, and the profile import step (named in the source comment, not drawn).
+% Colour: no magenta (no adversary). A token reached by the stage settles to white; the one the stage explains carries the style's
+% hl outline (navy, 1.6 pt) and a navy leader; tokens not yet reached are dashed ghosts. Placeholders and the real values in the
+% variable slots are navy. Nothing moves: every token box has a fixed width and height, and every callout is anchored at its
+% token's centre from the stage that brings it, so no stage changes a box's size or place.
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \useasboundingbox (0,0) rectangle (16.5,5.8);
+  \hyphenpenalty=10000 \exhyphenpenalty=10000 \frenchspacing
+  \tikzset{
+    tok/.style={gnode, font=\ttfamily\small, minimum height=0.8cm, inner sep=4pt, outer sep=0pt},
+    ghosttok/.style={draw=ibmfg!25, text=ibmfg!35, fill=white, dashed},
+    leader/.style={{Circle[length=1.2mm]}-, draw=ibmfg!45, line width=0.6pt},
+    leadernew/.style={{Circle[length=1.2mm]}-, draw=deckNavy, line width=1.1pt},
+    clab/.style={lab, anchor=north},
+  }
+  % \tok{name}{stage that explains it}{centre x}{width}{fixed text}{variable text, abstract}{variable text, real}
+  % stage 1: the abstract text; from stage 2: the real text, a ghost before its stage, highlighted on it, white after it.
+  % The \strut gives every box the same line height, so the text sits at one height whether or not it has a descender.
+  \newcommand{\tok}[7]{%
+    \ifnum\stage=1
+      \node[tok, minimum width=#4] (#1) at (#3,4.55) {\strut #5\textcolor{deckNavy}{#6}};%
+    \else
+      \ifnum\stage<#2 \node[tok, ghosttok, minimum width=#4] (#1) at (#3,4.55) {\strut #5\textcolor{ibmfg!35}{#7}};\fi
+      \ifnum\stage=#2 \node[tok, hl, minimum width=#4] (#1) at (#3,4.55) {\strut #5\textcolor{deckNavy}{#7}};\fi
+      \ifnum\stage>#2 \node[tok, minimum width=#4] (#1) at (#3,4.55) {\strut #5\textcolor{deckNavy}{#7}};\fi
+    \fi}
+  % \callout{token}{stage}{centre x}{text width}{text}: a leader and its callout from the stage on; the leader is navy on its own stage
+  \newcommand{\callout}[5]{%
+    \ifnum\stage=#2 \node[clab, text width=#4] (l#1) at (#3,3.8) {#5}; \draw[leadernew] (#1.south) -- (l#1.north);\fi
+    \ifnum\stage>#2 \node[clab, text width=#4] (l#1) at (#3,3.8) {#5}; \draw[leader] (#1.south) -- (l#1.north);\fi}
+
+  % heading: grey for the general case, bold navy for the instance (as components and three-needs)
+  \ifnum\stage=1
+    \node[lab, anchor=west, text=deckGrey] at (0.05,5.6) {the shape of the command};
+  \fi
+  \ifnum\stage>1 \ifnum\stage<5
+    \node[lab, anchor=west, text=deckGrey] at (0.05,5.6) {a real command, token by token};
+  \fi\fi
+  \ifnum\stage=5
+    \node[zonelab, anchor=west, inner sep=1pt] at (0.05,5.6) {in action: Cyberbird};
+  \fi
+
+  % the command: five tokens in one line (left edges 0.425, 2.675, 5.925, 9.525, 13.275; gaps 0.45)
+  \tok{tA}{2}{1.325}{1.8}{openshell}{}{}
+  \tok{tB}{2}{4.075}{2.8}{provider create}{}{}
+  \tok{tC}{3}{7.5}{3.15}{--name }{<instance>}{my-claude}
+  \tok{tD}{4}{11.175}{3.3}{--type }{<profile>}{claude-code}
+  \tok{tE}{5}{14.675}{2.8}{--from-existing}{}{}
+
+  % stage 1: the three variable slots, named
+  \onlystage{1}{%
+    \node[clab, text width=2.6cm] (lC) at (7.5,3.8) {an instance};  \draw[leader] (tC.south) -- (lC.north);
+    \node[clab, text width=2.6cm] (lD) at (11.175,3.8) {its profile}; \draw[leader] (tD.south) -- (lD.north);
+    \node[clab, text width=2.6cm] (lE) at (14.675,3.8) {its values};  \draw[leader] (tE.south) -- (lE.north);}
+
+  % stages 2 to 5: what each token means
+  \callout{tA}{2}{1.325}{2.4cm}{the client, talking to the gateway}
+  \callout{tB}{2}{4.075}{2.7cm}{make a provider instance in this workspace}
+  \callout{tC}{3}{7.5}{3.2cm}{the instance's name;\\ \texttt{sandbox create}\\ \texttt{--provider my-claude}\\ attaches it}
+  \callout{tD}{4}{11.175}{3.3cm}{the profile it follows: its credential names, environment variables, endpoints and binaries}
+  \callout{tE}{5}{14.675}{3.5cm}{read the values from those environment variables now, into the gateway's credential store; the sandbox sees a placeholder}
+
+  % stage 5: Cyberbird. A plain note with a navy rule at its left (no box, so it does not read as a second closing box)
+  \atstage{5}{%
+    \node[note, anchor=north west, text width=15.9cm, inner sep=2pt, text=ibmfg] (cb) at (0.3,1.3) {%
+      Cyberbird with \texttt{--model anthropic:claude-opus-5} and \texttt{--provider my-claude}
+      sees \texttt{ANTHROPIC\_API\_KEY} as a placeholder.\\
+      In a test sandbox with a provider attached, \texttt{printenv ANTHROPIC\_API\_KEY | cut -c1-12} printed \texttt{openshell:re}.};
+    \draw[deckNavy, line width=1.6pt] ([xshift=-3pt]cb.north west) -- ([xshift=-3pt]cb.south west);}
+\end{tikzpicture}%

@@ -1,0 +1,97 @@
+note: Running TeX ...
+warning: accessing absolute path `/dev/null`; build may not be reproducible in other environments
+warning: open of input /dev/null.tex failed
+caused by: access to the path `/dev/null.tex` is forbidden
+warning: open of input /dev/null.tex failed
+caused by: access to the path `/dev/null.tex` is forbidden
+warning: plex-sans.sty:125: 
+Requested font "[IBMPlexSans-Regular.otf]/OT" at 9.99997pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Regular.otf]/OT" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Bold.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Italic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-BoldItalic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Regular.otf]/OT" at 9.99997pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Regular.otf]/OT" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Regular.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Bold.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Italic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-BoldItalic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: policy-pins-6.tex:3: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 10.0pt
+warning: policy-pins.tikz:95: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 8.0pt
+warning: policy-pins.tikz:95: Requested font "[IBMPlexSans-Bold.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 8.0pt
+warning: policy-pins.tikz:101: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 9.0pt
+warning: policy-pins.tikz:101: Requested font "[IBMPlexSans-Bold.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 9.0pt
+warning: policy-pins.tikz:110: Requested font "[lmmono9-regular]:" at 9.0pt
+warning: policy-pins.tikz:132: Requested font "[lmmono8-regular]:" at 8.0pt
+warning: policy-pins.tikz:138: Requested font "[lmroman8-regular]:mapping=tex-text;" at 8.0pt
+warning: policy-pins.tikz:138: Requested font "[lmroman6-regular]:mapping=tex-text;" at 6.0pt
+warning: policy-pins.tikz:138: Requested font "[lmroman5-regular]:mapping=tex-text;" at 5.0pt
+warning: policy-pins.tikz:138: Requested font "cmmi8" at 8.0pt
+warning: policy-pins.tikz:138:  -> cmmi8
+warning: policy-pins.tikz:138: Requested font "cmmi6" at 6.0pt
+warning: policy-pins.tikz:138:  -> cmmi6
+warning: policy-pins.tikz:138: Requested font "cmsy8" at 8.0pt
+warning: policy-pins.tikz:138:  -> cmsy8
+warning: policy-pins.tikz:138: Requested font "cmsy6" at 6.0pt
+warning: policy-pins.tikz:138:  -> cmsy6
+warning: policy-pins.tikz:138: Requested font "cmex8" at 8.0pt
+warning: policy-pins.tikz:138:  -> cmex8
+warning: policy-pins.tikz:138: Requested font "cmex7" at 6.0pt
+warning: policy-pins.tikz:138:  -> cmex7
+warning: policy-pins.tikz:138: Requested font "cmex7" at 5.0pt
+warning: policy-pins.tikz:138:  -> cmex7
+warning: policy-pins.tikz:138: Requested font "cmr8" at 8.0pt
+warning: policy-pins.tikz:138:  -> cmr8
+warning: policy-pins.tikz:138: Requested font "cmr6" at 6.0pt
+warning: policy-pins.tikz:138:  -> cmr6
+note: Rerunning TeX because "policy-pins-6.aux" changed ...
+warning: open of input /dev/null.tex failed
+caused by: access to the path `/dev/null.tex` is forbidden
+warning: open of input /dev/null.tex failed
+caused by: access to the path `/dev/null.tex` is forbidden
+warning: plex-sans.sty:125: 
+Requested font "[IBMPlexSans-Regular.otf]/OT" at 9.99997pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Regular.otf]/OT" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Bold.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Italic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-BoldItalic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Regular.otf]/OT" at 9.99997pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Regular.otf]/OT" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Regular.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Bold.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Italic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-BoldItalic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: policy-pins-6.tex:3: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 10.0pt
+warning: policy-pins.tikz:95: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 8.0pt
+warning: policy-pins.tikz:95: Requested font "[IBMPlexSans-Bold.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 8.0pt
+warning: policy-pins.tikz:101: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 9.0pt
+warning: policy-pins.tikz:101: Requested font "[IBMPlexSans-Bold.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 9.0pt
+warning: policy-pins.tikz:110: Requested font "[lmmono9-regular]:" at 9.0pt
+warning: policy-pins.tikz:132: Requested font "[lmmono8-regular]:" at 8.0pt
+warning: policy-pins.tikz:138: Requested font "[lmroman8-regular]:mapping=tex-text;" at 8.0pt
+warning: policy-pins.tikz:138: Requested font "[lmroman6-regular]:mapping=tex-text;" at 6.0pt
+warning: policy-pins.tikz:138: Requested font "[lmroman5-regular]:mapping=tex-text;" at 5.0pt
+warning: policy-pins.tikz:138: Requested font "cmmi8" at 8.0pt
+warning: policy-pins.tikz:138:  -> cmmi8
+warning: policy-pins.tikz:138: Requested font "cmmi6" at 6.0pt
+warning: policy-pins.tikz:138:  -> cmmi6
+warning: policy-pins.tikz:138: Requested font "cmsy8" at 8.0pt
+warning: policy-pins.tikz:138:  -> cmsy8
+warning: policy-pins.tikz:138: Requested font "cmsy6" at 6.0pt
+warning: policy-pins.tikz:138:  -> cmsy6
+warning: policy-pins.tikz:138: Requested font "cmex8" at 8.0pt
+warning: policy-pins.tikz:138:  -> cmex8
+warning: policy-pins.tikz:138: Requested font "cmex7" at 6.0pt
+warning: policy-pins.tikz:138:  -> cmex7
+warning: policy-pins.tikz:138: Requested font "cmex7" at 5.0pt
+warning: policy-pins.tikz:138:  -> cmex7
+warning: policy-pins.tikz:138: Requested font "cmr8" at 8.0pt
+warning: policy-pins.tikz:138:  -> cmr8
+warning: policy-pins.tikz:138: Requested font "cmr6" at 6.0pt
+warning: policy-pins.tikz:138:  -> cmr6
+warning: warnings were issued by the TeX engine; use --print and/or --keep-logs for details.
+note: Running xdvipdfmx ...
+note: Writing `build/policy-pins-6.pdf` (15.8583984375 KiB)
+note: Skipped writing 1 intermediate files (use --keep-intermediates to keep them)

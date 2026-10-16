@@ -1,0 +1,161 @@
+% lifecycle: the steps and phases a sandbox passes through, one per click, then the phases that outrank Ready, then Cyberbird's
+% sandbox. For build 3, "A sandbox is a record first, a container second." (Task 4.6, step 1, item 3). Order inside the build
+% (Rahul, 2026-10-15, 22:50): the abstract figure first (stages 1 to 5, generic names), Cyberbird as the real instance last (stage 6).
+% Shows: on the upper row, left to right, the record the gateway persists, Provisioning (the driver's work), the supervisor's hello
+% and Ready; each arrow names the component that moves the sandbox on. On the lower row, the phases that leave or outrank Ready:
+% Error (a backend failure, which the driver reports), Deleting and Stopped, with the operations stop, start and delete.
+% Canvas 16.5 x 5.8 cm (\useasboundingbox), the slide column at about 1:1; box titles 9 pt, box details, labels and notes 8 pt.
+% Stages:
+%   1 The record persisted, highlighted: the gateway's checks (identity, workspace, names, template, policy) and what it stores
+%     (the record, as Provisioning, with a UUID, an attachment epoch and a runtime generation). Everything else is a ghost.
+%   2 Provisioning, with the arrow from the record, moved by the gateway: the driver creates resources; Docker and VM may return
+%     early.
+%   3 The supervisor's hello, with the arrow moved by the supervisor: it connects out to the gateway; control stream, reverse relay.
+%   4 Ready, with the arrow moved by the gateway: usable through the API.
+%   5 The lower row: Error (from Provisioning, reported by the driver), Deleting and Stopped, with stop, start and delete; and the
+%     note "Ready: the supervisor talked back. It does not say the agent works."
+%   6 In action: the heading becomes "in action: Cyberbird"; the record reads cyberbird with its UUID and runtime generation;
+%     Provisioning reads Docker on Colima and the image cyberbird:1; the hello reads the captured condition "Supervisor session
+%     connected"; Stopped and Error, which Cyberbird's sandbox never reached, turn to ghosts with their arrows; under the diagram,
+%     the captured lines of `openshell sandbox list` (header and the cyberbird row, PHASE Ready).
+% Sources (the guide, OpenShell: Architecture, Enforcement, and Policy, commit be7af99, chapter 4, and its creation.tikz):
+%   the record: 4.2 ("establishes the caller's identity and checks membership. It requires an active workspace, validates names and
+%     labels, and resolves any named workload template ... converts policy into a canonical representation ... invokes configured
+%     policy validation"; "assigns a UUID, creation time, workspace, and status. It also creates an attachment epoch ... A runtime
+%     generation"); 4.3 ("stores the public sandbox object before provisioning begins"); creation.tikz step 3 ("gateway stores a
+%     Provisioning resource"), so the record is stored in the Provisioning phase and the box says so.
+%   Provisioning: 4.3 ("The gateway then sends a separate message to the driver"; "Docker and VM can accept a request and continue
+%     image preparation in the background"); creation.tikz step 4 ("selected compute driver provisions platform resources").
+%   hello: 4.4 ("the supervisor initiates a connection to the gateway and sends a hello message ... registers the control stream.
+%     This stream carries requests such as opening a relay"); 4.5 (exec runs over the reverse relay).
+%   Ready: 4.1 ("Ready means the gateway considers the sandbox usable through its API"); creation.tikz step 6 ("gateway admits
+%     configuration and publishes readiness"), so the gateway moves hello to Ready.
+%   lower row: 4.4 ("backend Error, Deleting, or Stopped states still prevail"); 3.3 (the gateway translates backend facts into
+%     public phases, so a backend failure reaches Error through the driver's report); 4.6 (Stop keeps the sandbox and stops its
+%     compute, Start runs it again, Delete removes the sandbox and its owned runtime resources; the gateway records Stopping or
+%     Deleting before the backend action). Phase names checked against proto/openshell.proto, enum SandboxPhase, at be7af99.
+%   note: the brief's wording; 3.3's exercise ("A running container is evidence about infrastructure, not a complete statement about
+%     usable workload access").
+%   stage 6, captured on 2026-10-15 (instructor-materials/hw2/feasibility/cyberbird, Task 4.6 step 0): sandbox-record.txt
+%     (`openshell sandbox get cyberbird`: Id 86d1c2e9-99a7-4c49-9101-118c7f4e3230, runtime-generation
+%     d1326079-66a5-44ab-9db3-51e13ac8dc46, condition "Ready: True (DependenciesReady) - Supervisor session connected");
+%     create.txt (image cyberbird:1, "Container created" at 0.1 s); list.txt (`openshell sandbox list` at 22:42:24 EDT, the
+%     row "cyberbird  2026-10-16 02:42:20  Ready"; CREATED is UTC); delete.txt (deleted from Ready at 22:44:40, never stopped).
+%     Docker on Colima: the run report and the components figure.
+% Illustrative: nothing; the in-action strings are captured or name the run's setup. The sandbox list excerpt keeps the header and
+% the cyberbird row and drops the two other sandboxes' rows (hw2feas, hw2local).
+% Left out on purpose: the transient phases Stopping and Starting and the phases Unknown and Completed of the enum (the guide's
+% chapter 4 names Stopping only in passing, and the arrows stop and start stand for them); exec over the reverse relay as its own
+% step (creation.tikz step 7: the hello box names the relay); the attachment epoch in stage 6 (no provider was attached, and the
+% captured auth-epoch annotation is a different value).
+% Labels: each arrow of the upper row and the arrow to Error names the component that moves the sandbox on (gateway, supervisor,
+% gateway; driver). The arrows stop, start and delete carry the operation instead: the gateway moves all three on an operator's
+% request and records Stopping or Deleting first (4.6), so the operation is what tells the arrows apart. The two delete arrows
+% (from Ready, from Stopped) share one label, set between them.
+% Colour: no magenta. The brief asked for Error as an `evil` node; lectures/CLAUDE.md keeps magenta for what an adversary
+% controls, and a backend failure is not that, so Error is an ordinary phase box (recorded as a ruling in the report). The newest
+% box carries the style's hl outline and its arrow is navy at 1.6 pt with its actor in bold navy; both settle on the next stage.
+% Ghosts are dashed light grey. Nothing moves: every box has a fixed size and outer sep 0, so each arrow ends on a box edge.
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \useasboundingbox (0,0) rectangle (16.5,5.8);
+  \hyphenpenalty=10000 \exhyphenpenalty=10000 \frenchspacing
+  \def\sRecord{1}\def\sProv{2}\def\sHello{3}\def\sReady{4}\def\sAfter{5}\def\sAction{6}
+  \tikzset{
+    fixed/.style={outer sep=0pt},
+    ghostbox/.style={draw=ibmfg!25, text=ibmfg!35, fill=white, dashed},
+    ghflow/.style={-{Stealth[length=2.2mm]}, thick, draw=ibmfg!25, dashed},
+    newflow/.style={-{Stealth[length=2.2mm]}, line width=1.6pt, draw=deckNavy},
+    % the upper row: 2.35 cm tall, from y 2.95 to 5.3; the lower row: 1.4 cm tall, from y 1.0 to 2.4
+    up/.style={gnode, fixed, minimum height=2.35cm},
+    low/.style={gnode, fixed, minimum height=1.4cm},
+    tlnew/.style={lab, text=deckNavy, font=\sffamily\footnotesize\bfseries},
+    tlold/.style={lab},
+    tlghost/.style={lab, text=ibmfg!35},
+  }
+  % \inst{text}: an instance word of stage 6, bold navy;  \instt{text}: an instance name in typewriter, navy (no bold face)
+  \newcommand{\inst}[1]{\textcolor{deckNavy}{\bfseries #1}}
+  \newcommand{\instt}[1]{\textcolor{deckNavy}{\texttt{#1}}}
+  \newcommand{\dt}[1]{{\footnotesize #1}}
+  % \phase{name}{stage}{style and size}{(x,y)}{generic text}{in-action text}{1 = a ghost on the in-action stage}
+  %   a ghost before its stage, highlighted on it, plain after it; on the in-action stage the in-action text, or a ghost
+  \newcommand{\phase}[7]{%
+    \ifnum\stage<#2 \node[#3, ghostbox] (#1) at #4 {#5};\fi
+    \ifnum\stage=#2 \node[#3, hl] (#1) at #4 {#5};\fi
+    \ifnum\stage>#2
+      \ifnum\stage<\sAction \node[#3] (#1) at #4 {#5};\fi
+      \ifnum\stage=\sAction
+        \ifnum#7=1 \node[#3, ghostbox] (#1) at #4 {#5};\else \node[#3] (#1) at #4 {#6};\fi
+      \fi
+    \fi}
+  % \trans{stage}{1 = a ghost on the in-action stage}{path}{label position and anchor}{label}
+  %   a ghost arrow before its stage (no label), navy with a bold navy label on it, plain after it
+  \newcommand{\trans}[5]{%
+    \ifnum\stage<#1 \draw[ghflow] #3;\fi
+    \ifnum\stage=#1 \draw[newflow] #3; \node[tlnew, #4] {#5};\fi
+    \ifnum\stage>#1
+      \ifnum\stage<\sAction \draw[flow] #3; \node[tlold, #4] {#5};\fi
+      \ifnum\stage=\sAction
+        \ifnum#2=1 \draw[ghflow] #3; \node[tlghost, #4] {#5};\else \draw[flow] #3; \node[tlold, #4] {#5};\fi
+      \fi
+    \fi}
+
+  % heading
+  \ifnum\stage<\sAction
+    \node[lab, anchor=west, text=deckGrey] at (0.05,5.6) {the general case};
+  \else
+    \node[zonelab, anchor=west, inner sep=1pt] at (0.05,5.6) {in action: Cyberbird};
+  \fi
+
+  % the upper row: x 0.05-4.1, 5.5-8.4, 10.1-13.0, 14.4-16.4; arrows on y 4.125; the record box is taller (y 2.4-5.3):
+  % 2.9 cm in every stage, because its stage 1 text needs 2.897 cm (measured in TeX) and stage 6 only 1.909 cm, and a
+  % minimum height below the text would let the box grow on stages 1 to 5 and shrink on stage 6; its top stays level
+  % with the row at 5.3 and its bottom level with the lower row's top at 2.4. A longer stage 1 text needs a taller box.
+  \phase{rec}{\sRecord}{up, minimum width=4.05cm, minimum height=2.9cm, text width=3.75cm}{(2.075,3.85)}
+    {\textbf{record persisted}\\\dt{the gateway checks identity, workspace, names, template and policy, then stores the record
+     as Provisioning: UUID, attachment epoch, runtime generation}}
+    {\textbf{record persisted}\\\dt{\inst{cyberbird}\\UUID \instt{86d1c2e9-99a7-\ldots}\\runtime generation\\
+     \instt{d1326079-66a5-\ldots}}}{0}
+  \phase{prov}{\sProv}{up, minimum width=2.9cm, text width=2.6cm}{(6.95,4.125)}
+    {\textbf{Provisioning}\\\dt{the driver creates resources; Docker and VM may return early}}
+    {\textbf{Provisioning}\\\dt{\inst{Docker on Colima}\\image \instt{cyberbird:1},\\container created\\after 0.1\,s}}{0}
+  \phase{hello}{\sHello}{up, minimum width=2.9cm, text width=2.6cm}{(11.55,4.125)}
+    {\textbf{supervisor hello}\\\dt{it connects out to the gateway: control stream, reverse relay}}
+    {\textbf{supervisor hello}\\\dt{\instt{Supervisor}\\\instt{session connected}}}{0}
+  \phase{ready}{\sReady}{up, minimum width=2.0cm, text width=1.7cm}{(15.4,4.125)}
+    {\textbf{Ready}\\\dt{usable through the API}}
+    {\textbf{Ready}\\\dt{usable through the API}}{0}
+
+  \trans{\sProv}{0}{(4.1,4.125) -- (5.5,4.125)}{anchor=south, at={(4.8,4.175)}}{gateway}
+  \trans{\sHello}{0}{(8.4,4.125) -- (10.1,4.125)}{anchor=south, at={(9.25,4.175)}}{supervisor}
+  \trans{\sReady}{0}{(13.0,4.125) -- (14.4,4.125)}{anchor=south, at={(13.7,4.175)}}{gateway}
+
+  % the lower row: Error under Provisioning, Deleting under the hello, Stopped under Ready; y 1.0-2.4
+  \phase{err}{\sAfter}{low, minimum width=2.7cm, text width=2.4cm}{(6.95,1.7)}
+    {\textbf{Error}\\\dt{the backend reports a failure}}{}{1}
+  \phase{del}{\sAfter}{low, minimum width=3.3cm, text width=3.0cm}{(10.9,1.7)}
+    {\textbf{Deleting}\\\dt{removing the sandbox and its resources}}
+    {\textbf{Deleting}\\\dt{removing the sandbox and its resources}}{0}
+  \phase{stop}{\sAfter}{low, minimum width=2.7cm, text width=2.42cm}{(15.05,1.7)}
+    {\textbf{Stopped}\\\dt{compute stopped; record kept}}{}{1}
+
+  \trans{\sAfter}{1}{(6.95,2.95) -- (6.95,2.4)}{anchor=west, at={(7.03,2.675)}}{driver}
+  \trans{\sAfter}{1}{(14.95,2.95) -- (14.95,2.4)}{anchor=east, at={(14.87,2.675)}}{stop}
+  \trans{\sAfter}{1}{(15.6,2.4) -- (15.6,2.95)}{anchor=west, at={(15.68,2.675)}}{start}
+  \trans{\sAfter}{0}{(14.4,3.2) -- (12.55,2.15)}{anchor=center, at={(13.125,1.9)}}{delete}
+  % the delete from Stopped shares the label of the delete from Ready, so it draws only its arrow
+  \ifnum\stage<\sAfter \draw[ghflow] (13.7,1.45) -- (12.55,1.45);\fi
+  \ifnum\stage=\sAfter \draw[newflow] (13.7,1.45) -- (12.55,1.45);\fi
+  \ifnum\stage>\sAfter \draw[ghflow] (13.7,1.45) -- (12.55,1.45);\fi
+
+  % the note (stage 5), under the record, left of Error
+  \atstage{\sAfter}{\node[note, anchor=west] at (0.05,1.45)
+    {\textbf{Ready:} the supervisor talked back.\\It does not say the agent works.};}
+
+  % in action: the captured lines of openshell sandbox list, under the diagram
+  \ifnum\stage=\sAction
+    \node[font=\ttfamily\footnotesize, anchor=south east, align=left, inner sep=1pt] (list) at (16.4,0.05)
+      {\textcolor{deckGrey}{NAME~~~~~~~CREATED~~~~~~~~~~~~~~PHASE}\\
+       \textcolor{deckNavy}{cyberbird~~2026-10-16~02:42:20~~Ready}};
+    \node[note, anchor=east] at ([xshift=-0.15cm]list.west) {\texttt{openshell sandbox list}, after the create:};
+  \fi
+\end{tikzpicture}%

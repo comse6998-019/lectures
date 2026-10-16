@@ -1,0 +1,108 @@
+% three-needs: what an agent needs from the machine, one need per click, then where a rule can sit, then Cyberbird. For build 1 of the
+% OpenShell segment, "The agent needs the machine for three things." (Task 4.6, step 1, item 1).
+% Shows: an agent (a model that chooses, a program that acts) at the left; three kinds of request (files, processes, connections) as
+% three arrows into the kernel at the right, each labelled with the system calls it becomes and, under the arrow, an example of what it
+% reaches; a dashed line just before the kernel where a rule can sit below the program; and, on the last stage, the same picture for
+% Cyberbird. Order inside the build (Rahul, 2026-10-15, 22:50): the abstract figure first (stages 1 to 4, a generic agent), Cyberbird
+% as the real-world instance last (stage 5).
+% Canvas 16.5 x 5.8 cm (\useasboundingbox), the slide column at about 1:1; box text 9 pt, labels and notes 8 pt.
+% Stages:
+%   1 The frame: the agent, the kernel, and the first arrow, "files" (open(), read(), write()), with "the repository, the key, the
+%     workspace" under it. The two other arrows are dashed ghosts, so the three channels are reserved from the start.
+%   2 The second arrow, "processes" (fork(), execve()), with "the shell, Python, a scanner".
+%   3 The third arrow, "connections" (connect()), with "the model's API, GitHub, anything".
+%   4 The dashed line between the agent and the kernel, "where a rule can sit below the program".
+%   5 In action: the agent box becomes cyberbird, and the three examples become BenchmarkTest00283.py, helpers/ and its workspace copy;
+%     python and bandit on submit; the model server. The heading turns from "the general case" to "in action: Cyberbird".
+% Sources. The agent as "a model that chooses, a program that acts": the brief; the guide's 1 ("An AI agent combines a model with a
+% program that can perform actions. The model selects a command; a process executes it.") and 1.1 (kernel, system call: "open()
+% requests a file; connect() requests a connection"). The kernel "decides every request": 1.1 ("Linux decides whether a process can
+% open a file") and 7.1 ("Restrictions on these operations constrain execution even when an agent attempts a forbidden action"). The
+% three needs and their examples: the brief (item 1 of build 1) and the guide's 1 ("Starting a shell, running Python, reading a
+% repository, installing a package, and calling an API all require operations that the operating system controls") and 1.2 ("filesystem
+% access, process creation, and selected network access"). The system calls fork() and execve() for process creation: the brief;
+% the guide's 7.1 names "starting another process" as a system call without naming them. The line, "where a rule can sit below the
+% program": the brief; the guide's 7.1 (restrictions on kernel operations) and 1.2 (a prompt asking the model to avoid the file is a
+% separate, weaker mechanism). Stage 5: the brief's running example (Cyberbird's reactive agent on alert bc284c6b; the case file
+% testcode/BenchmarkTest00283.py and the helpers/ folder it may search, both read from a disposable copy in its workspace; python
+% running the agent and bandit on submit; the model server, reached through OPENAI_BASE_URL).
+% Illustrative: the examples under the first two arrows ("the key", "a scanner") name kinds, not a captured trace; stage 5 prints no
+% captured line.
+% Left out on purpose: everything about OpenShell itself (components, policy), which the next builds draw; no arrow back from the
+% kernel, because this figure shows what the agent asks for and where a rule can sit, and results are not the point.
+% Colour: no magenta (no adversary). The newest element (an arrow, then the line) is navy at 1.6 pt with its word in bold navy and
+% settles on the next stage to the regular arrow and black; ghosts are dashed light grey; on stage 5 the instance names are navy
+% (bold for words, \instt for typewriter names, which have no bold face; the same convention as components and gateway-authority).
+% Nothing moves: both boxes have fixed size and outer sep 0, so each arrow starts and ends exactly on a box edge.
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \useasboundingbox (0,0) rectangle (16.5,5.8);
+  \hyphenpenalty=10000 \exhyphenpenalty=10000 \frenchspacing
+  \def\sFiles{1}\def\sProc{2}\def\sConn{3}\def\sLine{4}\def\sAction{5}
+  % geometry: agent x 0.1 to 4.3, kernel x 11.9 to 16.4, both y 0.5 to 4.95; the rule line at x 11.1; arrows at y 4.2, 2.7, 1.2
+  \def\xa{4.3}\def\xk{11.9}\def\xz{11.1}\def\xm{7.7}
+  \tikzset{
+    ghflow/.style={-{Stealth[length=2.2mm]}, thick, draw=ibmfg!25, dashed},
+    newflow/.style={-{Stealth[length=2.2mm]}, line width=1.6pt, draw=deckNavy},
+  }
+  % \inst{text}: an instance line of stage 5, in navy
+  \newcommand{\inst}[1]{\textcolor{deckNavy}{\bfseries #1}}
+  % \instt{text}: an instance name set in typewriter, navy; the typewriter face has no bold, so it is never asked for one
+  \newcommand{\instt}[1]{\textcolor{deckNavy}{\texttt{#1}}}
+  % \need{stage}{y}{kind}{system calls}{example}{example in action}: ghost before its stage, newest on it, settled after it
+  \newcommand{\need}[6]{%
+    \ifnum\stage<#1
+      \draw[ghflow] (\xa,#2) -- (\xk,#2);
+    \else
+      \ifnum\stage=#1
+        \draw[newflow] (\xa,#2) -- (\xk,#2);
+        \node[lab, anchor=south, inner sep=2pt] at (\xm,#2+0.04) {\textcolor{deckNavy}{\textbf{#3}}\quad\texttt{#4}};
+      \else
+        \draw[flow] (\xa,#2) -- (\xk,#2);
+        \node[lab, anchor=south, inner sep=2pt] at (\xm,#2+0.04) {\textbf{#3}\quad\texttt{#4}};
+      \fi
+      \ifnum\stage<\sAction
+        \node[lab, anchor=north, inner sep=2pt, text width=6.4cm] at (\xm,#2-0.06) {#5};
+      \else
+        \node[lab, anchor=north, inner sep=2pt, text width=6.4cm] at (\xm,#2-0.06) {#6};
+      \fi
+    \fi}
+
+  % heading
+  \ifnum\stage<\sAction
+    \node[lab, anchor=west, text=deckGrey] at (0.05,5.6) {the general case};
+  \else
+    \node[zonelab, anchor=west, inner sep=1pt] at (0.05,5.6) {in action: Cyberbird};
+  \fi
+
+  % the agent and the kernel: fixed size, outer sep 0, so an arrow ends exactly on a box edge
+  \ifnum\stage<\sAction
+    \node[mnode, minimum width=4.2cm, minimum height=4.45cm, text width=3.4cm, outer sep=0pt] at (2.2,2.725)
+      {\textbf{agent}\\a model that chooses,\\a program that acts};
+  \else
+    \node[mnode, minimum width=4.2cm, minimum height=4.45cm, text width=3.4cm, outer sep=0pt] at (2.2,2.725)
+      {\instt{cyberbird}\\works Bandit alert\\\instt{bc284c6b}};
+  \fi
+  \node[rnode, minimum width=4.5cm, minimum height=4.45cm, text width=4.1cm, outer sep=0pt] at (14.15,2.725)
+    {\textbf{the kernel}\\decides every request};
+
+  % the three needs
+  \need{\sFiles}{4.2}{files}{open(), read(), write()}
+    {the repository, the key, the workspace}
+    {\instt{BenchmarkTest00283.py}, \instt{helpers/},\\\inst{its workspace copy}}
+  \need{\sProc}{2.7}{processes}{fork(), execve()}
+    {the shell, Python, a scanner}
+    {\instt{python}, \instt{bandit} on submit}
+  \need{\sConn}{1.2}{connections}{connect()}
+    {the model's API, GitHub, anything}
+    {\inst{the model server}}
+
+  % the line where a rule can sit
+  \ifnum\stage=\sLine
+    \draw[deckNavy, dashed, line width=1.6pt] (\xz,0.25) -- (\xz,5.1);
+    \node[zonelab, anchor=south] at (\xz,5.1) {where a rule can sit below the program};
+  \fi
+  \ifnum\stage>\sLine
+    \draw[deckNavy, dashed, thick] (\xz,0.25) -- (\xz,5.1);
+    \node[zonelab, anchor=south] at (\xz,5.1) {where a rule can sit below the program};
+  \fi
+\end{tikzpicture}%

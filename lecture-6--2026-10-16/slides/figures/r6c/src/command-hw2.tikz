@@ -1,0 +1,186 @@
+% command-hw2: the four commands the homework uses, first as the abstract shape of `sandbox create`, then each real command taken apart
+% flag by flag with Cyberbird's names. For build 15 of the OpenShell segment, "The commands HW2 uses." (Task 4.6, step 1, item 7).
+% Shows: every command as one or two lines of token boxes (fixed words in black, the operator's values in navy), a short callout from
+% each token, the part after the double dash set apart as the workload's command, and under the command the lines it printed in the
+% recorded Cyberbird run. A line of four names at the top right says which command the stage is on. Order inside the build (Rahul,
+% 2026-10-15, 22:50): the abstract shape first (stage 1, generic names), the real commands with Cyberbird's names after it.
+% Canvas 16.5 x 5.8 cm (\useasboundingbox), the slide column at about 1:1; token text 9 pt typewriter, callouts and notes 8 pt,
+% printed lines 8 pt typewriter.
+% Stages:
+%   1 The shape: `openshell sandbox create --name <sandbox> --from <image> --policy <file> --provider <instance> -- <command>` as token
+%     boxes in two lines, the five placeholders in navy, a callout under each placeholder ("its name", "the image with the agent
+%     inside", "the policy document", "a provider instance", "the workload's command"), `--provider <instance>` dashed because it is
+%     optional, `-- <command>` in the dashed lilac box that marks the workload's command, and a note: flags before the double dash are
+%     the operator's, everything after it is the workload's.
+%   2 `sandbox create`, the real command: --name cyberbird, --from cyberbird:1, --detach, --policy cyberbird-policy.yaml,
+%     --no-auto-providers, `-- sleep infinity`; each with its callout; under it the two lines the command printed that name the new
+%     sandbox and its container.
+%   3 `sandbox exec`: -n cyberbird, --no-login-shell, --no-tty, `-- cyberbird reactive --alert-id bc284c6b --model openai:qwen3.8-27b`;
+%     under it the two lines the run printed.
+%   4 `logs`: the sandbox, --source sandbox, --since 10m; under it two events from the capture: the denial of pypi.org:443 and the
+%     allowed call to the model server, by the same binary.
+%   5 `policy get`: the sandbox and --full; under it the head and the network rule of the policy it printed, and the note that no
+%     provider is attached, so the effective policy holds no provider rules (no `_provider_` key in policy-full.txt).
+% Sources.
+%   Flags: instructor-materials/hw2/feasibility/help-sandbox-create.txt, help-sandbox-exec.txt, help-logs.txt, help-policy-get.txt (all
+%     `openshell <command> --help` of openshell 0.1.4). create: `--name`, `--from` ("a container image reference"), `--policy` ("Path to
+%     a custom sandbox policy YAML file"), `--provider` ("Attach a configured credential provider ... Repeatable"), `--detach` ("Start
+%     the canonical main process without attaching to it"), `--no-auto-providers` ("Never auto-create providers; error if required
+%     providers are missing"); everything after `--` is `[COMMAND]...`. exec: `-n, --name`, `--no-login-shell` ("Run the command without
+%     sourcing shell login/profile startup files"), `--no-tty` ("Disable pseudo-terminal allocation"), `<COMMAND>...` "after `--`".
+%     logs: `[NAME]`, `--source` ("gateway", "sandbox", or "all" (default)), `--since` ("5m, 1h, 30s"). policy get: `[NAME]`, `--full`
+%     ("Include the effective policy payload, including provider-composed entries"), `--base` (not drawn).
+%   What the commands do: the guide's 4.3 (the record before the container, the driver provisions), 4.5 (exec: the gateway "allocates a
+%     relay channel and asks the supervisor to connect back"; "Output and exit status travel back as API events"), 13.3 (exec "starts an
+%     additional command"; the main process is another thing), 13.4 (logs carry "Policy decisions, configuration changes, process events,
+%     and runtime diagnostics", and "does not include the main process's ordinary output"), 10.4 (the base policy is the authored
+%     document; the effective policy is what enforcement gets after attached providers add their network rules; `policy get --base`,
+%     `--full`).
+%   The commands themselves are the ones the feasibility run executed, in instructor-materials/hw2/feasibility/cyberbird/: create.txt
+%     (`openshell sandbox create --name cyberbird --from cyberbird:1 --policy cyberbird-policy.yaml --no-auto-providers --detach --
+%     sleep infinity`, 22:42:20 EDT), run.txt (exec, 22:42:41), logs.txt (22:43:46) and policy-full.txt (22:44:08). The names are the
+%     brief's running example: sandbox cyberbird, image cyberbird:1, policy cyberbird-policy.yaml, `cyberbird reactive --alert-id
+%     bc284c6b`. The sandbox starts `sleep infinity` as its main process and Cyberbird is started by exec, as in the HW2 feasibility
+%     runs (hw2feas, hw2local), so the sandbox stays Ready for exec, logs and policy get.
+%   The printed lines are copied from those files without change: create.txt, the first and last lines of the output ("Created sandbox: cyberbird",
+%     "[0.1s] Starting sandbox Container created"; the lines between are left out); run.txt ("terminal status : accepted", "model calls
+%     : 8 of 40"); logs.txt, two events, `NET:OPEN [MED] DENIED /usr/local/bin/python3.12(0) -> pypi.org:443` and `NET:OPEN [INFO] ALLOWED
+%     /usr/local/bin/python3.12(0) -> host.lima.internal:8080`, each shortened at the right (an ellipsis marks the cut: the reason, and
+%     the policy and engine) and without the timestamp and source prefix; policy-full.txt ("Status: Effective", "Source: sandbox", the
+%     landlock lines and the head of network_policies).
+% Departures from the captured commands, all drawn in the figure or named here. (1) The capture put `--detach` last and `--policy`
+%     third; flags take any order, and the figure's order fills two lines. (2) The capture's exec also passed `--env OPENAI_BASE_URL=...`
+%     and `--env OPENAI_API_KEY=none`, because openshell 0.1.4 handed exec neither of the image's OPENAI_ values (preflight.txt: unset
+%     without the flags, set with them; PATH, also an image value, did arrive); the figure leaves those flags out and says so in a
+%     note. (3) The capture's model host was host.lima.internal, not the lecture's host.docker.internal
+%     (attempt-host-docker-internal.txt); the figure names no host except in the logs line, which is the capture's.
+% Illustrative: stage 1's generic names; nothing else.
+% Left out on purpose: the other create flags (`--provider` appears only in the shape, `--env`, `--upload`, `--forward`, `--cpu`), the
+%     other exec flags (`--workdir`, `--timeout`, `--env`), `logs --tail` and `--level`, `policy get --base`, `--rev`.
+% Colour: no magenta (no adversary). Navy marks the operator's own values (placeholders in stage 1, Cyberbird's names after it); the
+%     workload's command sits in the dashed navy box on lilac, the figure's one mark of the operator-workload line. Nothing is
+%     highlighted for newness: a stage replaces the whole command, so every token on it is equally new.
+% Nothing moves: the first line of tokens is at the same height on every stage, the second line (when a command has one) is at the same
+%     height on stages 1 to 3, and every callout hangs from its token's bottom edge by a leader of the same length.
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \useasboundingbox (0,0) rectangle (16.5,5.8);
+  \hyphenpenalty=10000 \exhyphenpenalty=10000 \frenchspacing
+  \def\ya{4.92}\def\yb{2.85}\def\g{0.4cm}
+  \tikzset{
+    tok/.style={gnode, font=\ttfamily\small, minimum height=0.72cm, inner sep=4pt, outer sep=0pt},
+    wl/.style={tok, draw=deckNavy, dashed, line width=0.9pt, fill=deckLilac!30},
+    opt/.style={tok, dashed},
+    leader/.style={{Circle[length=1.2mm]}-, draw=ibmfg!45, line width=0.6pt},
+    clab/.style={lab, anchor=north, fill=none},
+    strip/.style={anchor=north west, draw=ibmfg!35, fill=black!4, rounded corners=2pt, inner sep=4pt,
+                  text width=15.9cm, align=left, font=\ttfamily\footnotesize},
+    striplab/.style={anchor=north east, font=\sffamily\footnotesize, text=deckGrey, inner sep=1pt},
+  }
+  % \nv{text}: an operator's value, in navy
+  \newcommand{\nv}[1]{\textcolor{deckNavy}{#1}}
+  % \co{token}{text width}{text}: a callout hanging 0.38 cm under the token's bottom edge, on a leader
+  \newcommand{\co}[3]{\node[clab, text width=#2] (c#1) at ([yshift=-0.38cm]#1.south) {#3}; \draw[leader] (#1.south) -- (c#1.north);}
+  % \col{token}{text width}{text}: a callout whose left edge is the token's left edge; the leader drops straight to its top edge
+  \newcommand{\col}[3]{\node[clab, anchor=north west, align=left, text width=#2] (c#1) at ([yshift=-0.38cm]#1.south west) {#3};
+    \draw[leader] (#1.south) -- (#1.south |- c#1.north);}
+  % \printed{strip}: the label inside the top right corner of a strip
+  \newcommand{\printed}[1]{\node[striplab] at ([shift={(-0.2cm,-0.14cm)}]#1.north east) {printed (excerpt)};}
+  % the four-name line at the top right: the current command in bold navy
+  \newcommand{\chip}[1]{\ifnum\stage=#1 \bfseries\color{deckNavy}\fi}
+  \ifnum\stage>1
+    \node[lab, anchor=east, text=deckGrey] at (16.45,5.62)
+      {{\chip{2}create} \quad {\chip{3}exec} \quad {\chip{4}logs} \quad {\chip{5}policy get}};
+  \fi
+
+  % ---------- stage 1: the shape of sandbox create
+  \ifnum\stage=1
+    \node[lab, anchor=west, text=deckGrey] at (0.05,5.62) {the shape of \texttt{sandbox create}};
+    \node[tok, anchor=west] (a1) at (0.25,\ya) {openshell sandbox create};
+    \node[tok, right=\g of a1] (a2) {--name \nv{<sandbox>}};
+    \node[tok, right=\g of a2] (a3) {--from \nv{<image>}};
+    \node[tok, right=\g of a3] (a4) {--policy \nv{<file>}};
+    \node[opt, anchor=west] (b1) at (0.25,\yb) {--provider \nv{<instance>}};
+    \node[wl, right=\g of b1] (b2) {-- \nv{<command>}};
+    \co{a2}{3.0cm}{its name}
+    \co{a3}{3.0cm}{the image with the agent inside}
+    \co{a4}{3.0cm}{the policy document}
+    \co{b1}{3.8cm}{optional: a provider instance, for a credential}
+    \co{b2}{3.2cm}{the workload's command}
+    \node[note, anchor=north west, text width=15.9cm, draw=deckNavy, fill=deckLilac!30, rounded corners=2pt, inner sep=4pt, text=ibmfg]
+      (nb) at (0.25,1.12) {Before the double dash, the operator's flags, which OpenShell reads. After it, the workload's command,
+      which runs inside the sandbox.};
+  \fi
+
+  % ---------- stage 2: sandbox create
+  \ifnum\stage=2
+    \node[lab, anchor=west, text=deckGrey] at (0.05,5.62) {make the sandbox and start its workload};
+    \node[tok, anchor=west] (a1) at (0.25,\ya) {openshell sandbox create};
+    \node[tok, right=\g of a1] (a2) {--name \nv{cyberbird}};
+    \node[tok, right=\g of a2] (a3) {--from \nv{cyberbird:1}};
+    \node[tok, right=\g of a3] (a4) {--detach};
+    \node[tok, anchor=west] (b1) at (0.25,\yb) {--policy \nv{cyberbird-policy.yaml}};
+    \node[tok, right=\g of b1] (b2) {--no-auto-providers};
+    \node[wl, right=\g of b2] (b3) {-- \nv{sleep infinity}};
+    \co{a1}{4.4cm}{ask the gateway to create a sandbox}
+    \co{a2}{3.0cm}{its name; later commands refer to it}
+    \co{a3}{3.3cm}{the image with Cyberbird inside}
+    \co{a4}{3.0cm}{start the workload without attaching to it}
+    \co{b1}{5.0cm}{the policy document: what it may read, write and reach}
+    \co{b2}{3.5cm}{never create providers from local keys}
+    \co{b3}{4.2cm}{the workload's command: it only keeps the sandbox alive}
+    \node[strip] (st) at (0.25,1.18) {Created sandbox: cyberbird\\ {[0.1s]} Starting sandbox Container created};
+    \printed{st}
+  \fi
+
+  % ---------- stage 3: sandbox exec
+  \ifnum\stage=3
+    \node[lab, anchor=west, text=deckGrey] at (0.05,5.62) {run one more command inside it};
+    \node[tok, anchor=west] (a1) at (0.25,\ya) {openshell sandbox exec};
+    \node[tok, right=\g of a1] (a2) {-n \nv{cyberbird}};
+    \node[tok, right=\g of a2] (a3) {--no-login-shell};
+    \node[tok, right=\g of a3] (a4) {--no-tty};
+    \node[wl, anchor=west] (b1) at (0.25,\yb) {-- \nv{cyberbird reactive --alert-id bc284c6b --model openai:qwen3.8-27b}};
+    \co{a1}{4.2cm}{start one more command in the running sandbox}
+    \co{a2}{2.5cm}{the sandbox to run it in}
+    \co{a3}{3.5cm}{no shell start-up files run before the command}
+    \co{a4}{2.4cm}{no terminal: plain pipes}
+    \co{b1}{11.0cm}{the workload's command: the supervisor opens a relay back to the gateway, Cyberbird runs inside, and its output returns the same way}
+    \node[note, anchor=north west, text width=4.1cm] at (12.25,3.21) {Exec did not get the image's\\ \texttt{OPENAI\_BASE\_URL} and\\ \texttt{OPENAI\_API\_KEY}, so the\\ recorded run passed them\\ with \texttt{--env}.};
+    \node[strip] (st) at (0.25,1.18) {terminal status~: accepted\\ model calls~~~~~: 8 of 40};
+    \printed{st}
+  \fi
+
+  % ---------- stage 4: logs
+  \ifnum\stage=4
+    \def\g{0.9cm}
+    \node[lab, anchor=west, text=deckGrey] at (0.05,5.62) {read the sandbox's events};
+    \node[tok, anchor=west] (a1) at (0.25,\ya) {openshell logs};
+    \node[tok, right=\g of a1] (a2) {\nv{cyberbird}};
+    \node[tok, right=\g of a2] (a3) {--source \nv{sandbox}};
+    \node[tok, right=\g of a3] (a4) {--since \nv{10m}};
+    \co{a1}{3.2cm}{events, not the workload's output}
+    \co{a2}{2.4cm}{the sandbox}
+    \co{a3}{4.6cm}{only events from inside it: connection decisions, policy loads}
+    \co{a4}{2.9cm}{only the last ten minutes}
+    \node[strip] (st) at (0.25,2.95) {NET:OPEN {[MED]} DENIED /usr/local/bin/python3.12(0) -> pypi.org:443 ...\\
+      NET:OPEN {[MED]} DENIED /usr/bin/curl(0) -> host.lima.internal:8080 ...\\
+      NET:OPEN {[INFO]} ALLOWED /usr/local/bin/python3.12(0) -> host.lima.internal:8080 ...};
+    \printed{st}
+    \node[note, anchor=north west, text width=15.9cm] at (0.25,1.55) {The policy admits a binary together with a destination: python3.12 may reach the model server, curl may not.};
+  \fi
+
+  % ---------- stage 5: policy get
+  \ifnum\stage=5
+    \def\g{0.9cm}
+    \node[lab, anchor=west, text=deckGrey] at (0.05,5.62) {read the policy in force};
+    \node[tok, anchor=west] (a1) at (0.25,\ya) {openshell policy get};
+    \node[tok, right=\g of a1] (a2) {\nv{cyberbird}};
+    \node[tok, right=\g of a2] (a3) {--full};
+    \co{a1}{3.8cm}{show the policy the sandbox enforces now}
+    \co{a2}{2.4cm}{the sandbox}
+    \col{a3}{6.0cm}{the effective policy in full: the base document plus the rules that attached providers add}
+    \node[strip, text width=8.6cm] (st) at (0.25,2.95) {Status:~~~~~~~Effective\\ Source:~~~~~~~sandbox\\ ...\\ landlock:\\ ~~compatibility: hard\_requirement\\ network\_policies:\\ ~~model\_server:\\ ~~~~...};
+    \printed{st}
+    \node[note, anchor=north west, text width=6.4cm] at (9.45,2.95) {No provider is attached to this sandbox, so the effective policy holds no provider rules.};
+  \fi
+\end{tikzpicture}%

@@ -1,0 +1,120 @@
+% components: the five components of OpenShell around the untrusted workload, one per click, then Cyberbird in them. For build 2,
+% "Five components, one job each." The drawing is the guide's Figure 1 (openshell/openshell-figures/architecture.tikz, "Component
+% placement on the standard Linux path", the overview Rahul showed): the same seven boxes in the same places (the control plane on
+% the upper row: Client, Gateway, Compute driver; the lower row: Agent and tools and Sandbox runtime inside the dashed untrusted
+% workload, Trusted supervisor, Approved external service), the same arrows with the same heads (two one-way flows on the upper row,
+% one into the runtime, two two-way flows on the lower row, the dashed return from the supervisor up to the gateway) and the same
+% labels, in this deck's style and lower case for the labels.
+% Canvas 16.5 x 5.8 cm (\useasboundingbox), the slide column at about 1:1; box text 9 pt, labels and notes 8 pt.
+% Stages (Task 4.6, step 1, item 2): the abstract concept first, Cyberbird last.
+%   1 Client highlighted, with "management requests" toward the gateway (bullet 1 names them); the agent in its untrusted workload
+%     is the frame, drawn from stage 1; every other component a ghost.
+%   2 Gateway highlighted, with its unlabelled arrow to the compute driver (it hands configuration to drivers).
+%   3 Compute driver highlighted, with "provisions workload and supervisor placement" and the note defining placement.
+%   4 Sandbox runtime highlighted, with the arrow from the agent and tools into it.
+%   5 Trusted supervisor highlighted, with "authenticated runtime channel" (from the runtime) and "supervisor-initiated control
+%     session" (up to the gateway).
+%   6 Approved external service highlighted, with "permitted traffic and responses".
+%   7 In action: no highlight; the heading becomes "in action: Cyberbird" and the instance lines turn navy: the client "Rahul's
+%     terminal", the agent and tools "cyberbird and bandit", the driver "Docker on Colima", the service "the model server", and
+%     a note under the supervisor, "admits only the model server".
+% Sources. Box texts, arrow labels and "Standard Linux path": architecture.tikz at commit be7af99 of the guide's figures, verbatim
+% but for case and line breaks ("Provisions workload and supervisor placement." loses its capital and full stop; "Sandbox runtime"
+% takes one line, so the lower row is three lines tall). The placement note: the brief's
+% definition (Task 4.6, item 2), consistent with the guide's 6.3 ("Boundary and supervisor placement": separate containers on Docker,
+% separate Pods on Kubernetes, a host supervisor beside a microVM) and 7.2 (the driver "creates containers or a VM, places the
+% supervisor"). Stage 7: the brief's running example (Cyberbird, `uv run cyberbird reactive`, Bandit on submit, the model server
+% reached through OPENAI_BASE_URL, Colima's Docker; the supervisor admits only the model server under cyberbird-policy.yaml).
+% Illustrative: nothing; stage 7 names the brief's setup and prints no captured line.
+% Left out on purpose: the guide's Windows MXC exception (2.3), which the heading "standard Linux path" fences off; the isolation
+% backend (6.1), which the guide's figure does not draw; an arrow from the driver, which the guide's figure does not draw either
+% (its "provisions" text is a free label under the driver, and stays one here).
+% Placement of labels: the guide sets both lower-row labels under the row; here "authenticated runtime channel" sits above its
+% arrow and "permitted traffic and responses" under its arrow, so stage 7's note under the supervisor has the space below the row.
+% The placement note is right-aligned under the driver's label and runs left over the gap, two lines, clear of the service.
+% Colour: no magenta (no adversary). The highlighted component carries the style's hl outline (navy, 1.6 pt); the ones already
+% reached keep the guide's fills; the ones not reached are dashed ghosts with their text in light grey; an arrow is a ghost until
+% the stage that brings it. Nothing moves: every box has a fixed text width and height, so no stage changes a box's size.
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \useasboundingbox (0,0) rectangle (16.5,5.8);
+  \hyphenpenalty=10000 \exhyphenpenalty=10000 \frenchspacing
+  % the stage on which each component is highlighted, and the in-action stage
+  \def\sClient{1}\def\sGateway{2}\def\sDriver{3}\def\sRuntime{4}\def\sSuper{5}\def\sService{6}\def\sAction{7}
+  \tikzset{
+    ghostbox/.style={draw=ibmfg!25, text=ibmfg!35, fill=white, dashed},
+    ghflow/.style={-{Stealth[length=2.2mm]}, thick, draw=ibmfg!25, dashed},
+    ghflow2/.style={{Stealth[length=2.2mm]}-{Stealth[length=2.2mm]}, thick, draw=ibmfg!25, dashed},
+    flow2/.style={flow, {Stealth[length=2.2mm]}-{Stealth[length=2.2mm]}},
+    % outer sep 0: an anchor sits on the outline's centre whatever its width, so a highlight moves no arrow
+    toprow/.style={minimum height=1.45cm, outer sep=0pt},
+    botrow/.style={minimum height=1.45cm, outer sep=0pt},
+    alab/.style={lab, font=\sffamily\footnotesize},
+  }
+  % \inst{text}: an instance line of stage 7, in navy
+  \newcommand{\inst}[1]{\textcolor{deckNavy}{\bfseries #1}}
+  % \comp{name}{stage}{style}{geometry}{(x,y)}{generic text}{in-action text}: a ghost before its stage, highlighted on it,
+  % its own style after it; on the in-action stage it prints the in-action text
+  \newcommand{\comp}[7]{%
+    \ifnum\stage<#2 \node[#3, #4, ghostbox] (#1) at #5 {#6};\fi
+    \ifnum\stage=#2 \node[#3, #4, hl] (#1) at #5 {#6};\fi
+    \ifnum\stage>#2 \ifnum\stage<\sAction \node[#3, #4] (#1) at #5 {#6};\fi\fi
+    \ifnum\stage=\sAction \node[#3, #4] (#1) at #5 {#7};\fi}
+  % \link{style}{ghost style}{stage}{path}: an arrow, a ghost before its stage
+  \newcommand{\link}[4]{\ifnum\stage<#3 \draw[#2] #4;\else \draw[#1] #4;\fi}
+
+  % heading
+  \ifnum\stage<\sAction
+    \node[lab, anchor=west, text=deckGrey] at (0.05,5.6) {standard Linux path};
+  \else
+    \node[zonelab, anchor=west, inner sep=1pt] at (0.05,5.6) {in action: Cyberbird};
+  \fi
+
+  % columns: A client and agent (0.2 to 2.95), B runtime (3.27 to 6.12), C gateway and supervisor (8.25 to 11.88), D driver and
+  % service (13.45 to 16.45); rows: the control plane at y 4.575, the workload row at y 1.35
+  % the upper row: the control plane
+  \comp{client}{\sClient}{gnode}{toprow, minimum width=2.75cm, text width=2.47cm}{(1.575,4.575)}
+    {\textbf{Client}\\CLI / TUI / SDK}{\textbf{Client}\\\inst{Rahul's terminal}}
+  \comp{gateway}{\sGateway}{mnode}{toprow, minimum width=3.63cm, text width=3.35cm}{(10.065,4.575)}
+    {\textbf{Gateway}\\Identity and records\\Configuration}{\textbf{Gateway}\\Identity and records\\Configuration}
+  \comp{driver}{\sDriver}{gnode}{toprow, minimum width=3.0cm, text width=2.72cm}{(14.95,4.575)}
+    {\textbf{Compute driver}\\Platform provisioning}{\textbf{Compute driver}\\\inst{Docker on Colima}}
+
+  % the lower row: the untrusted workload, the supervisor, the service
+  \draw[zone] (0.05,0.475) rectangle (6.22,2.325);
+  \node[zonelab, anchor=east] at (6.07,2.325) {untrusted workload};
+  % the agent and tools are the frame: drawn from stage 1, never highlighted
+  \ifnum\stage<\sAction
+    \node[rnode, botrow, minimum width=2.75cm, text width=2.47cm] (agent) at (1.575,1.35)
+      {\textbf{Agent and tools}\\Workload\\processes};
+  \else
+    \node[rnode, botrow, minimum width=2.75cm, text width=2.47cm] (agent) at (1.575,1.35)
+      {\textbf{Agent and tools}\\\inst{\texttt{cyberbird}}\\\inst{and \texttt{bandit}}};
+  \fi
+  \comp{runtime}{\sRuntime}{rnode}{botrow, minimum width=2.85cm, text width=2.6cm}{(4.695,1.35)}
+    {\textbf{Sandbox runtime}\\Process control\\Mediation}{\textbf{Sandbox runtime}\\Process control\\Mediation}
+  \comp{super}{\sSuper}{mnode}{botrow, minimum width=3.63cm, text width=3.35cm}{(10.065,1.35)}
+    {\textbf{Trusted supervisor}\\Policy and credentials\\Upstream connections}{\textbf{Trusted supervisor}\\Policy and credentials\\Upstream connections}
+  \comp{service}{\sService}{tnode}{minimum width=3.0cm, minimum height=1.45cm, text width=2.6cm, inner xsep=-0.35cm, outer sep=0pt, align=center}{(14.95,1.35)}
+    {Approved\\external service}{\inst{the model server}}
+
+  % arrows on the upper row
+  \link{flow}{ghflow}{\sClient}{(client.east) -- (gateway.west)}
+  \atstage{\sClient}{\node[alab, above=3pt] at ($(client.east)!0.5!(gateway.west)$) {management requests};}
+  \link{flow}{ghflow}{\sGateway}{(gateway.east) -- (driver.west)}
+  \atstage{\sDriver}{%
+    \node[alab, anchor=north] at (14.9,3.8) {provisions workload and\\supervisor placement};
+    \node[note, anchor=north east, text width=5.0cm, align=right, inner sep=0pt] at (16.45,2.98)
+      {placement: on which host or node the workload and its supervisor run};}
+
+  % arrows on the lower row
+  \link{flow}{ghflow}{\sRuntime}{(agent.east) -- (runtime.west)}
+  \link{flow2}{ghflow2}{\sSuper}{(runtime.east) -- (super.west)}
+  \atstage{\sSuper}{\node[alab, anchor=south] at (7.25,1.46) {authenticated\\runtime\\channel};}
+  \link{back}{ghflow}{\sSuper}{(super.north) -- (gateway.south)}
+  \atstage{\sSuper}{\node[alab, anchor=east] at (9.9,3.15) {supervisor-initiated\\control session};}
+  \link{flow2}{ghflow2}{\sService}{(super.east) -- (service.west)}
+  \atstage{\sService}{\node[alab, anchor=north] at (12.665,1.24) {permitted\\traffic and\\responses};}
+
+  % in action: the supervisor's rule for Cyberbird
+  \atstage{\sAction}{\node[font=\sffamily\footnotesize, anchor=north, inner sep=1pt] at (9.9,0.44) {\inst{admits only the model server}};}
+\end{tikzpicture}%

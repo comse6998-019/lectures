@@ -1,0 +1,53 @@
+note: Running TeX ...
+warning: accessing absolute path `/dev/null`; build may not be reproducible in other environments
+warning: open of input /dev/null.tex failed
+caused by: access to the path `/dev/null.tex` is forbidden
+warning: open of input /dev/null.tex failed
+caused by: access to the path `/dev/null.tex` is forbidden
+warning: plex-sans.sty:125: 
+Requested font "[IBMPlexSans-Regular.otf]/OT" at 9.99997pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Regular.otf]/OT" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Bold.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Italic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-BoldItalic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Regular.otf]/OT" at 9.99997pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Regular.otf]/OT" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Regular.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Bold.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Italic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-BoldItalic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: gateway-authority-1.tex:3: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 10.0pt
+warning: gateway-authority.tikz:73: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 8.0pt
+warning: gateway-authority.tikz:81: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 9.0pt
+warning: gateway-authority.tikz:81: Requested font "[IBMPlexSans-Bold.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 9.0pt
+warning: gateway-authority.tikz:92: Requested font "[IBMPlexSans-Bold.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 8.0pt
+warning: gateway-authority.tikz:92: Underfull \hbox (badness 1406) in paragraph at lines 92--92
+note: Rerunning TeX because "gateway-authority-1.aux" changed ...
+warning: open of input /dev/null.tex failed
+caused by: access to the path `/dev/null.tex` is forbidden
+warning: open of input /dev/null.tex failed
+caused by: access to the path `/dev/null.tex` is forbidden
+warning: plex-sans.sty:125: 
+Requested font "[IBMPlexSans-Regular.otf]/OT" at 9.99997pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Regular.otf]/OT" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Bold.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-Italic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:125: Requested font "[IBMPlexSans-BoldItalic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Regular.otf]/OT" at 9.99997pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Regular.otf]/OT" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Regular.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Bold.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-Italic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: plex-sans.sty:144: Requested font "[IBMPlexSansCondensed-BoldItalic.otf]/OT:script=latn;language=dflt;" at 10.00003pt
+warning: gateway-authority-1.tex:3: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 10.0pt
+warning: gateway-authority.tikz:73: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 8.0pt
+warning: gateway-authority.tikz:81: Requested font "[IBMPlexSans-Regular.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 9.0pt
+warning: gateway-authority.tikz:81: Requested font "[IBMPlexSans-Bold.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 9.0pt
+warning: gateway-authority.tikz:92: Requested font "[IBMPlexSans-Bold.otf]/OT:script=latn;language=dflt;mapping=tex-text;" at 8.0pt
+warning: gateway-authority.tikz:92: Underfull \hbox (badness 1406) in paragraph at lines 92--92
+warning: warnings were issued by the TeX engine; use --print and/or --keep-logs for details.
+note: Running xdvipdfmx ...
+note: Writing `build/gateway-authority-1.pdf` (8.302734375 KiB)
+note: Skipped writing 1 intermediate files (use --keep-intermediates to keep them)

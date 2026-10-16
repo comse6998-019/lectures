@@ -1,0 +1,142 @@
+% gateway-authority: what the gateway checks before it writes a record, one check per click, then Cyberbird's create. For build 4,
+% "The gateway holds the authority and the records." Task 4.6, step 1, item 4. The abstract concept first (stages 1 to 4), the
+% instance last (stage 5).
+% Canvas 16.5 x 5.8 cm (\useasboundingbox), the slide column at about 1:1; box text 9 pt, labels and notes 8 pt.
+% Stages:
+%   1 A request (a method on an object) enters the Gateway, a tall box, and meets gate 1, "who": an OIDC token, a client key, or
+%     a supervisor's runtime credential. Gates 2 and 3, the store and the reconcile loop are ghosts.
+%   2 Gate 2, "what": the method's declared permission (principal kind, scope, role).
+%   3 Gate 3, "which": the workspace and the object.
+%   4 The store, "conditional update by resource version", with the write arrow to it, and the reconcile loop back to the gateway:
+%     desired against observed, leases, inventory sweep.
+%   5 In action: the request reads "sandbox create cyberbird"; gate 1 "Rahul's client key" with the captured status line; gate 2
+%     "CreateSandbox declares user, scope sandbox:write, role workspace user"; gate 3 "workspace default, object cyberbird"; the store holds
+%     the record, resource version 14 at Ready; the loop compares the record with its container; a note on the supervisor's
+%     own credential.
+% Sources (all labels checked against the guide's chapter 5, commit be7af99):
+%   Gate 1 (5.1): "Authentication verifies who is calling"; OIDC tokens and mutual TLS identify users; the authentication chain
+%     in 5.1 and the supervisor's own credentials in 5.3 ("A supervisor does not reuse the user's OIDC token or client private
+%     key. On Docker, Podman, and VM, its initial authentication is delivered through protected runtime material").
+%   Gate 2 (5.2): "allowed principal kind, required scope, and role"; the table of roles there is Platform Admin, Workspace Admin,
+%     Workspace User, and the last is the one with "Creating and using sandboxes". Passing the method check authorizes no object.
+%   Gate 3 (5.2): "Handlers then check the selected workspace and object"; the CLI's --workspace defaults to "default"
+%     (help-sandbox-create.txt, GLOBAL FLAGS).
+%   Store (5.4): resource version, compare-and-swap; the first write of a new sandbox uses MustCreate (4.3).
+%   Loop (5.5, 5.6): reconciliation compares durable records with backend resources; the inventory sweep runs every minute; a
+%     renewable lease gives the reconciliation role to one replica.
+% Captured lines in stage 5 (instructor-materials/hw2/feasibility): "Authentication: Authenticated (mTLS transport)" is a line of
+% `openshell status` on Rahul's gateway (results.md, "Gateway check"); "Resource version: 14" is a line of
+% `openshell sandbox get cyberbird` after the run, at Ready (cyberbird/sandbox-record.txt).
+% Rulings against the brief's wording (recorded in the report): gate 2's "user, scope sandbox, role writer" becomes what the
+%   gateway's own proto declares for rpc CreateSandbox at commit be7af99 (proto/openshell.proto line 48: auth_mode "bearer",
+%   scope "sandbox:write", workspace_role "user"), so "user, scope sandbox:write, role workspace user", the guide's name for the
+%   role that creates sandboxes (5.2); "record cyberbird, revision 1" becomes the captured "resource version 14 at Ready"
+%   ("revision" in OpenShell names a policy revision, and nothing captured shows version 1). Text under 8 pt is avoided: the
+%   captured status line is set in 8 pt typewriter.
+% Colour: no magenta (no adversary). The gate being explained carries the style's hl outline; gates already reached keep their
+% navy numbers; the ones not reached are dashed ghosts with their text in light grey. Nothing moves between stages: every box
+% has a fixed size.
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \useasboundingbox (0,0) rectangle (16.5,5.8);
+  \hyphenpenalty=10000 \exhyphenpenalty=10000 \frenchspacing
+  \def\sAction{5}
+  \tikzset{
+    ghostbox/.style={draw=ibmfg!25, text=ibmfg!35, fill=white, dashed},
+    ghflow/.style={-{Stealth[length=2.2mm]}, thick, draw=ibmfg!25, dashed},
+    ghnum/.style={circle, draw=ibmfg!25, text=ibmfg!35, fill=white, dashed, inner sep=0pt, minimum size=4.6mm,
+                  font=\sffamily\footnotesize\bfseries},
+    gtext/.style={font=\sffamily\footnotesize, anchor=west, text width=5.65cm, inner sep=1pt, align=left},
+    solid/.style={outer sep=0pt},
+  }
+  % \inst{text}: an instance line of stage 5, in navy
+  \newcommand{\inst}[1]{\textcolor{deckNavy}{\bfseries #1}}
+  % \link{style}{ghost style}{stage}{path}: an arrow, a ghost before its stage
+  \newcommand{\link}[4]{\ifnum\stage<#3 \draw[#2] #4;\else \draw[#1] #4;\fi}
+  % \gate{k}{y}{generic text}{in-action text}: the numbered circle and its text on the row at height y; a ghost before stage k,
+  % outlined on stage k, plain after it; stage 5 prints the in-action text
+  \newcommand{\gate}[4]{%
+    \ifnum\stage<#1
+      \node[ghnum, solid] (g#1) at (4.15,#2) {#1};
+      \node[gtext, text=ibmfg!35] (t#1) at (4.5,#2) {#3};
+    \else
+      \node[evnum, solid] (g#1) at (4.15,#2) {#1};
+      \ifnum\stage=\sAction
+        \node[gtext] (t#1) at (4.5,#2) {#4};
+      \else
+        \node[gtext] (t#1) at (4.5,#2) {#3};
+      \fi
+    \fi
+    \ifnum\stage=#1 \draw[hl] (3.75,#2-0.58) rectangle (10.3,#2+0.58);\fi}
+
+  % heading
+  \ifnum\stage<\sAction
+    \node[lab, anchor=west, text=deckGrey] at (0.05,5.6) {a request to the gateway};
+  \else
+    \node[zonelab, anchor=west, inner sep=1pt] at (0.05,5.6) {in action: Cyberbird};
+  \fi
+
+  % the request, at the left, level with gate 1
+  \ifnum\stage<\sAction
+    \node[mnode, solid, minimum width=2.75cm, minimum height=1.2cm, text width=2.5cm] (req) at (1.425,4.1)
+      {\textbf{request}\\a method on an object};
+  \else
+    \node[mnode, solid, minimum width=2.75cm, minimum height=1.2cm, text width=2.5cm] (req) at (1.425,4.1)
+      {\textbf{request}\\\inst{sandbox create}\\\inst{cyberbird}};
+  \fi
+
+  % the gateway: a tall box with the three gates stacked inside
+  \node[rnode, solid, minimum width=6.8cm, minimum height=5.0cm] (gw) at (7.0,2.8) {};
+  \node[font=\sffamily\small\bfseries, anchor=north] at (7.0,5.22) {Gateway};
+
+  \gate{1}{4.1}{\textbf{who:} OIDC token, client key, or a supervisor's runtime credential}
+    {\textbf{who:} \inst{Rahul's client key}\\{\ttfamily\footnotesize\textcolor{deckGrey}{Authentication: Authenticated}}\\{\ttfamily\footnotesize\textcolor{deckGrey}{(mTLS transport)}}}
+  \gate{2}{2.8}{\textbf{what:} the method's declared permission (principal kind, scope, role)}
+    {\textbf{what:} \inst{CreateSandbox declares}\\\inst{user, scope sandbox:write,}\\\inst{role workspace user}}
+  \gate{3}{1.5}{\textbf{which:} the workspace and the object}
+    {\textbf{which:} \inst{workspace default,}\\\inst{object cyberbird}}
+
+  % the store, at the right, level with gate 3
+  \ifnum\stage<4
+    \node[gnode, solid, ghostbox, minimum width=4.4cm, minimum height=1.75cm, text width=4.1cm] (store) at (14.25,1.5)
+      {\textbf{store}\\conditional update\\by resource version};
+  \else
+    \ifnum\stage=\sAction
+      \node[gnode, solid, minimum width=4.4cm, minimum height=1.75cm, text width=4.1cm] (store) at (14.25,1.5)
+        {\textbf{store}\\record \inst{cyberbird}\\\inst{resource version 14}\\\inst{at Ready}};
+    \else
+      \node[gnode, solid, minimum width=4.4cm, minimum height=1.75cm, text width=4.1cm, hl] (store) at (14.25,1.5)
+        {\textbf{store}\\conditional update\\by resource version};
+    \fi
+  \fi
+
+  % arrows: the request in, down through the gates, the write out, the reconcile loop back
+  \link{flow}{ghflow}{1}{(req.east) -- (g1.west)}
+  \link{flow}{ghflow}{2}{(g1.south) -- (g2.north)}
+  \link{flow}{ghflow}{3}{(g2.south) -- (g3.north)}
+  \link{flow}{ghflow}{4}{(10.4,1.5) -- (store.west)}
+  \ifnum\stage<4
+    \draw[ghflow] (store.north) |- (10.4,3.6);
+  \else
+    \ifnum\stage=4
+      \draw[back, draw=deckNavy, line width=1.6pt] (store.north) |- (10.4,3.6);
+    \else
+      \draw[back] (store.north) |- (10.4,3.6);
+    \fi
+  \fi
+  \ifnum\stage<4
+    \node[lab, anchor=south, text width=3.5cm, text=ibmfg!35] at (12.3,3.68)
+      {reconcile: desired against observed, leases, inventory sweep};
+  \else
+    \ifnum\stage=\sAction
+      \node[lab, anchor=south, text width=3.5cm] at (12.3,3.68)
+        {reconcile: record \inst{cyberbird} against its container};
+    \else
+      \node[lab, anchor=south, text width=3.5cm] at (12.3,3.68)
+        {reconcile: desired against observed, leases, inventory sweep};
+    \fi
+  \fi
+
+  % in action: the supervisor's own credential (guide 5.3)
+  \atstage{\sAction}{\node[font=\sffamily\footnotesize, anchor=north west, text width=3.2cm, inner sep=1pt, align=left]
+    at (0.05,3.0) {\inst{Its supervisor}\\signs in with runtime material bound at creation, not this key};}
+\end{tikzpicture}%

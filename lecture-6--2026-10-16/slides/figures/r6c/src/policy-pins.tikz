@@ -1,0 +1,145 @@
+% policy-pins: the five sections of an OpenShell policy pinned on the component that holds each, one pin per click, then
+% Cyberbird's values. For build 6, "A policy is a YAML document in five sections." Task 4.6, step 1, item 5. The abstract concept
+% first (stages 1 to 5), the instance last (stage 6).
+% The drawing is a reduced copy of components.tikz (build 2): the same seven boxes in the same columns and the same arrows with the
+% same heads, every one drawn from stage 1 and none highlighted. Reduced: each box keeps only its bold role title, the arrow labels
+% and the placement note are gone, and the two rows sit at the top and the foot of the canvas so the pins' flags have the band
+% between them. The untrusted workload's label sits at the zone's top left (components puts it at the top right), so the
+% runtime's three poles clear it; the stage 5 note takes the free space left of pole 1, above the agent, since the workload row
+% fills the foot of the canvas.
+% Canvas 16.5 x 5.8 cm (\useasboundingbox), the slide column at about 1:1; box text 9 pt, flags and the note 8 pt.
+% Stages (the brief: five pins revealed one per stage, the note on stage 5, Cyberbird on stage 6):
+%   1 Pin 1 on the sandbox runtime, filesystem_policy, "kernel rules, fixed at start". Pins 2 to 5 are ghosts.
+%   2 Pin 2 on the sandbox runtime, landlock, "required or best effort, fixed at start".
+%   3 Pin 3 on the sandbox runtime, process, "identity, at creation".
+%   4 Pin 4 on the trusted supervisor, network_policies, "live, reloadable".
+%   5 Pin 5 on the trusted supervisor, network_middlewares, "after admission, live"; and the note "two sections the kernel holds,
+%     two the supervisor holds, one the runtime sets at creation".
+%   6 In action: no highlight; the heading becomes "in action: Cyberbird", the agent box reads cyberbird, the service the model
+%     server, and each flag's second line becomes Cyberbird's value, in navy:
+%       filesystem_policy   read_only: [..., /app/fixtures]  and  read_write: [..., /app/runs]
+%       landlock            compatibility: hard_requirement
+%       process             not set: image user, uid 1000
+%       network_policies    python3.12 -> host.lima.internal:8080
+%       network_middlewares not set: no middleware
+% Each pin is a navy evnum circle on the top edge of its box with a pole up to its flag (the section's name in typewriter over its
+% label). The flags step up to the left, so no flag crosses another pin's pole: the runtime's three flags run right from their poles
+% to the left of the supervisor's control-session arrow, the supervisor's two to the right of it. A pin not yet reached is a dashed
+% ghost with its flag in light grey, so nothing moves between stages; the newest flag carries the style's hl outline.
+% Sources (the course's guide at commit be7af99, chapter 10; OpenShell's docs/how-it-works/policies/schema.mdx at the same commit):
+%   The five sections and when each applies: the guide's 10.1 table (filesystem_policy "Paths the workload may read or write",
+%     Startup; landlock "Required enforcement of the additional filesystem policy", Startup; process "User and group that run the
+%     workload", "Creation/startup, with driver-specific identity handling"; network_policies "Permitted binaries, destinations,
+%     and requests", "Can change while running"; network_middlewares "Further processing of admitted traffic", "Can change while
+%     running"). "The policy configures kernel controls on workload processes and network decisions in the trusted supervisor"
+%     (10.1). Landlock rules are kernel-enforced (7.4) and changing them "requires a new sandbox, whereas network revisions can
+%     load live" (10.5).
+%   Pin 2's label: landlock.compatibility takes best_effort or hard_requirement (schema.mdx, "Landlock"; the guide's 10.5).
+%   Pin 3 on the runtime: the capability-free identity transition is the runtime's (7.3); schema.mdx, "Process": "Docker and Podman
+%     use these fields to select the workload identity from the policy passed at creation; omitted fields use the image's USER."
+%   Pin 5's label: middleware runs on admitted traffic (9.5; 10.1's "Further processing of admitted traffic").
+%   The note: the brief's sentence (Task 4.6, item 5), which build 6's closing box repeats.
+% Stage 6 values: Cyberbird's committed policy, instructor-materials/hw2/feasibility/cyberbird-policy.yaml, and its effective form
+% (cyberbird/policy-full.txt, `openshell policy get cyberbird --full`, 22:44:08 EDT 2026-10-15). The read lists are excerpts of
+% the real flow sequences, marked with "...": read_only also lists /bin, /usr, /lib, /etc, /proc, /dev/urandom and /app (so the
+% answer key under /app stays readable, which the notes must say), read_write also /sandbox, /tmp, /dev/null. The policy has no
+% process and no network_middlewares section; under Docker the identity is the image's USER, agent, uid 1000 (cyberbird/Dockerfile;
+% `id` in cyberbird/preflight.txt prints uid=1000(agent)). The host is host.lima.internal, the host the run used: OpenShell 0.1.4
+% on Colima refuses host.docker.internal at policy DNS (cyberbird/attempt-host-docker-internal.txt). python3.12 is the policy's
+% binary /usr/local/bin/python3.12, shortened; the endpoint is protocol tcp on port 8080.
+% Illustrative: nothing.
+% Left out on purpose: version: 1 (a header, not a section); the subtitles and arrow labels of components.tikz (build 2 taught
+% them); the client's and driver's instance names of components stage 7 (no section is pinned on them); provider composition
+% (_provider_* rules, 10.4), which build 10 covers.
+% Colour: no magenta (no adversary).
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \useasboundingbox (0,0) rectangle (16.5,5.8);
+  \hyphenpenalty=10000 \exhyphenpenalty=10000 \frenchspacing
+  \def\sAction{6}
+  \tikzset{
+    flow2/.style={flow, {Stealth[length=2.2mm]}-{Stealth[length=2.2mm]}},
+    row/.style={minimum height=0.8cm, outer sep=0pt},
+    lowrow/.style={minimum height=1.0cm, outer sep=0pt},
+    ghnum/.style={circle, draw=ibmfg!25, text=ibmfg!35, fill=white, dashed, inner sep=0pt, minimum size=4.6mm,
+                  font=\sffamily\footnotesize\bfseries},
+    pole/.style={draw=deckNavy, line width=0.8pt},
+    ghpole/.style={draw=ibmfg!25, dashed, line width=0.8pt},
+    flag/.style={font=\sffamily\footnotesize, anchor=north west, align=left, inner sep=2.5pt, outer sep=0pt, rounded corners=3pt},
+  }
+  % \inst{text}: an instance line of stage 6, in navy; \code{text}: typewriter
+  \newcommand{\inst}[1]{\textcolor{deckNavy}{\bfseries #1}}
+  \newcommand{\code}[1]{\texttt{#1}}
+  % \pin{k}{x}{y of the box's top edge}{y of the flag's top}{section name}{label}{in-action value}: a ghost before stage k,
+  % solid from stage k with the hl outline on its flag at stage k, the value in place of the label on the in-action stage
+  \newcommand{\pin}[7]{%
+    \ifnum\stage<#1
+      \draw[ghpole] (#2,#3+0.23) -- (#2,#4);
+      \node[ghnum] at (#2,#3) {#1};
+      \node[flag, text=ibmfg!35] at (#2+0.1,#4) {\code{#5}\\#6};
+    \else
+      \draw[pole] (#2,#3+0.23) -- (#2,#4);
+      \node[evnum] at (#2,#3) {#1};
+      \ifnum\stage=\sAction
+        \node[flag] at (#2+0.1,#4) {\code{#5}\\#7};
+      \else\ifnum\stage=#1
+        \node[flag, hl] at (#2+0.1,#4) {\code{#5}\\#6};
+      \else
+        \node[flag] at (#2+0.1,#4) {\code{#5}\\#6};
+      \fi\fi
+    \fi}
+
+  % heading
+  \ifnum\stage<\sAction
+    \node[lab, anchor=west, text=deckGrey] at (0.05,5.6) {where each section of a policy takes effect};
+  \else
+    \node[zonelab, anchor=west, inner sep=1pt] at (0.05,5.6) {in action: Cyberbird};
+  \fi
+
+  % columns as in components.tikz: client and agent 0.2 to 2.95, runtime 3.27 to 6.12, gateway and supervisor 8.25 to 11.88,
+  % driver and service 13.45 to 16.45; rows: the control plane at y 4.95 (0.8 cm tall), the workload row at y 0.75 (1.0 cm tall,
+  % so a title clears the pins on the top edge)
+  \node[gnode, row, minimum width=2.75cm] (client) at (1.575,4.95) {\textbf{Client}};
+  \node[mnode, row, minimum width=3.63cm] (gateway) at (10.065,4.95) {\textbf{Gateway}};
+  \node[gnode, row, minimum width=3.0cm] (driver) at (14.95,4.95) {\textbf{Compute driver}};
+
+  \draw[zone] (0.05,0.1) rectangle (6.22,1.72);
+  \node[zonelab, anchor=west] at (0.2,1.72) {untrusted workload};
+  \ifnum\stage<\sAction
+    \node[rnode, lowrow, minimum width=2.75cm] (agent) at (1.575,0.75) {\textbf{Agent and tools}};
+  \else
+    \node[rnode, lowrow, minimum width=2.75cm] (agent) at (1.575,0.75) {\textcolor{deckNavy}{\code{cyberbird}}};
+  \fi
+  \node[rnode, lowrow, minimum width=2.85cm] (runtime) at (4.695,0.75) {\textbf{Sandbox runtime}};
+  \node[mnode, lowrow, minimum width=3.63cm] (super) at (10.065,0.75) {\textbf{Trusted supervisor}};
+  \ifnum\stage<\sAction
+    \node[tnode, minimum width=3.0cm, minimum height=1.1cm, text width=2.6cm, inner xsep=-0.35cm, outer sep=0pt, align=center]
+      (service) at (14.95,0.75) {Approved\\external service};
+  \else
+    \node[tnode, minimum width=3.0cm, minimum height=1.1cm, text width=2.6cm, inner xsep=-0.35cm, outer sep=0pt, align=center]
+      (service) at (14.95,0.75) {\inst{the model server}};
+  \fi
+
+  % arrows, all drawn from stage 1
+  \draw[flow] (client.east) -- (gateway.west);
+  \draw[flow] (gateway.east) -- (driver.west);
+  \draw[flow] (agent.east) -- (runtime.west);
+  \draw[flow2] (runtime.east) -- (super.west);
+  \draw[back] (super.north) -- (gateway.south);
+  \draw[flow2] (super.east) -- (service.west);
+
+  % the pins: three on the sandbox runtime, two on the trusted supervisor (right of the control-session arrow)
+  \pin{1}{3.6}{1.25}{4.45}{filesystem\_policy}{kernel rules, fixed at start}
+    {\textcolor{deckNavy}{\code{read\_only: [..., /app/fixtures]}}\\\textcolor{deckNavy}{\code{read\_write: [..., /app/runs]}}}
+  \pin{2}{4.4}{1.25}{3.35}{landlock}{required or best effort, fixed at start}
+    {\textcolor{deckNavy}{\code{compatibility: hard\_requirement}}}
+  \pin{3}{5.2}{1.25}{2.5}{process}{identity, at creation}
+    {\inst{not set: image user, uid 1000}}
+  \pin{4}{10.55}{1.25}{3.35}{network\_policies}{live, reloadable}
+    {\textcolor{deckNavy}{\code{python3.12} $\rightarrow$ \code{host.lima.internal:8080}}}
+  \pin{5}{11.4}{1.25}{2.5}{network\_middlewares}{after admission, live}
+    {\inst{not set: no middleware}}
+
+  % the note, on stage 5: who holds which sections
+  \atstage{5}{\node[note, anchor=north west, text width=3.25cm, inner sep=0pt] at (0.1,3.95)
+    {two sections the kernel holds, two the supervisor holds, one the runtime sets at creation};}
+\end{tikzpicture}%

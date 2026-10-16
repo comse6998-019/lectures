@@ -1,0 +1,1497 @@
+{
+ "segments": [
+  {
+   "segment": "7",
+   "slides": [
+    {
+     "id": "7.1",
+     "kind": "text",
+     "title": "An agent works through the kernel.",
+     "bullets": [
+      [
+       [
+        "b",
+        "Files:"
+       ],
+       [
+        "r",
+        " the agent reads a repository and must never read the key."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Processes:"
+       ],
+       [
+        "r",
+        " each shell, interpreter or scanner it starts has its authority."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Connections:"
+       ],
+       [
+        "r",
+        " it calls the model's API, GitHub, or any host on the network."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In Cyberbird's case,"
+       ],
+       [
+        "r",
+        " it reads a case, runs "
+       ],
+       [
+        "c",
+        "bandit"
+       ],
+       [
+        "r",
+        " and calls a model server."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] COMS E6998-019, OpenShell: Architecture, Enforcement, and Policy (the course's guide to commit be7af99), chapter 1."
+     ],
+     "notes": "We start from what an agent needs from the machine. An agent is a model that chooses an action and a program that carries it out, and the program runs as processes, a process being a running program with its own memory, open files and user identity. Every file it opens, every program it starts and every connection it makes is a system call, a request to the kernel, the part of Linux that grants or refuses it. On the fourth click we point at the dashed line: a rule placed there refuses the call even when the model has been talked into making it, which a prompt cannot do (the guide's exercise in chapter 1). Our running example for the whole section is Cyberbird, the course's reactive agent from lecture 2, working Bandit's SQL injection alert bc284c6b at testcode/BenchmarkTest00283.py line 46 of its OWASP fixture.\n\nWe ran Cyberbird inside OpenShell 0.1.4 on October 15, 2026 (Colima on the instructor's Mac, model openai:qwen3.8-27b on the local llama-swap server): it read the case and helpers/db_sqlite.py in a disposable copy of the fixture, searched four times, edited the case, ran bandit when it submitted, and finished ACCEPTED after 8 model calls in 13.5 s. The captures are in instructor-materials/hw2/feasibility/cyberbird/.\n\nThe figure, stage by stage.\n1. Files: open(), read() and write() reach the repository, the key and the workspace. The other two arrows are reserved as ghosts.\n2. Processes: fork() and execve() start a shell, Python or a scanner, each a child with the agent's authority.\n3. Connections: connect() reaches the model's API, GitHub, or anything else on the network.\n4. The dashed line: a rule can sit below the program, where the kernel decides every request.\n5. In action: cyberbird works alert bc284c6b. It reads BenchmarkTest00283.py and helpers/ in its workspace copy, runs python and bandit, and connects to the model server.",
+     "title_marker": "[1]",
+     "figure": {
+      "stages": [
+       "r6c/three-needs-1.png",
+       "r6c/three-needs-2.png",
+       "r6c/three-needs-3.png",
+       "r6c/three-needs-4.png",
+       "r6c/three-needs-5.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 2,
+       "fig": 2
+      },
+      {
+       "b": 3,
+       "fig": 3
+      },
+      {
+       "b": 3,
+       "fig": 4
+      },
+      {
+       "b": 4,
+       "fig": 5
+      },
+      {
+       "b": 4,
+       "fig": 5,
+       "close": true
+      }
+     ],
+     "closing": "A rule the kernel enforces holds whatever the model chooses."
+    },
+    {
+     "id": "7.2",
+     "kind": "text",
+     "title": "Each OpenShell component has its own job.",
+     "bullets": [
+      [
+       [
+        "b",
+        "The client, gateway and driver"
+       ],
+       [
+        "r",
+        " create, record and place sandboxes."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The sandbox runtime"
+       ],
+       [
+        "r",
+        " fences the agent's processes from inside the workload."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The trusted supervisor"
+       ],
+       [
+        "r",
+        " decides every connection from outside the workload."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In Cyberbird's case,"
+       ],
+       [
+        "r",
+        " Docker ran it, and only the model server was reachable."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] COMS E6998-019, OpenShell: Architecture, Enforcement, and Policy (the course's guide to commit be7af99), chapters 2, 6 and 7."
+     ],
+     "notes": "We name the parts before we use them, on the guide's Figure 1. The client (the openshell CLI, the TUI or an SDK) sends management requests to OpenShell's gateway, the control plane that authenticates every caller, stores every sandbox record and hands configuration to drivers and supervisors. The compute driver turns a record into platform resources on Docker, Podman, Kubernetes or a microVM and decides placement, which is on which host or node the workload and its supervisor run. The untrusted workload is the agent with its tools and child processes, code we assume may be faulty or hostile, together with the sandbox runtime, the small OpenShell program inside it that launches processes, installs the kernel fences and pauses network calls for mediation. The trusted supervisor runs outside that boundary, holds the policy and the real credentials, decides each outbound connection, and talks to the runtime over the authenticated runtime channel, a private connection whose ends authenticate each other.\n\nOn Docker the workload and the supervisor are separate containers joined by a private Unix socket, the workload's own network is removed, and the supervisor uses the host's network (guide, 6.3). In the recorded run the client was the instructor's terminal, the driver Docker on Colima, and the policy admitted one destination, the model server.\n\nThe figure, stage by stage.\n1. The client: the CLI, TUI or an SDK sends management requests. The agent and its tools in the untrusted workload are the frame.\n2. The gateway: identity and records, and the configuration it hands on.\n3. The compute driver provisions the workload and places the supervisor. The note defines placement.\n4. The sandbox runtime, inside the workload: process control and mediation.\n5. The trusted supervisor, outside: policy and credentials, the authenticated runtime channel from the runtime, and the control session it opens to the gateway.\n6. The approved external service: what remains reachable, through the supervisor.\n7. In action: Rahul's terminal, Docker on Colima, cyberbird and bandit in the workload, and a supervisor that admits only the model server.",
+     "title_marker": "[1]",
+     "figure": {
+      "stages": [
+       "r6c/components-1.png",
+       "r6c/components-2.png",
+       "r6c/components-3.png",
+       "r6c/components-4.png",
+       "r6c/components-5.png",
+       "r6c/components-6.png",
+       "r6c/components-7.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 1,
+       "fig": 2
+      },
+      {
+       "b": 1,
+       "fig": 3
+      },
+      {
+       "b": 2,
+       "fig": 4
+      },
+      {
+       "b": 3,
+       "fig": 5
+      },
+      {
+       "b": 3,
+       "fig": 6
+      },
+      {
+       "b": 4,
+       "fig": 7
+      },
+      {
+       "b": 4,
+       "fig": 7,
+       "close": true
+      }
+     ],
+     "closing": "The keys and the network decisions stay outside the agent's workload."
+    },
+    {
+     "id": "7.3",
+     "kind": "text",
+     "title": "A sandbox is a record before a container.",
+     "bullets": [
+      [
+       [
+        "b",
+        "The record comes first:"
+       ],
+       [
+        "r",
+        " the gateway stores it before any driver runs."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The driver provisions,"
+       ],
+       [
+        "r",
+        " then the supervisor connects back and says hello."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Ready means the API can reach it,"
+       ],
+       [
+        "r",
+        " and it says nothing about the agent."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In Cyberbird's case,"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "sandbox list"
+       ],
+       [
+        "r",
+        " showed it Ready within four seconds."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] COMS E6998-019, OpenShell: Architecture, Enforcement, and Policy (the course's guide to commit be7af99), chapter 4."
+     ],
+     "notes": "We follow one sandbox from request to deletion. The gateway checks the request (identity, workspace, names, template, policy) and persists the record before any container exists, with a UUID, an attachment epoch that stops a re-attached provider from reusing old evidence, and a runtime generation that stops a new run from inheriting old runtime credentials. The driver then provisions: Docker and the VM may answer early and keep preparing the image, Kubernetes reconciles, and a watch stream reports progress. Ready means the gateway considers the sandbox usable through its API, which it decides once the supervisor has connected back and said hello; Error, Deleting and Stopped still outrank it, so Ready says nothing about whether the agent works. Stop keeps the record and stops the compute, start runs it again, and delete removes it, with what is retained depending on the backend: Docker keeps the stopped container, Kubernetes its Sandbox resource, the VM its overlay.\n\nCaptured for Cyberbird on October 15, 2026 (OpenShell 0.1.4, Colima): create printed \"Created sandbox: cyberbird\", \"[0.0s] Requesting compute...\", \"[0.0s] Sandbox allocated\" and \"[0.1s] Starting sandbox Container created\"; sandbox get showed \"Ready: True (DependenciesReady) - Supervisor session connected\", runtime-generation d1326079-66a5-44ab-9db3-51e13ac8dc46 and auth-epoch 1; sandbox list at 22:42:24 EDT printed \"cyberbird  2026-10-16 02:42:20  Ready\" (CREATED is UTC, so 22:42:20 EDT); delete printed \"✓ Sandbox cyberbird deletion accepted; cleanup is pending\".\n\nThe figure, stage by stage.\n1. The record persisted: the gateway's checks and what it stores, in the Provisioning phase.\n2. Provisioning: the driver creates the resources. Docker and the VM may return early.\n3. The supervisor's hello: it connects out to the gateway and opens the control stream that later carries exec's relay.\n4. Ready: usable through the API, as the gateway publishes it.\n5. The phases that leave or outrank Ready: Error from the driver, Stopped and Deleting by stop, start and delete. The note: Ready says the supervisor talked back, and nothing about the agent.\n6. In action: cyberbird's record, Docker on Colima with the image cyberbird:1, the captured condition, and the sandbox list row.",
+     "title_marker": "[1]",
+     "figure": {
+      "stages": [
+       "r6c/lifecycle-1.png",
+       "r6c/lifecycle-2.png",
+       "r6c/lifecycle-3.png",
+       "r6c/lifecycle-4.png",
+       "r6c/lifecycle-5.png",
+       "r6c/lifecycle-6.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 2,
+       "fig": 2
+      },
+      {
+       "b": 2,
+       "fig": 3
+      },
+      {
+       "b": 3,
+       "fig": 4
+      },
+      {
+       "b": 3,
+       "fig": 5
+      },
+      {
+       "b": 4,
+       "fig": 6
+      },
+      {
+       "b": 4,
+       "fig": 6,
+       "close": true
+      }
+     ],
+     "closing": "The gateway records each phase, so an interrupted create can be reconciled."
+    },
+    {
+     "id": "7.4",
+     "kind": "text",
+     "title": "The gateway holds authority and records.",
+     "bullets": [
+      [
+       [
+        "b",
+        "Who:"
+       ],
+       [
+        "r",
+        " a user's token or client key, or a supervisor's own credential."
+       ]
+      ],
+      [
+       [
+        "b",
+        "What and which:"
+       ],
+       [
+        "r",
+        " the method's permission, then the workspace and object."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The store"
+       ],
+       [
+        "r",
+        " writes a record only if its version is still the one read."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In Cyberbird's case,"
+       ],
+       [
+        "r",
+        " Rahul's client key created "
+       ],
+       [
+        "c",
+        "cyberbird"
+       ],
+       [
+        "r",
+        " in "
+       ],
+       [
+        "c",
+        "default"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] COMS E6998-019, OpenShell: Architecture, Enforcement, and Policy (the course's guide to commit be7af99), chapter 5."
+     ],
+     "notes": "We open the gateway. Authentication establishes who is calling: an OIDC token, issued by an identity provider, or a client key over mutual TLS for people and tools, and runtime material bound at creation for a supervisor, which never reuses the user's token or key. Authorization runs twice: every RPC method declares the principal kind (user, sandbox or peer), the scope (an operation category such as sandbox:write) and the role (Platform Admin, Workspace Admin or Workspace User) it needs, and the gateway refuses to start if a method lacks the declaration; passing that check authorizes no particular object, so the handler then checks the workspace, the group that holds sandboxes and providers, and the object. The store writes by compare-and-swap on the resource version, a number that changes on every update, so a stale writer is rejected. A reconcile loop, run by one replica under a renewable lease, compares the records with what the backends report and sweeps the inventory every minute.\n\nFor Cyberbird: openshell status on the instructor's gateway reported \"Authentication: Authenticated (mTLS transport)\"; CreateSandbox declares a user principal, scope sandbox:write and the workspace user role (proto/openshell.proto at be7af99); the CLI's workspace defaults to default; sandbox get showed \"Resource version: 14\" at Ready.\n\nThe figure, stage by stage.\n1. Who: gate 1 authenticates the request.\n2. What: gate 2, the method's declared permission.\n3. Which: gate 3, the workspace and the object.\n4. The store's conditional update, and the reconcile loop: desired against observed state, leases, the inventory sweep.\n5. In action: sandbox create cyberbird, the client key, CreateSandbox's declaration, workspace default, and the record at resource version 14. Its supervisor signs in with its own runtime material.",
+     "title_marker": "[1]",
+     "figure": {
+      "stages": [
+       "r6c/gateway-authority-1.png",
+       "r6c/gateway-authority-2.png",
+       "r6c/gateway-authority-3.png",
+       "r6c/gateway-authority-4.png",
+       "r6c/gateway-authority-5.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 2,
+       "fig": 2
+      },
+      {
+       "b": 2,
+       "fig": 3
+      },
+      {
+       "b": 3,
+       "fig": 4
+      },
+      {
+       "b": 4,
+       "fig": 5
+      },
+      {
+       "b": 4,
+       "fig": 5,
+       "close": true
+      }
+     ],
+     "closing": "The gateway checks caller, method and object before a conditional write."
+    },
+    {
+     "id": "7.5",
+     "kind": "text",
+     "title": "The agent starts with reduced privileges.",
+     "bullets": [
+      [
+       [
+        "b",
+        "Each child drops privilege first:"
+       ],
+       [
+        "r",
+        " non-root IDs and no capabilities."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Landlock"
+       ],
+       [
+        "r",
+        " fences its files, above a baseline that guards the runtime."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Seccomp"
+       ],
+       [
+        "r",
+        " blocks risky calls and pauses "
+       ],
+       [
+        "c",
+        "connect()"
+       ],
+       [
+        "r",
+        " for the broker."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In Cyberbird's case,"
+       ],
+       [
+        "r",
+        " its user, uid 1000, could not list its own home directory."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] COMS E6998-019, OpenShell: Architecture, Enforcement, and Policy (the course's guide to commit be7af99), chapter 7."
+     ],
+     "notes": "We look inside the workload at start-up. The runtime's launcher thread starts every child, and the launch order is enforced by type state, Rust types that make it hard to start the agent before the boundary is confirmed. Each child first drops privilege: a capability is one slice of root's power, such as administering the network, and the child gives up all of them, takes non-root user and group IDs, and sets no_new_privs, a one-way flag that stops any later program from gaining privilege. Landlock is a Linux module that lets a process restrict its own and its children's file access: a mandatory baseline at Landlock ABI v3 (kernel 6.2 or newer) protects the runtime's private /.openshell files, and the policy's lists are layered on top, so an access must satisfy both. Seccomp filters system calls: it blocks tracing, mount changes, BPF and io_uring, and its user-notification mode pauses connect() and hands it to the broker, the part of the runtime that asks the supervisor.\n\nCyberbird's run shows the result (October 15, 2026): id inside the sandbox printed \"uid=1000(agent) gid=1000(agent)\"; the supervisor logged \"Isolation boundary enforcement confirmed\" before \"Isolation boundary agent started\"; and ls /home/agent, the agent's own home directory, failed with \"Permission denied\", because no list in the policy names /home.\n\nThe figure, stage by stage.\n1. The operator's image runs unmodified. Once the boundary is provisioned, attached and confirmed and networking is prepared, the launcher thread starts each child.\n2. Each child gives up privilege first: non-root user and group IDs, every capability set dropped, and no_new_privs, a one-way setting.\n3. The Landlock baseline (ABI v3 or newer, which covers truncation) protects the private /.openshell hierarchy. The user's filesystem policy is layered above it, so an access must satisfy both.\n4. Seccomp: the network filter sits on the launcher thread and each child inherits it. The child adds its system-call and self-protection filters, then executes the agent's command, and the supervisor manages the running workload.",
+     "title_marker": "[1]",
+     "figure": {
+      "stages": [
+       "r6b/runtime-startup-1.png",
+       "r6b/runtime-startup-2.png",
+       "r6b/runtime-startup-3.png",
+       "r6b/runtime-startup-4.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 1,
+       "fig": 2
+      },
+      {
+       "b": 2,
+       "fig": 3
+      },
+      {
+       "b": 3,
+       "fig": 4
+      },
+      {
+       "b": 4,
+       "fig": 4
+      },
+      {
+       "b": 4,
+       "fig": 4,
+       "close": true
+      }
+     ],
+     "closing": "The fences are in the kernel before the agent's first instruction runs."
+    },
+    {
+     "id": "7.6",
+     "kind": "text",
+     "title": "A policy states a workload's authority.",
+     "bullets": [
+      [
+       [
+        "b",
+        "The kernel holds"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "filesystem_policy"
+       ],
+       [
+        "r",
+        " and "
+       ],
+       [
+        "c",
+        "landlock"
+       ],
+       [
+        "r",
+        ", fixed at the start."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The runtime sets"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "process"
+       ],
+       [
+        "r",
+        ", the workload's user and group, at creation."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The supervisor holds"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "network_policies"
+       ],
+       [
+        "r",
+        " and "
+       ],
+       [
+        "c",
+        "network_middlewares"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In Cyberbird's case,"
+       ],
+       [
+        "r",
+        " one rule lets "
+       ],
+       [
+        "c",
+        "python3.12"
+       ],
+       [
+        "r",
+        " reach the model server."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] COMS E6998-019, OpenShell: Architecture, Enforcement, and Policy (the course's guide to commit be7af99), chapter 10."
+     ],
+     "notes": "We define a policy before we read one. A policy is the workload's authority written down: which files it may use, which destinations it may reach and which requests it may make, as a YAML document with version: 1 and up to five sections, each enforced by a component we have already drawn. filesystem_policy lists the paths the workload may read and write, and landlock says whether failing to enforce those lists fails the start (hard_requirement) or continues with a finding (best_effort); the kernel holds both, fixed when the sandbox starts. process names the user and group that run the workload, set at creation, and on Docker an omitted section means the image's USER. network_policies pairs binaries with endpoints, every binary of a rule reaching every endpoint of it, and network_middlewares adds processing after admission; the supervisor holds both, and both can change while the sandbox runs.\n\nDefaults depend on presence: omitting filesystem_policy grants the working directory, while an empty filesystem_policy object does not. Cyberbird's values come from cyberbird-policy.yaml and its effective form, openshell policy get cyberbird --full (version 2).\n\nThe figure, stage by stage.\n1. filesystem_policy, pinned on the sandbox runtime: kernel rules, fixed at start.\n2. landlock: required or best effort, fixed at start.\n3. process: the workload's identity, set at creation.\n4. network_policies, pinned on the trusted supervisor: live and reloadable.\n5. network_middlewares: processing after admission, also live. The note says which component holds which section.\n6. In action: Cyberbird's values. The read list ends in /app/fixtures and the write list in /app/runs, Landlock is a hard requirement, process is not set so the image's user, uid 1000, runs it, python3.12 reaches host.lima.internal:8080, and no middleware is set.",
+     "title_marker": "[1]",
+     "figure": {
+      "stages": [
+       "r6c/policy-pins-1.png",
+       "r6c/policy-pins-2.png",
+       "r6c/policy-pins-3.png",
+       "r6c/policy-pins-4.png",
+       "r6c/policy-pins-5.png",
+       "r6c/policy-pins-6.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 1,
+       "fig": 2
+      },
+      {
+       "b": 2,
+       "fig": 3
+      },
+      {
+       "b": 3,
+       "fig": 4
+      },
+      {
+       "b": 3,
+       "fig": 5
+      },
+      {
+       "b": 4,
+       "fig": 6
+      },
+      {
+       "b": 4,
+       "fig": 6,
+       "close": true
+      }
+     ],
+     "closing": "File rules are fixed at the start, and network rules can change live."
+    },
+    {
+     "id": "7.7",
+     "kind": "window",
+     "title": "Cyberbird's policy, line by line",
+     "bullets": [
+      [
+       [
+        "b",
+        "As a document,"
+       ],
+       [
+        "r",
+        " a policy is parsed, validated, versioned and diffed."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The read list grants "
+       ],
+       [
+        "c",
+        "/app"
+       ],
+       [
+        "b",
+        ","
+       ],
+       [
+        "r",
+        " so every case and the answer key stay readable."
+       ]
+      ],
+      [
+       [
+        "b",
+        "One network rule"
+       ],
+       [
+        "r",
+        " lets "
+       ],
+       [
+        "c",
+        "python3.12"
+       ],
+       [
+        "r",
+        " open TCP to the model server's port."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] COMS E6998-019, OpenShell: Architecture, Enforcement, and Policy (the course's guide to commit be7af99), chapter 10."
+     ],
+     "notes": "The window is the policy of the run we recorded on October 15, 2026, instructor-materials/hw2/feasibility/cyberbird-policy.yaml, without its three comment lines, which say why the host is host.lima.internal: OpenShell 0.1.4 on Colima refuses host.docker.internal at policy DNS, and an IP literal is refused for protocol tcp. A policy is a document so that machines and people can check it: a bounded parser rejects unknown fields, duplicate keys and oversized input, the gateway validates and versions every revision, a reviewer diffs it, the supervisor loads it and the prover reads it. The read list grants /app, so inside the sandbox the sibling case BenchmarkTest00284.py and the answer key expectedresults-0.1.csv were both readable; only Cyberbird's own workspace code kept them out of the agent's copy, and the HW2 policy lists the target's code directories instead. protocol: tcp admits the connection with no request inspection, so the rule has no enforcement line; with --model anthropic:claude-opus-5 the rule would name api.anthropic.com port 443 with protocol: rest and enforcement: enforce, and the key would come through a provider attachment.\n\nThe guide's quickstart policy (10.2) gives curl api.github.com:443 with protocol: rest, enforcement: enforce and access: read-only, which admits GET, HEAD and OPTIONS; without its enforcement line the mode is audit, which logs a violation and lets the request through. The effective policy the supervisor loaded, openshell policy get cyberbird --full, is version 2: OpenShell added /var/log to read_only and the name model_server to the rule.\n\nClick by click.\n1. As a document: parsed, validated, versioned, diffed, loaded and proved.\n2. The read list: /app makes the whole fixture readable, the answer key included. We also point at landlock: hard_requirement means lists the kernel cannot enforce fail the start, where best_effort would continue with a finding.\n3. The network rule: one binary, one host and port, TCP only.\n4. The closing box.",
+     "title_marker": "[1]",
+     "window": {
+      "label": "cyberbird-policy.yaml: the policy of the recorded run, its three comment lines left out",
+      "lang": "yaml",
+      "lines": [
+       "version: 1",
+       "filesystem_policy:",
+       "  include_workdir: true",
+       "  read_only: [/bin, /usr, /lib, /etc, /proc, /dev/urandom, /app, /app/fixtures]",
+       "  read_write: [/sandbox, /tmp, /dev/null, /app/runs]",
+       "landlock:",
+       "  compatibility: hard_requirement",
+       "network_policies:",
+       "  model_server:",
+       "    endpoints:",
+       "      - host: host.lima.internal",
+       "        port: 8080",
+       "        protocol: tcp",
+       "    binaries:",
+       "      - path: /usr/local/bin/python3.12"
+      ]
+     },
+     "closing": "Each grant covers everything beneath its path, the answer key included."
+    },
+    {
+     "id": "7.8",
+     "kind": "text",
+     "title": "The supervisor checks connections first.",
+     "bullets": [
+      [
+       [
+        "b",
+        "Connection admission"
+       ],
+       [
+        "r",
+        " checks the host, the port and the calling binary."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Each request"
+       ],
+       [
+        "r",
+        " then meets its rule, its credential binding and middleware."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In Cyberbird's case,"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "python3.12"
+       ],
+       [
+        "r",
+        " passed admission, and "
+       ],
+       [
+        "c",
+        "pypi.org"
+       ],
+       [
+        "r",
+        " failed it."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] COMS E6998-019, OpenShell: Architecture, Enforcement, and Policy (the course's guide to commit be7af99), chapters 9 and 10."
+     ],
+     "notes": "We follow one request through the supervisor. Connection admission is the L4, transport-layer decision: the destination's host and port and the identity of the calling executable, whose ancestry counts, so a child of an authorized binary inherits its grant. A request rule is the L7, application-layer decision on an endpoint declared protocol: rest: it checks the method and the path in audit mode, which logs and lets through and is the default, or enforce mode, which blocks, and the read-only preset admits GET, HEAD and OPTIONS. Credential binding lets the supervisor substitute a provider's key only at the host, port and path the profile names, and middleware, an ordered chain of processors, runs before the key is supplied and forces a fresh evaluation when it changes what the policy depends on. Matching rules combine their grants, a deny beats an allow, and a provider's rules are appended under their own _provider_ keys.\n\nCyberbird's sandbox log, October 15, 2026: each of the eight model calls shows \"NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> host.lima.internal:8080 [policy:model_server engine:opa]\" and then \"HTTP:POST [INFO] ALLOWED POST http://host.lima.internal:8080/v1/chat/completions\" (the supervisor logs the method although a tcp endpoint has no request rule). pip, run with the same python3.12, was refused at admission: \"NET:OPEN [MED] DENIED /usr/local/bin/python3.12(0) -> pypi.org:443 [reason:transparent_tcp_policy_denied]\", with \"endpoint pypi.org:443 is not allowed by any policy\". curl to the model server was refused on its binary: \"binary '/usr/bin/curl' not allowed in policy 'model_server'\".\n\nThe figure, stage by stage.\n1. Connection admission: admit the destination and the executable.\n2. The request rule: parse and validate the application request, then evaluate the application policy. Audit logs a violation and lets the request through, enforce blocks it.\n3. Credential binding: resolve the endpoint-bound credential or sign the request, guarding the current policy and credential generations. Only the authorized host, port and path admit the substitution.\n4. Middleware runs before the credential is used, and a policy-relevant change is evaluated again. The request then goes upstream, for HTTPS over a separate verified TLS connection.",
+     "title_marker": "[1]",
+     "figure": {
+      "stages": [
+       "r6b/request-enforcement-1.png",
+       "r6b/request-enforcement-2.png",
+       "r6b/request-enforcement-3.png",
+       "r6b/request-enforcement-4.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 2,
+       "fig": 2
+      },
+      {
+       "b": 2,
+       "fig": 3
+      },
+      {
+       "b": 2,
+       "fig": 4
+      },
+      {
+       "b": 3,
+       "fig": 4
+      },
+      {
+       "b": 3,
+       "fig": 4,
+       "close": true
+      }
+     ],
+     "closing": "Audit, the default, logs a request-rule violation and lets the request through."
+    },
+    {
+     "id": "7.9",
+     "kind": "text",
+     "title": "Every connection passes the supervisor.",
+     "bullets": [
+      [
+       [
+        "b",
+        "The kernel pauses"
+       ],
+       [
+        "r",
+        " the program's "
+       ],
+       [
+        "c",
+        "connect()"
+       ],
+       [
+        "r",
+        " and hands it to the broker."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The supervisor admits it"
+       ],
+       [
+        "r",
+        " by host, port, binary and policy generation."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The supervisor connects upstream"
+       ],
+       [
+        "r",
+        " after substituting any credential."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In Cyberbird's case,"
+       ],
+       [
+        "r",
+        " eight model calls took this path with no key to substitute."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] COMS E6998-019, OpenShell: Architecture, Enforcement, and Policy (the course's guide to commit be7af99), chapters 2 and 8.",
+      "[2] NVIDIA. Open Agent Safety Platform announcement, September 28, 2026. NVIDIA, 2026."
+     ],
+     "notes": "We draw the path of one allowed connection. The program calls connect(), and seccomp's user notification pauses the call and hands it to the sandbox broker, which checks the destination and the socket's identity. The supervisor, outside the sandbox, receives the destination with the socket and executable evidence and admits the TCP connection by host and port, binary and policy generation, the version of the policy in force; DNS has already given the program a synthetic address that the supervisor maps back to the approved hostname. If a provider credential applies, the supervisor substitutes or signs it and opens its own connection upstream. Sentry, NVIDIA's reference design announced with OpenShell on September 28, 2026 as the Open Agent Safety Platform, is a BlueField-4 processor on the network path outside the host that watches this traffic and can quarantine the agent; it never sees a local file read, and the course does not run it.\n\nCyberbird's eight model calls took this path with OPENAI_API_KEY=none, so nothing was substituted; before each allowed connection the log shows \"Policy DNS mapped host.lima.internal resolved=192.168.5.2 synthetic=198.18.0.2 ports=8080\".\n\nThe figure, stage by stage.\n1. The workload tool calls connect(). The kernel pauses the call and hands it to the sandbox broker, inside the sandbox.\n2. The supervisor, outside the sandbox, receives the destination with the observed socket and executable evidence and admits the TCP connection by host and port, binary and policy generation.\n3. If credentials apply, the supervisor substitutes or signs them, and the connection goes upstream.\n4. Sentry, a BlueField-4 processor on the network path outside the host, watches that traffic and can quarantine the agent. It never sees a local file read. The figure draws the allowed path only.",
+     "title_marker": "[1]",
+     "figure": {
+      "stages": [
+       "r6b/network-request-1.png",
+       "r6b/network-request-2.png",
+       "r6b/network-request-3.png",
+       "r6b/network-request-4.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 2,
+       "fig": 2
+      },
+      {
+       "b": 3,
+       "fig": 3
+      },
+      {
+       "b": 3,
+       "fig": 4
+      },
+      {
+       "b": 4,
+       "fig": 4
+      },
+      {
+       "b": 4,
+       "fig": 4,
+       "close": true
+      }
+     ],
+     "closing": "Each hop can stop a request, so each hop is a place to diagnose."
+    },
+    {
+     "id": "7.10",
+     "kind": "text",
+     "title": "A provider keeps the key at the gateway.",
+     "bullets": [
+      [
+       [
+        "b",
+        "A provider instance"
+       ],
+       [
+        "r",
+        " holds one account's credential in the gateway's store."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Its name"
+       ],
+       [
+        "r",
+        " is what "
+       ],
+       [
+        "c",
+        "sandbox create --provider"
+       ],
+       [
+        "r",
+        " attaches to one sandbox."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Its profile"
+       ],
+       [
+        "r",
+        " names the key's variables, endpoints and permitted binaries."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In Cyberbird's case,"
+       ],
+       [
+        "r",
+        " the profile must name "
+       ],
+       [
+        "c",
+        "python3.12"
+       ],
+       [
+        "r",
+        ", as in HW2."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] COMS E6998-019, OpenShell: Architecture, Enforcement, and Policy (the course's guide to commit be7af99), chapter 11.",
+      "[2] NVIDIA. OpenShell, commit be7af99. https://github.com/NVIDIA/OpenShell"
+     ],
+     "notes": "We take one command apart. A profile says how a service's credential may be used: its credential names, the environment variables that carry it, its endpoints and the binaries allowed to use it. A provider instance holds one account's values, encrypted in the gateway's credential store, and an attachment, made with sandbox create --provider, gives one sandbox that instance and nothing more. --from-existing reads the values from the variables the profile names at the moment we run the command, and it fails when they are unset. Inside the sandbox the variable holds an opaque placeholder, which the supervisor replaces with the real value only on a request to an endpoint the profile binds, so a base URL such as OPENAI_BASE_URL never carries a credential to another host, and an expired or unresolved reference fails closed.\n\nThe figure's claude-code profile, in OpenShell's providers/ directory, names only the claude binaries, /usr/bin/claude and /usr/local/bin/claude, and a new gateway does not load that directory. For a Python SDK the actual Python executable must be authorized, so Cyberbird with --model anthropic:claude-opus-5 needs an imported profile that names /usr/local/bin/python3.12: HW2 imports the anthropic profile with its binaries edited (the brief, \"The sandbox image and the launch commands\"). No Cyberbird run used a provider. In a staff test sandbox with a provider attached, printenv ANTHROPIC_API_KEY | cut -c1-12 printed openshell:re, the start of the placeholder.\n\nThe figure, stage by stage.\n1. The shape: provider create with an instance's name, its profile, and where its values come from.\n2. openshell is the client, talking to the gateway. provider create makes an instance in this workspace.\n3. --name my-claude: the instance's name, which sandbox create --provider my-claude attaches.\n4. --type claude-code: the profile it follows, with its credential names, variables, endpoints and binaries.\n5. --from-existing: the values are read from those variables now, into the gateway's credential store, and the sandbox sees a placeholder. The note: Cyberbird with an Anthropic model, and the placeholder prefix a test sandbox printed. We add that Cyberbird's profile must name python3.12, as HW2's edited anthropic profile does.",
+     "title_marker": "[1]",
+     "figure": {
+      "stages": [
+       "r6c/command-provider-1.png",
+       "r6c/command-provider-2.png",
+       "r6c/command-provider-3.png",
+       "r6c/command-provider-4.png",
+       "r6c/command-provider-5.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 1,
+       "fig": 2
+      },
+      {
+       "b": 2,
+       "fig": 3
+      },
+      {
+       "b": 3,
+       "fig": 4
+      },
+      {
+       "b": 3,
+       "fig": 5
+      },
+      {
+       "b": 4,
+       "fig": 5
+      },
+      {
+       "b": 4,
+       "fig": 5,
+       "close": true
+      }
+     ],
+     "closing": "The sandbox sees a placeholder, and the supervisor holds the real key."
+    },
+    {
+     "id": "7.12",
+     "kind": "text",
+     "title": "A denied request becomes a proposal.",
+     "bullets": [
+      [
+       [
+        "b",
+        "The denial is recorded,"
+       ],
+       [
+        "r",
+        " and the mapper drafts a narrow rule from it."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The gateway validates"
+       ],
+       [
+        "r",
+        " the candidate, and the prover reports new findings."
+       ]
+      ],
+      [
+       [
+        "b",
+        "A reviewer approves it,"
+       ],
+       [
+        "r",
+        " or automatic approval does when nothing is flagged."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In Cyberbird's case,"
+       ],
+       [
+        "r",
+        " a denied "
+       ],
+       [
+        "c",
+        "pip"
+       ],
+       [
+        "r",
+        " left a pending rule for "
+       ],
+       [
+        "c",
+        "pypi.org:443"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] COMS E6998-019, OpenShell: Architecture, Enforcement, and Policy (the course's guide to commit be7af99), chapter 12."
+     ],
+     "notes": "We follow a denial to a policy change. Proposals have two sources: the supervisor's mapper turns observed denials into draft rules, usually one host, port and binary, and the policy advisor, off by default, lets the agent itself propose through http://policy.local. The gateway composes the candidate effective policy, validates it and runs the prover, which models the policy before and after the change and reports new findings: link-local reach, credentialed reach for a binary that bypasses L7 inspection, credential reach expansion and capability expansion; a review token binds that evaluation to the state it saw. Review is manual by default, and automatic approval admits a proposal with no new finding and no destination flag, which can include a new public host with no credential in scope. A proposal can only add network rules: it cannot change the filesystem lists, the process identity or Landlock, and it takes effect when the supervisor loads the revision.\n\nIn Cyberbird's sandbox on October 15, 2026, pip download requests, run with the image's python3.12, was denied pypi.org:443, and the supervisor logged \"Flushed denial analysis to gateway proposals=1\". openshell rule get cyberbird then showed the draft \"Rule: allow_pypi_org_443\", \"Binary: /usr/local/bin/python3.12\", \"Confidence: 65%\", \"Rationale: Allow python3.12 to connect to pypi.org:443 (HTTPS).\", \"Prover: prover: no new findings\", \"Status: pending\", \"Hits: 2\". We left it pending, and Cyberbird itself never asked for a package: the probe ran pip in its sandbox.\n\nThe figure, stage by stage.\n1. A request is denied, and a narrow rule is drafted, by the supervisor's mapper or through the policy advisor.\n2. The gateway validates the candidate effective policy and the prover reports any new findings. A review token binds this evaluation to the policy and provider state.\n3. The proposal waits for review, or automatic approval accepts it when there is no new finding and no destination flag. The approved revision is saved.\n4. The supervisor loads the revision and the workload retries the request. Approval and storage alone do not show that the revision is loaded.",
+     "title_marker": "[1]",
+     "figure": {
+      "stages": [
+       "r6b/policy-review-1.png",
+       "r6b/policy-review-2.png",
+       "r6b/policy-review-3.png",
+       "r6b/policy-review-4.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 2,
+       "fig": 2
+      },
+      {
+       "b": 3,
+       "fig": 3
+      },
+      {
+       "b": 3,
+       "fig": 4
+      },
+      {
+       "b": 4,
+       "fig": 4
+      },
+      {
+       "b": 4,
+       "fig": 4,
+       "close": true
+      }
+     ],
+     "closing": "A proposal adds network rules and leaves file and identity rules alone."
+    },
+    {
+     "id": "7.13",
+     "kind": "text",
+     "title": "Diagnose by the boundary that failed.",
+     "bullets": [
+      [
+       [
+        "b",
+        "A request can stop"
+       ],
+       [
+        "r",
+        " at any boundary, from its creation to the filesystem."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Each boundary records"
+       ],
+       [
+        "r",
+        " its own evidence: an error, an event or a result."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In Cyberbird's case,"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "Connection error."
+       ],
+       [
+        "r",
+        " was a denial the log named."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] COMS E6998-019, OpenShell: Architecture, Enforcement, and Policy (the course's guide to commit be7af99), chapter 14."
+     ],
+     "notes": "Optional: we skip this build when the section runs long. A boundary here is a place on the request's path where a component can stop it, from creation to the filesystem. A failed request shows that some condition is unresolved, and a timeout alone names nothing, because it can arise at provisioning, DNS, admission, TLS, request policy, credential substitution or upstream. The procedure: identify the exact command and sandbox, read the phase and the effective policy, find the event at the boundary that failed, change the narrowest responsible configuration and repeat the same request. HW2 asks for the same discipline in the trace, where a refused tool result names the place that refused it in refused_by.\n\nOur real case, October 15, 2026: with the lecture's host.docker.internal in the policy and the base URL, Cyberbird printed \"MODEL →  thinking over 2 messages…\", then \"END      ERROR\" and \"openai.APIConnectionError: Connection error.\", which looks like a dead model server. The row \"connection denied\" sends us to the sandbox log, where openshell logs cyberbird --source sandbox showed \"NET:REFUSE [MED] DENIED host.docker.internal [reason:policy_dns_trusted_gateway_unavailable]\". The narrowest fix was the host name host.lima.internal in the policy and the base URL, and the run then completed.\n\nThe figure, stage by stage.\n1. The boundaries in the order a request meets them: creation and provisioning, connection admission, TLS and request policy, credential binding, the upstream service. The filesystem stands apart.\n2. What the operator sees at each: creation rejected or stuck in Provisioning, connection denied, a connection that opens while the HTTP operation fails, a saved policy with unchanged behaviour, a failed file write.\n3. The next evidence at each: the RPC error and the create handler; conditions, driver events and supervisor logs; the denial event and the effective rules; the HTTP event, policy mode and endpoint binding; the revision result and a fresh request; the path, process identity and creation policy.\n4. Change the narrowest responsible configuration, then repeat the same request.",
+     "title_marker": "[1]",
+     "skip_to": "7.14",
+     "lead": "A failure shows an unresolved condition at one boundary.",
+     "figure": {
+      "stages": [
+       "r6b/diagnosis-1.png",
+       "r6b/diagnosis-2.png",
+       "r6b/diagnosis-3.png",
+       "r6b/diagnosis-4.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 1,
+       "fig": 2
+      },
+      {
+       "b": 2,
+       "fig": 3
+      },
+      {
+       "b": 2,
+       "fig": 4
+      },
+      {
+       "b": 3,
+       "fig": 4
+      },
+      {
+       "b": 3,
+       "fig": 4,
+       "close": true
+      }
+     ],
+     "closing": "Diagnosis starts from the evidence of the boundary that failed."
+    },
+    {
+     "id": "7.14",
+     "kind": "text",
+     "title": "What OpenShell does not cover.",
+     "bullets": [
+      [
+       [
+        "b",
+        "A tool's definition and response"
+       ],
+       [
+        "r",
+        " reach the model as unchecked text"
+       ],
+       [
+        "m",
+        "[1]"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ],
+      [
+       [
+        "b",
+        "The agent holds a placeholder"
+       ],
+       [
+        "r",
+        " and has no identity of its own."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Governing agents across sandboxes"
+       ],
+       [
+        "r",
+        " lies outside its scope"
+       ],
+       [
+        "m",
+        "[2]"
+       ],
+       [
+        "r",
+        "."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Sentry"
+       ],
+       [
+        "m",
+        "[3]"
+       ],
+       [
+        "b",
+        ","
+       ],
+       [
+        "r",
+        " the watcher outside the host, runs on hardware the course lacks."
+       ]
+      ],
+      [
+       [
+        "b",
+        "In Cyberbird's case,"
+       ],
+       [
+        "r",
+        " the model believes a case file OpenShell never reads."
+       ]
+      ]
+     ],
+     "refs": [
+      "[1] COMS E6998-019, OpenShell: Architecture, Enforcement, and Policy (the course's guide to commit be7af99), chapter 1.",
+      "[2] Tigera. NVIDIA OpenShell Secures the Agent. Who Governs the Fleet? 2026 (a vendor's reading of OpenShell's documentation).",
+      "[3] NVIDIA. Open Agent Safety Platform announcement, September 28, 2026. NVIDIA, 2026."
+     ],
+     "notes": "We end with what lies outside OpenShell. It constrains what a process may touch: the code on disk through the filesystem policy, the stored key through the provider attachment, outbound connections through the supervisor, and the kernel boundary through Landlock and seccomp. Text that reaches the model is outside it: a tool's definition and a tool's response arrive as words the model may believe, and only host-side checks, the harness or the server, can read them. Tigera's reading of the documentation, a vendor's analysis, puts agent identity, agent-to-agent governance and cross-sandbox communication outside OpenShell's scope, and the agent receives a placeholder, which is no identity of its own. Sentry watches from outside the host on BlueField-4 hardware, which the course does not run.\n\nCyberbird read BenchmarkTest00283.py and believed it: a case file that told the model to read the answer key would pass every OpenShell check, and with this policy the read would succeed, since /app is readable. The columns name ATLAS techniques by their short names (release 2026.09): definition, implementation and runtime-response poisoning, credentials from configuration, exfiltration via tool invocation, escape to host.\n\nThe figure, stage by stage.\n1. Definition text: no OpenShell layer guards it, because the text reaches the model. Definition poisoning.\n2. Implementation: the filesystem policy keeps the tool's code read-only. Implementation poisoning.\n3. Response: no layer guards it either. Runtime-response poisoning.\n4. Stored credential: the provider attachment hands the agent a placeholder. Credentials from configuration.\n5. Outbound connection: the supervisor's network policy, with L7 enforce. Exfiltration via tool invocation.\n6. Kernel boundary: the Landlock and seccomp baseline. Escape to host.",
+     "title_marker": "",
+     "figure": {
+      "stages": [
+       "r6/openshell-assets-1.png",
+       "r6/openshell-assets-2.png",
+       "r6/openshell-assets-3.png",
+       "r6/openshell-assets-4.png",
+       "r6/openshell-assets-5.png",
+       "r6/openshell-assets-6.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 1,
+       "fig": 1
+      },
+      {
+       "b": 1,
+       "fig": 2
+      },
+      {
+       "b": 1,
+       "fig": 3
+      },
+      {
+       "b": 2,
+       "fig": 4
+      },
+      {
+       "b": 3,
+       "fig": 5
+      },
+      {
+       "b": 4,
+       "fig": 6
+      },
+      {
+       "b": 5,
+       "fig": 6
+      },
+      {
+       "b": 5,
+       "fig": 6,
+       "close": true
+      }
+     ],
+     "closing": "The host must check what the model reads, since OpenShell cannot."
+    },
+    {
+     "id": "7.15",
+     "kind": "text",
+     "title": "The commands HW2 uses.",
+     "bullets": [
+      [
+       [
+        "b",
+        "Create:"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "--from"
+       ],
+       [
+        "r",
+        " names the image and "
+       ],
+       [
+        "c",
+        "--policy"
+       ],
+       [
+        "r",
+        " the policy file."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Exec:"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "--no-login-shell --no-tty"
+       ],
+       [
+        "r",
+        " keep an MCP stream clean."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Logs:"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "--source sandbox"
+       ],
+       [
+        "r",
+        " shows its denials and policy loads."
+       ]
+      ],
+      [
+       [
+        "b",
+        "Policy:"
+       ],
+       [
+        "r",
+        " "
+       ],
+       [
+        "c",
+        "--full"
+       ],
+       [
+        "r",
+        " prints the effective policy, provider rules included."
+       ]
+      ]
+     ],
+     "refs": [],
+     "notes": "We close the section with the commands HW2 uses, in the shape of sandbox create first and then the real commands of Cyberbird's run. Everything after the double dash is the workload's command, and everything before it is the operator's. sandbox create and sandbox exec appear in the brief's README section, \"The sandbox image and the launch commands\", and exec again in \"How the guardrails are tested\": the staff driver starts each team's MCP server with exec --no-login-shell --no-tty, because a login shell's start-up files can print to standard output and corrupt the JSON-RPC stream, whose first byte must be {. policy get --full appears in \"The guardrails\", where A4 asks for a reason for each grant, and the driver reads it to confirm the provider is the only network grant; logs is ours, the evidence of a denial. The effective policy is the authored document plus the rules that attached providers add.\n\nThe commands ran on October 15, 2026 with OpenShell 0.1.4 (cyberbird/create.txt, run.txt, logs.txt, policy-full.txt): create idled the sandbox on sleep infinity and exec started Cyberbird. exec also passed --env OPENAI_BASE_URL and --env OPENAI_API_KEY, because 0.1.4 hands exec none of the image's ENV values except PATH. openshell sandbox list then printed \"cyberbird  2026-10-16 02:42:20  Ready\".\n\nThe figure, stage by stage.\n1. The shape of sandbox create: a name, an image, a policy, an optional provider, and after the double dash the workload's command.\n2. sandbox create for Cyberbird, and the lines it printed.\n3. sandbox exec: the sandbox, no login shell, no terminal, and Cyberbird's command, with the two lines the run ended on.\n4. logs: the sandbox's own events. python3.12 is denied pypi.org:443, curl is denied the model server, and python3.12 is allowed to it: a rule admits a binary together with a destination.\n5. policy get --full: the effective policy. With no provider attached it holds no provider rules.",
+     "title_marker": "",
+     "figure": {
+      "stages": [
+       "r6c/command-hw2-1.png",
+       "r6c/command-hw2-2.png",
+       "r6c/command-hw2-3.png",
+       "r6c/command-hw2-4.png",
+       "r6c/command-hw2-5.png"
+      ],
+      "placement": "below"
+     },
+     "steps": [
+      {
+       "b": 0,
+       "fig": 1
+      },
+      {
+       "b": 1,
+       "fig": 2
+      },
+      {
+       "b": 2,
+       "fig": 3
+      },
+      {
+       "b": 3,
+       "fig": 4
+      },
+      {
+       "b": 4,
+       "fig": 5
+      },
+      {
+       "b": 4,
+       "fig": 5,
+       "close": true
+      }
+     ],
+     "closing": "Flags before the double dash are the operator's. The sandbox list then read: cyberbird  2026-10-16 02:42:20  Ready."
+    }
+   ]
+  }
+ ]
+}
