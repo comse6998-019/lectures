@@ -1,0 +1,124 @@
+$ openshell sandbox exec -n se-cbprobe --no-login-shell --no-tty --env OPENAI_BASE_URL=http://host.lima.internal:8080/v1 --env OPENAI_API_KEY=none -- sh -c 'cd /app && cyberbird reactive --alert-id bc284c6b --model openai:qwen3.8-27b 2>&1'   (start 23:20:35 EDT)
+
+reactive-bc284c6b
+model openai:qwen3.8-27b · budget 40 calls
+blue = decided   yellow = reasoning   white = the runtime acted
+
+    1.6s SCAN     bandit → 536 results  runs/scans/bandit.json
+    2.0s ALERT    bc284c6b  bandit:B608 at testcode/BenchmarkTest00283.py:46  1 of 536
+    2.0s          Possible SQL injection vector through string-based query construction.
+    2.2s MODEL →  thinking over 2 messages…
+    3.1s MODEL    controller → read_file  in=0 out=0
+    3.1s ROUTE    → tools  decided by model
+    3.1s TOOL →   read_file(path='testcode/BenchmarkTest00283.py')
+    3.1s TOOL ←   read_file ok  1665 chars
+    3.1s MODEL →  thinking over 4 messages…
+    4.3s MODEL    controller → read_file  in=0 out=0
+    4.3s ROUTE    → tools  decided by model
+    4.3s TOOL →   read_file(path='helpers/db_sqlite.py')
+    4.3s TOOL ←   read_file ok  1826 chars
+    4.3s MODEL →  thinking over 6 messages…
+    5.7s MODEL    controller → search  in=0 out=0
+    5.7s ROUTE    → tools  decided by model
+    5.7s TOOL →   search(pattern='cur\\.execute\\(sql,', glob='testcode/*.py')
+    5.7s TOOL ←   search ok  10 chars
+    5.7s MODEL →  thinking over 8 messages…
+    6.5s MODEL    controller → search  in=0 out=0
+    6.5s ROUTE    → tools  decided by model
+    6.5s TOOL →   search(pattern='execute\\(.*,\\s*\\(', glob='testcode/*.py')
+    6.5s TOOL ←   search ok  10 chars
+    6.5s MODEL →  thinking over 10 messages…
+    7.3s MODEL    controller → search  in=0 out=0
+    7.3s ROUTE    → tools  decided by model
+    7.3s TOOL →   search(pattern='\\.execute\\(', glob='testcode/*.py')
+    7.3s TOOL ←   search ok  51 chars
+    7.3s MODEL →  thinking over 12 messages…
+    8.3s MODEL    controller → search  in=0 out=0
+    8.3s ROUTE    → tools  decided by model
+    8.3s TOOL →   search(pattern='execute', glob='helpers/*.py')
+    8.3s TOOL ←   search ok  45 chars
+    8.3s MODEL →  thinking over 14 messages…
+   10.9s MODEL    controller → edit  in=0 out=0
+   10.9s ROUTE    → tools  decided by model
+   10.9s TOOL →   edit(path='testcode/BenchmarkTest00283.py', old="\t\tsql = f'S…)
+   10.9s TOOL ←   edit ok  47 chars
+   10.9s MODEL →  thinking over 16 messages…
+   12.2s MODEL    controller → no tool call — finished  in=0 out=0
+   12.2s ROUTE    → submit  decided by model
+   12.5s CHECK    applies=True touches_line=True rescan_clean=True
+   12.5s ROUTE    → accepted  decided by runtime
+   12.5s END      ACCEPTED
+
+trajectory (mermaid)
+sequenceDiagram
+    autonumber
+    participant C as Controller<br/>(model decides)
+    participant R as Runtime<br/>(executes, refuses, checks)
+    participant W as Workspace<br/>(pinned fixture)
+
+    Note over C: 1s · in=0 out=0
+    C->>R: read_file(path=testcode/BenchmarkTest00283.py)
+    R->>W: read_file
+    W-->>R: 1665 chars
+    R-->>C: observation
+    Note over C: 3s · in=0 out=0
+    C->>R: read_file(path=helpers/db_sqlite.py)
+    R->>W: read_file
+    W-->>R: 1826 chars
+    R-->>C: observation
+    Note over C: 4s · in=0 out=0
+    C->>R: search(pattern=cur\.execute\(sql,, glob=testco…)
+    R->>W: search
+    W-->>R: 10 chars
+    R-->>C: observation
+    Note over C: 5s · in=0 out=0
+    C->>R: search(pattern=execute\(.*,\s*\(, glob=testcod…)
+    R->>W: search
+    W-->>R: 10 chars
+    R-->>C: observation
+    Note over C: 6s · in=0 out=0
+    C->>R: search(pattern=\.execute\(, glob=testcode/*.py)
+    R->>W: search
+    W-->>R: 51 chars
+    R-->>C: observation
+    Note over C: 7s · in=0 out=0
+    C->>R: search(pattern=execute, glob=helpers/*.py)
+    R->>W: search
+    W-->>R: 45 chars
+    R-->>C: observation
+    Note over C: 9s · in=0 out=0
+    C->>R: edit(path=testcode/BenchmarkTest00283.py, ol…)
+    R->>W: edit
+    W-->>R: 47 chars
+    R-->>C: observation
+    Note over C: 11s · in=0 out=0
+    C->>R: no tool call — finished
+    R->>W: rescan
+    Note over R: applies=✓ touches_line=✓ rescan_clean=✓
+    Note over R: routed → accepted (runtime)
+    Note over C,W: ACCEPTED
+trajectory saved: /app/runs/reactive-bc284c6b.mmd
+
+terminal status : accepted
+model calls     : 8 of 40
+tokens          : input=0 output=0 cache_read=0 cache_write=0  (four counters, never summed)
+observations    : 7
+trace           : /app/runs/reactive-bc284c6b.jsonl
+
+patch:
+--- a/testcode/BenchmarkTest00283.py
++++ b/testcode/BenchmarkTest00283.py
+@@ -43,10 +43,10 @@
+ 
+ 		import helpers.db_sqlite
+ 
+-		sql = f'SELECT username from USERS where password = \'{bar}\''
++		sql = 'SELECT username from USERS where password = ?'
+ 		con = helpers.db_sqlite.get_connection()
+ 		cur = con.cursor()
+-		cur.execute(sql)
++		cur.execute(sql, (bar,))
+ 		RESPONSE += (
+ 			helpers.db_sqlite.results(cur, sql)
+ 		)
+exit 0 (end 23:20:49 EDT)

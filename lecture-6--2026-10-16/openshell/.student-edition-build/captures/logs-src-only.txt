@@ -1,0 +1,21 @@
+$ openshell logs se-cbprobe --source sandbox --since 10m   (23:20:55 EDT; lines with NET:, HTTP:, FS:, landlock, Permission or expectedresults)
+[1792120814.933] [sandbox] [OCSF ] [ocsf] NET:LISTEN [INFO] 127.0.0.1:3128
+[1792120814.946] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] host.docker.internal:17670
+[1792120838.698] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> host.lima.internal:8080 [policy:model_server engine:opa]
+[1792120838.698] [sandbox] [OCSF ] [ocsf] HTTP:POST [INFO] ALLOWED POST http://host.lima.internal:8080/v1/chat/completions
+[1792120839.567] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> host.lima.internal:8080 [policy:model_server engine:opa]
+[1792120839.568] [sandbox] [OCSF ] [ocsf] HTTP:POST [INFO] ALLOWED POST http://host.lima.internal:8080/v1/chat/completions
+[1792120840.759] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> host.lima.internal:8080 [policy:model_server engine:opa]
+[1792120840.759] [sandbox] [OCSF ] [ocsf] HTTP:POST [INFO] ALLOWED POST http://host.lima.internal:8080/v1/chat/completions
+[1792120842.188] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> host.lima.internal:8080 [policy:model_server engine:opa]
+[1792120842.190] [sandbox] [OCSF ] [ocsf] HTTP:POST [INFO] ALLOWED POST http://host.lima.internal:8080/v1/chat/completions
+[1792120843.018] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> host.lima.internal:8080 [policy:model_server engine:opa]
+[1792120843.018] [sandbox] [OCSF ] [ocsf] HTTP:POST [INFO] ALLOWED POST http://host.lima.internal:8080/v1/chat/completions
+[1792120843.749] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> host.lima.internal:8080 [policy:model_server engine:opa]
+[1792120843.750] [sandbox] [OCSF ] [ocsf] HTTP:POST [INFO] ALLOWED POST http://host.lima.internal:8080/v1/chat/completions
+[1792120844.734] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> host.lima.internal:8080 [policy:model_server engine:opa]
+[1792120844.735] [sandbox] [OCSF ] [ocsf] HTTP:POST [INFO] ALLOWED POST http://host.lima.internal:8080/v1/chat/completions
+[1792120844.829] [sandbox] [INFO ] [openshell_supervisor] Flushed activity summary to gateway denied_action_count=0 network_activity_count=7 sandbox_name=se-cbprobe
+[1792120847.394] [sandbox] [OCSF ] [ocsf] NET:OPEN [INFO] ALLOWED /usr/local/bin/python3.12(0) -> host.lima.internal:8080 [policy:model_server engine:opa]
+[1792120847.394] [sandbox] [OCSF ] [ocsf] HTTP:POST [INFO] ALLOWED POST http://host.lima.internal:8080/v1/chat/completions
+[1792120854.729] [sandbox] [INFO ] [openshell_supervisor] Flushed activity summary to gateway denied_action_count=0 network_activity_count=1 sandbox_name=se-cbprobe

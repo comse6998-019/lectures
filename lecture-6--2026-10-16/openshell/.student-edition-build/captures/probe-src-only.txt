@@ -1,0 +1,46 @@
+$ openshell sandbox create --name se-cbprobe --from cyberbird:1 --policy cyberbird-policy-src-only.yaml --no-auto-providers --detach -- sleep infinity   (23:20:14 EDT; policy sha256 fb82ec7b380cdf4c…)
+
+Created sandbox: se-cbprobe
+
+  [0.0s] Requesting compute...
+[0.0s] Sandbox allocated
+[0.0s] Pulling image cyberbird:1
+[0.0s] Image already present
+[0.1s] Starting sandbox Container created
+exit 0
+$ openshell sandbox list   (23:20:14 EDT)
+NAME        CREATED              PHASE
+hw2feas     2026-10-16 00:46:03  Ready
+hw2local    2026-10-16 02:45:34  Ready
+se-cbprobe  2026-10-16 03:20:14  Ready
+$ openshell sandbox exec -n se-cbprobe --no-login-shell --no-tty -- sh -c '<the probes below, one per --- line>'   (23:20:22 EDT)
+--- 1. who runs here
+uid=1000(agent) gid=1000(agent) groups=1000(agent)
+--- 2. the answer key (ground-truth/ is on neither list)
+cat: /app/fixtures/owasp-benchmark-python/ground-truth/expectedresults-0.1.csv: Permission denied
+rc=1
+cat: /app/fixtures/owasp-benchmark-python/ground-truth/expectedresults-0.1.csv: Permission denied
+--- 3. the withheld sibling case (src/ is read_only)
+'''
+rc=0
+--- 4. the folder above the key
+ls: cannot open directory '/app/fixtures/owasp-benchmark-python/ground-truth': Permission denied
+rc=2
+--- 5. Cyberbird starts?
+Usage: cyberbird [OPTIONS] COMMAND [ARGS]...
+
+  Cyberbird: vulnerability-patching agents, one subcommand each.
+
+rc=0
+/app/cyberbird/__init__.py
+rc=0
+--- 6. /app itself
+ls: cannot open directory '/app': Permission denied
+exit 0
+$ openshell sandbox delete se-cbprobe   (23:21:04 EDT)
+✓ Sandbox se-cbprobe deletion accepted; cleanup is pending
+exit 0
+$ openshell sandbox list
+NAME      CREATED              PHASE
+hw2feas   2026-10-16 00:46:03  Ready
+hw2local  2026-10-16 02:45:34  Ready
