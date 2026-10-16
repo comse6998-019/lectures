@@ -11,7 +11,7 @@ the two agents that call it, and the hand-over to the brief.
 
 Every code window quotes a real file and every output window a real capture:
   - code comes from cldk-mcp.ipynb (found by the start of its cell), cldk-demo/server.py (found by its first and last line)
-    and the scripts in hw2/captures/ (levels.py, client.py, codeact.py), read at generation time;
+    and the scripts in hw2/captures/ (levels.py, move3.py, client.py, codeact.py), read at generation time;
   - a line longer than the window holds at 8 pt (WIDTH characters of Aptos Mono) is shown broken inside its brackets, or
     with its trailing comment on the line above, and the shown lines must parse to the same Python syntax tree as the
     source lines (same_code), so the window shows the program that ran;
@@ -157,9 +157,9 @@ def same_code(source, shown):
 # Lines longer than WIDTH, as shown: broken inside their brackets, an implicit string concatenation, or a trailing comment
 # moved to its own line above. same_code checks every window that uses them.
 SHOWN = {
-    'print(len(an.callers_of("get_safe_value")), "callers of the helper HW1\'s false positives share")':
+    'print(len(an.callers_of("get_safe_value")), "callers of get_safe_value, which returns the constant \'bar\'")':
         ['print(len(an.callers_of("get_safe_value")),',
-         '      "callers of the helper HW1\'s false positives share")'],
+         '      "callers of get_safe_value, which returns the constant \'bar\'")'],
     '        g.add_edge(e.src.split("@")[-1].split(":")[0], e.dst.split("@")[-1].split(":")[0], var=e.var)':
         ['        g.add_edge(e.src.split("@")[-1].split(":")[0],',
          '                   e.dst.split("@")[-1].split(":")[0], var=e.var)'],
@@ -276,6 +276,10 @@ def checked(text):
 
 
 EXTERNAL_ERR = check("callers_of('execute'):")
+_callers = re.fullmatch(r"(\d+) callers in \d+ files, testcode/BenchmarkTest(\d+)\.py to testcode/BenchmarkTest(\d+)\.py, "
+                        r"all _post handlers: True \| in HW1's scope BenchmarkTest000\*: 0", check("callers_of('get_safe_value'):"))
+assert _callers, check("callers_of('get_safe_value'):")
+CALLER_RANGE = f"the _post handlers of BenchmarkTest{_callers.group(2)} to BenchmarkTest{_callers.group(3)}"
 
 
 def thousands(n):
@@ -289,7 +293,12 @@ LEVELS_CODE = code(span(script("levels.py"), "for level in", "    print("))
 REFUSAL_CODE = code(span(script("levels.py"), "try:", "    print("))
 LOCATE_CODE = code(cell("hit = an.locate("))
 BODY_CODE = code(cell("print(an.get_method_bodies("))
-MOVE3_CODE = code(cell("for c in an.callees_of("))
+# Move 3 is quoted from captures/move3.py: its for line is the notebook's move 3 cell verbatim, and its print line gives the
+# callers count a label that says what it is (the cell's own label, "callers of the helper HW1's false positives share",
+# is wrong: the 74 callers are BenchmarkTest01103 to 01230, outside HW1's scan scope BenchmarkTest000*.py).
+MOVE3_CODE = code(span(script("move3.py"), "for c in an.callees_of(", 'print(len(an.callers_of("get_safe_value"))'))
+assert MOVE3_CODE[0] == cell("for c in an.callees_of(")[0], "move3.py's for line no longer matches the notebook's move 3 cell"
+
 REACHES_CODE = code(cell("import networkx as nx\ndef reaches(")[1:9])      # the function, without the import and the prints
 assert REACHES_CODE[0].startswith("def reaches(") and REACHES_CODE[-1] == "    return None, None", REACHES_CODE
 COVERAGE_CODE = code(cell("cov = an.get_entrypoint_coverage()"))
@@ -299,7 +308,7 @@ CATALOG_CODE = json.dumps(json.loads("\n".join(CATALOG)), indent=1).splitlines()
 assert json.loads("\n".join(CATALOG_CODE)) == json.loads("\n".join(CATALOG)) and max(map(len, CATALOG_CODE)) <= WIDTH
 INSPECTOR = "npx @modelcontextprotocol/inspector --web --catalog cldk-demo/catalog.json"
 assert INSPECTOR in "".join(c for cl in NB["cells"] for c in cl["source"]), "the notebook no longer gives this command"
-CLIENT_CODE = code(span(script("client.py"), "async def main():", "        print(bad.is_error"))
+CLIENT_CODE = code(span(script("client.py"), "import asyncio", "asyncio.run(main())"))  # the whole program, docstring aside
 CODEACT_CODE = code(codeact_script())
 
 # ---------------------------------------------------------------- segment 1: CLDK essentials
@@ -433,16 +442,21 @@ SEG2 = [
     item("2.3", "window", "Move 3: callers and callees by name.",
          bullets=[B("`callers_of` covers declared callables,", "and `callees_of` adds externals."),
                   B("An ambiguous name", "raises `AmbiguousName`, and `in_module=` narrows it.")],
-         window=window("cldk-mcp.ipynb, section 2: what the handler calls, and who calls a helper", MOVE3_CODE,
+         window=window("move3.py: what the handler calls, and who calls a helper", MOVE3_CODE,
                        "output: file, line and callee, then the callers of get_safe_value",
                        output(capture("callees.txt") + capture("callers.txt"))),
          steps=steps((1, True), (2, True)),
          closing="One call lists the 74 handlers that use the constant helper.",
          notes=click_notes(
-             f"The window is section 2 of cldk-mcp.ipynb, {RUN}. callees_of lists what BenchmarkTest00099_post calls: an "
-             "external callee comes back with an empty file and line 0, and the two in the checkout carry their file and "
-             f"line. {N_CALLERS} callables call get_safe_value, the helper in helpers/separate_request.py that returns the "
-             "constant \"bar\", so a case that takes its value from it is safe. From hw2/captures/checks.py, the same day: "
+             f"The window is hw2/captures/move3.py, {RUN_SCRIPT}. Its for line is the move 3 cell of cldk-mcp.ipynb, "
+             "section 2, verbatim, and it runs on the same analysis object after the same locate. callees_of lists what "
+             "BenchmarkTest00099_post calls: an external callee comes back with an empty file and line 0, and the two in "
+             f"the checkout carry their file and line. {N_CALLERS} callables call get_safe_value, the helper in "
+             "helpers/separate_request.py that returns the constant \"bar\", so the value a case takes from it carries "
+             f"nothing from the request. checks.py lists them: {CALLER_RANGE}. None is in HW1's scan scope, "
+             "BenchmarkTest000*.py, so the notebook's own label for this count, \"callers of the helper HW1's false "
+             "positives share\", is wrong, and move3.py prints the count under a label that names the helper. "
+             "From hw2/captures/checks.py, the same day: "
              f"callers_of('execute') raises {EXTERNAL_ERR}, and callers_of('init') "
              "raises AmbiguousName because 1,230 callables match, with the hint to narrow by in_module or more of the "
              "dotted path.",
@@ -597,40 +611,46 @@ SEG4 = [
     item("4.1", "window", "The MCP agent calls tools through a client.",
          bullets=[B("The host", "starts the server from `mcp.json` and lists its tools."),
                   B("Every call", "passes the HW1 dispatcher, and a refusal sets `is_error`.")],
-         window=window("client.py: list the tools, call locate and dataflow, send a refused path", CLIENT_CODE,
-                       "output", output(CLIENT)),
-         steps=steps((1, False), (2, True)),
+         window=window("client.py: start the server over stdio, call its tools, send a refused path", CLIENT_CODE),
+         steps=[{"b": 1}, {"b": 2}, {"b": 2, "close": True}],
          closing="Your HW1 dispatcher stays, and the MCP client sits behind it.",
          notes=click_notes(
-             f"The window is hw2/captures/client.py, which starts cldk-demo/server.py over stdio with the SDK's Client "
-             f"(mcp {MCP_V}), {RUN_SCRIPT}. It is the four-call check the server was tested with on 2026-10-15, printing "
-             f"its answers: the four tool names, the callable locate returns, {N_EDGES} dataflow edges of which two leave "
-             "line 31, and the refused path with is_error True (isError on the wire). In HW2 the MCP agent's host reads "
+             f"The window is all of hw2/captures/client.py but its docstring, {RUN_SCRIPT}. It imports Client from mcp "
+             "and StdioServerParameters from mcp.client.stdio, names the command that starts cldk-demo/server.py, and "
+             "runs the four-call check the server was tested with on 2026-10-15. The program and its output do not both "
+             "fit at 8 pt, so the output is here. It printed four lines: "
+             + "; ".join(CLIENT) + ". "
+             f"That is the four tool names, the callable locate returns, {N_EDGES} dataflow edges of which two leave line "
+             "31, and the refused path with is_error True (isError on the wire). In HW2 the MCP agent's host reads "
              "the same command from mcp.json, records a discovery event after tools/list, offers the model the list "
              "minus host-only tools such as set_alert, and sends every call through the HW1 dispatcher before the client.",
              ["The host side: mcp.json says how to start the server, and tools/list, minus the host-only tools, is what "
               "the model is offered.",
-              "Every call goes through the dispatcher, then the client. The output arrives: names, the located handler, "
-              "the edges from line 31, and the refusal as an error result.",
+              "Every call goes through the dispatcher, then the client. The program printed the names, the located "
+              "handler, the edges from line 31, and the refusal as an error result with is_error True.",
               "The closing: nothing of HW1's dispatcher is thrown away, and the client sits behind it."])),
     item("4.2", "text", "The code-action agent acts in one process.",
          figure={"stages": stages("two-agents", 3), "placement": "below"},
          steps=paired(3),
-         bullets=[B("The code-action agent's action", "is a script, run with `exec`."),
-                  B("The MCP agent's action", "is a tool call, sent as `tools/call`."),
-                  B("Only the server", "sees each call, so only it can check one.")],
-         closing="A tool call crosses a boundary that can check it.",
+         bullets=[B("The code-action agent's action", "is a Python script, run by lecture 4's kernel with the analysis "
+                    "object in scope. The observation is what it printed."),
+                  B("The MCP agent's action", "is a tool call, sent to the server as `tools/call`."),
+                  B("Each tool call", "passes the dispatcher and the server, so each can check it.")],
+         closing="Each tool call can be checked on its own, and a script runs as one action.",
          notes=figure_notes(
              "Each team builds both agents on its HW1 loop. The code-action agent has one tool, run_python(script): the "
              "harness runs the script with exec in a namespace that holds the CLDK object and the workspace path, the "
              "kernel of lecture 4 (slide 137), and the observation is what the script prints or raises. The MCP agent "
              "sends every call through the HW1 dispatcher and then the MCP client to the server, which runs in another "
-             "process. The figure leaves out the MCP client and the sandbox on purpose.",
-             ["The code-action agent: the model sends a Python script, and the harness runs it with exec against the "
-              "CLDK object and the files, all in one process.",
-              "The MCP agent: the model's tool call goes through the host and its dispatcher, as tools/call, to a server "
-              "in another process.",
-              "The verdicts: inside one process there is no call to check, and on the server every call is checked."])),
+             "process, so the dispatcher can refuse a call before it leaves the host and the server can refuse it "
+             "again. HW2's trace names the one that refused in a refused result's refused_by field: dispatcher, server "
+             "or kernel. The figure leaves out the MCP client and the sandbox on purpose.",
+             ["The code-action agent: the model sends a Python script, lecture 4's kernel runs it with exec against the "
+              "CLDK object and the files, all in one process, and what the script printed comes back as the observation.",
+              "The MCP agent: the model's tool call goes to the host, where the dispatcher sees it, and on as tools/call "
+              "to a server in another process.",
+              "The verdicts: each tool call passes the dispatcher and the server, and either can check it. The calls "
+              "inside a script reach neither, so there is no call to check."])),
     item("4.3", "window", "The script asks the same dataflow question.",
          bullets=[B("No dispatcher", "sees the calls inside one script."),
                   B("The sandbox", "is the only fence, as lecture 4 found (slide 154)."),

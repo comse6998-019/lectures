@@ -1,1 +1,1 @@
-74 callers of the helper HW1's false positives share
+74 callers of get_safe_value, which returns the constant 'bar'

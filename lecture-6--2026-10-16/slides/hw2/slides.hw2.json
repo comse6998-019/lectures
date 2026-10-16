@@ -96,7 +96,7 @@
      "refs": [
       "[1] R. Krishna et al. Codellm-Devkit: a framework for contextualizing code LLMs with program analysis insights. FSE Companion 2025, pp. 308-318."
      ],
-     "notes": "CLDK is R. Krishna, R. Pan, R. Pavuluri, S. Tamilselvam, M. Vukovic and S. Sinha, Codellm-Devkit: A Framework for Contextualizing Code LLMs with Program Analysis Insights, FSE Companion 2025, pages 308 to 318 (arXiv 2410.13007). We use cldk 2.0.0 from PyPI, whose package metadata requires Python 3.11 or newer; for a Python project it runs codeanalyzer-python 1.5.3. The window is section 1 of cldk-mcp.ipynb, and its output was captured on 2026-10-15 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0): 3710 callables in 11 s, read from the cache that the first attach left in cldk-demo/owasp/.codeanalyzer. The checkout is OWASP BenchmarkPython at f1291485, the commit HW1 used.\n\nClick by click.\n1. CLDK is one Python API over static analysis of three languages, from the paper by Krishna and colleagues at FSE 2025.\n2. Installing it is one pip command, and it needs Python 3.11 or newer.\n3. For a Python project the analyzer is codeanalyzer-python: Jedi resolves the names and ast gives the structure.\n4. The project is HW1's OWASP checkout. The output arrives: 3,710 callables, attached from the cache in 11 seconds.\n5. The closing: one object per checkout, and every question we ask is a method call on it.",
+     "notes": "CLDK is R. Krishna, R. Pan, R. Pavuluri, S. Tamilselvam, M. Vukovic and S. Sinha, Codellm-Devkit: A Framework for Contextualizing Code LLMs with Program Analysis Insights, FSE Companion 2025, pages 308 to 318 (arXiv 2410.13007). We use cldk 2.0.0 from PyPI, whose package metadata requires Python 3.11 or newer; for a Python project it runs codeanalyzer-python 1.5.3. The window is section 1 of cldk-mcp.ipynb, and its output was captured on 2026-10-16 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0): 3710 callables in 9 s, read from the cache that the first attach left in cldk-demo/owasp/.codeanalyzer. The checkout is OWASP BenchmarkPython at f1291485, the commit HW1 used.\n\nClick by click.\n1. CLDK is one Python API over static analysis of three languages, from the paper by Krishna and colleagues at FSE 2025.\n2. Installing it is one pip command, and it needs Python 3.11 or newer.\n3. For a Python project the analyzer is codeanalyzer-python: Jedi resolves the names and ast gives the structure.\n4. The project is HW1's OWASP checkout. The output arrives: 3,710 callables, attached from the cache in 9 seconds.\n5. The closing: one object per checkout, and every question we ask is a method call on it.",
      "window": {
       "label": "cldk-mcp.ipynb, section 1: attach the analysis to the checkout",
       "lang": "python",
@@ -110,7 +110,7 @@
       "output": {
        "label": "output: a warm attach, read from the cache in cldk-demo/owasp/.codeanalyzer",
        "lines": [
-        "3710 callables, 11 s"
+        "3710 callables, 9 s"
        ]
       }
      },
@@ -182,7 +182,7 @@
       ]
      ],
      "refs": [],
-     "notes": "levels.py is in slides/hw2/captures. For each level it copies cldk-demo/owasp without its analysis cache and attaches once, so each row is a first attach. Measured on 2026-10-15 on this Mac with cldk 2.0.0 and codeanalyzer-python 1.5.3: symbol table 182 s, call graph 219 s, program dependency graph 220 s, system dependency graph 222 s, 3,710 callables at every level. An earlier run the same evening, also with other work on the machine, gave 135 s, 131 s, 158 s, 217 s for the same four levels. On this project the levels differ less than their names suggest; every first attach also creates a virtualenv for the analyzer inside the copy's cache folder. The specification's earlier measurement, with 2.0.0rc8, was 241 s at call-graph level and 151 s at the dependency level. From the cache an attach takes seconds (11 s on the previous slide). The notebook and HW2's server use program_dependency_graph, the lowest level with dataflow.\n\nClick by click.\n1. The two cheap levels: the symbol table knows what is declared, and the call graph knows who calls whom.\n2. The two dependency levels add flow, inside a callable and across callables. The output arrives: every first attach took minutes on this Mac, the system dependency graph the longest.\n3. The closing: choose the level the questions need, pay once, and read the cache after that.",
+     "notes": "levels.py is in slides/hw2/captures. For each level it copies cldk-demo/owasp without its analysis cache and attaches once, so each row is a first attach. Measured on 2026-10-15 on this Mac with cldk 2.0.0 and codeanalyzer-python 1.5.3: symbol table 182 s, call graph 219 s, program dependency graph 220 s, system dependency graph 222 s, 3,710 callables at every level. An earlier run the same evening, also with other work on the machine, gave 135 s, 131 s, 158 s, 217 s for the same four levels. On this project the levels differ less than their names suggest; every first attach also creates a virtualenv for the analyzer inside the copy's cache folder. The specification's earlier measurement, with 2.0.0rc8, was 241 s at call-graph level and 151 s at the dependency level. From the cache an attach takes seconds (9 s on the previous slide). The notebook and HW2's server use program_dependency_graph, the lowest level with dataflow.\n\nClick by click.\n1. The two cheap levels: the symbol table knows what is declared, and the call graph knows who calls whom.\n2. The two dependency levels add flow, inside a callable and across callables. The output arrives: every first attach took minutes on this Mac, the system dependency graph the longest.\n3. The closing: choose the level the questions need, pay once, and read the cache after that.",
      "window": {
       "label": "levels.py: the first attach at each level, each on a fresh copy of the checkout",
       "lang": "python",
@@ -435,7 +435,7 @@
       ]
      ],
      "refs": [],
-     "notes": "The window is section 2 of cldk-mcp.ipynb, captured on 2026-10-15 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). Bandit 1.9.4 reports B608 at line 46 of testcode/BenchmarkTest00099.py, the f-string that builds the SQL query, and locate returns the enclosing handler with its full signature. The two other outcomes come from hw2/captures/checks.py, run the same day: line 1 of app.py gives callable None and the diagnostic module_scope, \"line 1 is at module scope in app.py.\", and a file that does not exist gives callable None and file_not_in_graph, \"is not covered by any analysed module\". The result also carries node_id, the statement's own id, which the next slide uses.\n\nClick by click.\n1. The input is exactly what a scanner alert carries: a path relative to the checkout and a line number.\n2. The output arrives: the full signature, testcode.BenchmarkTest00099.init.BenchmarkTest00099_post, because the handler is nested in init, and the source starts at its def line.\n3. Outside any callable the answer is still unambiguous: callable is None, and a diagnostic says module scope or file not in the graph.\n4. The closing: an alert's file and line become the name that the rest of the API takes.",
+     "notes": "The window is section 2 of cldk-mcp.ipynb, captured on 2026-10-16 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). Bandit 1.9.4 reports B608 at line 46 of testcode/BenchmarkTest00099.py, the f-string that builds the SQL query, and locate returns the enclosing handler with its full signature. The two other outcomes come from hw2/captures/checks.py, run the same day: line 1 of app.py gives callable None and the diagnostic module_scope, \"line 1 is at module scope in app.py.\", and a file that does not exist gives callable None and file_not_in_graph, \"is not covered by any analysed module\". The result also carries node_id, the statement's own id, which the next slide uses.\n\nClick by click.\n1. The input is exactly what a scanner alert carries: a path relative to the checkout and a line number.\n2. The output arrives: the full signature, testcode.BenchmarkTest00099.init.BenchmarkTest00099_post, because the handler is nested in init, and the source starts at its def line.\n3. Outside any callable the answer is still unambiguous: callable is None, and a diagnostic says module scope or file not in the graph.\n4. The closing: an alert's file and line become the name that the rest of the API takes.",
      "window": {
       "label": "cldk-mcp.ipynb, section 2: the callable that holds line 46",
       "lang": "python",
@@ -520,7 +520,7 @@
       ]
      ],
      "refs": [],
-     "notes": "The window is section 2 of cldk-mcp.ipynb, captured on 2026-10-15 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0); the output is the first eight of the body's 28 lines, and the SQL string is line 19 of the body, line 46 of the file. From hw2/captures/checks.py, the same day: get_method_bodies of an unknown signature returns {}, an empty dict, and get_source with the node_id that locate returned gives sql = f'SELECT username from USERS where password = \\'{bar}\\''. The body is what the agent should read: HW1's read rule allows the open case and no other, and the whole file would also carry the GET handler.\n\nClick by click.\n1. get_method_bodies is a bulk call: a list of signatures in, a dict keyed by signature out. The output shows the handler's first lines.\n2. A signature without a body is left out of the dict rather than mapped to None, so the agent tests membership first.\n3. Below the callable, get_source with the node id from locate returns the single statement, here the f-string at line 46.\n4. The closing: the agent reads the function the alert names and nothing else, which is HW1's read rule.",
+     "notes": "The window is section 2 of cldk-mcp.ipynb, captured on 2026-10-16 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0); the output is the first eight of the body's 28 lines, and the SQL string is line 19 of the body, line 46 of the file. From hw2/captures/checks.py, the same day: get_method_bodies of an unknown signature returns {}, an empty dict, and get_source with the node_id that locate returned gives sql = f'SELECT username from USERS where password = \\'{bar}\\''. The body is what the agent should read: HW1's read rule allows the open case and no other, and the whole file would also carry the GET handler.\n\nClick by click.\n1. get_method_bodies is a bulk call: a list of signatures in, a dict keyed by signature out. The output shows the handler's first lines.\n2. A signature without a body is left out of the dict rather than mapped to None, so the agent tests membership first.\n3. Below the callable, get_source with the node id from locate returns the single statement, here the f-string at line 46.\n4. The closing: the agent reads the function the alert names and nothing else, which is HW1's read rule.",
      "window": {
       "label": "cldk-mcp.ipynb, section 2: the body of the handler, by its signature",
       "lang": "python",
@@ -617,14 +617,14 @@
       ]
      ],
      "refs": [],
-     "notes": "The window is section 2 of cldk-mcp.ipynb, captured on 2026-10-15 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). callees_of lists what BenchmarkTest00099_post calls: an external callee comes back with an empty file and line 0, and the two in the checkout carry their file and line. 74 callables call get_safe_value, the helper in helpers/separate_request.py that returns the constant \"bar\", so a case that takes its value from it is safe. From hw2/captures/checks.py, the same day: callers_of('execute') raises SelectorNotInGraph: 1 of 1 callable not in graph: 'execute', and callers_of('init') raises AmbiguousName because 1,230 callables match, with the hint to narrow by in_module or more of the dotted path.\n\nClick by click.\n1. callers_of answers for callables declared in the checkout, and an external name raises. callees_of includes externals: Cursor.execute is the sink Bandit worried about. Then the callers line: 74 handlers call the helper.\n2. A bare name such as init matches 1,230 callables, one per case, so CLDK raises with the candidates instead of picking one.\n3. The closing: one call tells the agent which cases depend on the constant helper.",
+     "notes": "The window is hw2/captures/move3.py, run on 2026-10-16 by hw2/captures/capture.py in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). Its for line is the move 3 cell of cldk-mcp.ipynb, section 2, verbatim, and it runs on the same analysis object after the same locate. callees_of lists what BenchmarkTest00099_post calls: an external callee comes back with an empty file and line 0, and the two in the checkout carry their file and line. 74 callables call get_safe_value, the helper in helpers/separate_request.py that returns the constant \"bar\", so the value a case takes from it carries nothing from the request. checks.py lists them: the _post handlers of BenchmarkTest01103 to BenchmarkTest01230. None is in HW1's scan scope, BenchmarkTest000*.py, so the notebook's own label for this count, \"callers of the helper HW1's false positives share\", is wrong, and move3.py prints the count under a label that names the helper. From hw2/captures/checks.py, the same day: callers_of('execute') raises SelectorNotInGraph: 1 of 1 callable not in graph: 'execute', and callers_of('init') raises AmbiguousName because 1,230 callables match, with the hint to narrow by in_module or more of the dotted path.\n\nClick by click.\n1. callers_of answers for callables declared in the checkout, and an external name raises. callees_of includes externals: Cursor.execute is the sink Bandit worried about. Then the callers line: 74 handlers call the helper.\n2. A bare name such as init matches 1,230 callables, one per case, so CLDK raises with the candidates instead of picking one.\n3. The closing: one call tells the agent which cases depend on the constant helper.",
      "window": {
-      "label": "cldk-mcp.ipynb, section 2: what the handler calls, and who calls a helper",
+      "label": "move3.py: what the handler calls, and who calls a helper",
       "lang": "python",
       "lines": [
        "for c in an.callees_of(hit.callable.name): print(c.file, c.line, c.callable)",
        "print(len(an.callers_of(\"get_safe_value\")),",
-       "      \"callers of the helper HW1's false positives share\")"
+       "      \"callers of get_safe_value, which returns the constant 'bar'\")"
       ],
       "output": {
        "label": "output: file, line and callee, then the callers of get_safe_value",
@@ -639,7 +639,7 @@
         "helpers/db_sqlite.py 30 helpers.db_sqlite.get_connection",
         "helpers/db_sqlite.py 33 helpers.db_sqlite.results",
         " 0 werkzeug.datastructures.structures.TypeConversionDict.get",
-        "74 callers of the helper HW1's false positives share"
+        "74 callers of get_safe_value, which returns the constant 'bar'"
        ]
       }
      },
@@ -809,7 +809,7 @@
       ]
      ],
      "refs": [],
-     "notes": "The window is the reaches function of cldk-mcp.ipynb, section 2; the output is its four calls in sections 2 and 3, captured on 2026-10-15 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). Each DDG edge names a source node and a target node, whose ids end in @line:col, and the variable that flows; reaches keeps the line, builds a networkx DiGraph and asks for a path. The four calls printed: 00099: request (31) -> sql string (46): (['31', '41', '42', '46'], ['param', 'conf52528.get', 'bar']); 00099: request (31) -> execute (49):    (['31', '41', '42', '46', '49'], ['param', 'conf52528.get', 'bar', 'sql']); 00011: request (39) -> sql string (47): (None, None); 00011: request (39) -> execute (50):    (['39', '43', '50'], ['param', 'bar']). The window shows the two that ask about the SQL string. CLDK's value-name predicates (resolve_value, flows_to_argument, taint) resolve parameters, captured globals and closure captures, so for a local variable such as bar the per-callable get_ddg is the dependable call. CLDK's own reaches method answers a different question, whether one callable can call another.\n\nClick by click.\n1. The code: the helper takes a handler and two lines, keys the dependence edges by line, and asks networkx for a path.\n2. The output arrives: 00099 has a path from the request to the SQL string, 00011 has none, and both reach their execute call.\n3. Why not a higher-level predicate: resolve_value and flows_to_argument resolve parameters, globals and captures, and bar is a local.\n4. The closing: the classifier's question is a path search, and only the true positive has the path.",
+     "notes": "The window is the reaches function of cldk-mcp.ipynb, section 2; the output is its four calls in sections 2 and 3, captured on 2026-10-16 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). Each DDG edge names a source node and a target node, whose ids end in @line:col, and the variable that flows; reaches keeps the line, builds a networkx DiGraph and asks for a path. The four calls printed: 00099: request (31) -> sql string (46): (['31', '41', '42', '46'], ['param', 'conf52528.get', 'bar']); 00099: request (31) -> execute (49):    (['31', '41', '42', '46', '49'], ['param', 'conf52528.get', 'bar', 'sql']); 00011: request (39) -> sql string (47): (None, None); 00011: request (39) -> execute (50):    (['39', '43', '50'], ['param', 'bar']). The window shows the two that ask about the SQL string. CLDK's value-name predicates (resolve_value, flows_to_argument, taint) resolve parameters, captured globals and closure captures, so for a local variable such as bar the per-callable get_ddg is the dependable call. CLDK's own reaches method answers a different question, whether one callable can call another.\n\nClick by click.\n1. The code: the helper takes a handler and two lines, keys the dependence edges by line, and asks networkx for a path.\n2. The output arrives: 00099 has a path from the request to the SQL string, 00011 has none, and both reach their execute call.\n3. Why not a higher-level predicate: resolve_value and flows_to_argument resolve parameters, globals and captures, and bar is a local.\n4. The closing: the classifier's question is a path search, and only the true positive has the path.",
      "window": {
       "label": "cldk-mcp.ipynb, sections 2 and 3: reaches, a path over a handler's dependence edges",
       "lang": "python",
@@ -927,7 +927,7 @@
       ]
      ],
      "refs": [],
-     "notes": "The window is section 4 of cldk-mcp.ipynb, captured on 2026-10-15 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). get_entrypoints returns 2,463 entry points, and get_entrypoint_coverage reports the frameworks it detected, click and flask, and 2,460 app.route decorators it could not resolve; its own docstring says the detection pass under-approximates by design, so silence is its failure mode. An empty list from get_entrypoints cannot tell \"none\" from \"missed\", and the coverage can. has_resolution_edges says whether get_callsites_for can resolve call sites on this backend; checks.py prints True on the local backend, and the flag is false only on a Neo4j graph built below the level where resolution runs.\n\nClick by click.\n1. The output: thousands of entry points, and nearly as many route decorators left unresolved, so a short list would say little.\n2. The rule: read the diagnostics and the coverage before an empty answer becomes a no.\n3. The same rule for call sites: has_resolution_edges explains a None callee before the agent reads it as unresolved.\n4. The closing: an answer that could mean two things is a defect, so the agent asks which.",
+     "notes": "The window is section 4 of cldk-mcp.ipynb, captured on 2026-10-16 by hw2/captures/capture.py, which executes the notebook headless in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). get_entrypoints returns 2,463 entry points, and get_entrypoint_coverage reports the frameworks it detected, click and flask, and 2,460 app.route decorators it could not resolve; its own docstring says the detection pass under-approximates by design, so silence is its failure mode. An empty list from get_entrypoints cannot tell \"none\" from \"missed\", and the coverage can. has_resolution_edges says whether get_callsites_for can resolve call sites on this backend; checks.py prints True on the local backend, and the flag is false only on a Neo4j graph built below the level where resolution runs.\n\nClick by click.\n1. The output: thousands of entry points, and nearly as many route decorators left unresolved, so a short list would say little.\n2. The rule: read the diagnostics and the coverage before an empty answer becomes a no.\n3. The same rule for call sites: has_resolution_edges explains a None callee before the agent reads it as unresolved.\n4. The closing: an answer that could mean two things is a defect, so the agent asks which.",
      "window": {
       "label": "cldk-mcp.ipynb, section 4: the entry points and the report on how they were found",
       "lang": "python",
@@ -1285,11 +1285,16 @@
       ]
      ],
      "refs": [],
-     "notes": "The window is hw2/captures/client.py, which starts cldk-demo/server.py over stdio with the SDK's Client (mcp 2.3.0), run on 2026-10-15 by hw2/captures/capture.py in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). It is the four-call check the server was tested with on 2026-10-15, printing its answers: the four tool names, the callable locate returns, 47 dataflow edges of which two leave line 31, and the refused path with is_error True (isError on the wire). In HW2 the MCP agent's host reads the same command from mcp.json, records a discovery event after tools/list, offers the model the list minus host-only tools such as set_alert, and sends every call through the HW1 dispatcher before the client.\n\nClick by click.\n1. The host side: mcp.json says how to start the server, and tools/list, minus the host-only tools, is what the model is offered.\n2. Every call goes through the dispatcher, then the client. The output arrives: names, the located handler, the edges from line 31, and the refusal as an error result.\n3. The closing: nothing of HW1's dispatcher is thrown away, and the client sits behind it.",
+     "notes": "The window is all of hw2/captures/client.py but its docstring, run on 2026-10-16 by hw2/captures/capture.py in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0). It imports Client from mcp and StdioServerParameters from mcp.client.stdio, names the command that starts cldk-demo/server.py, and runs the four-call check the server was tested with on 2026-10-15. The program and its output do not both fit at 8 pt, so the output is here. It printed four lines: ['locate', 'source', 'callers', 'dataflow']; BenchmarkTest00099_post; 47 edges; line 31 flows to [(32, 'param'), (41, 'param')]; True Error executing tool locate: refused: ../expectedresults-0.1.csv is not a file of the target. That is the four tool names, the callable locate returns, 47 dataflow edges of which two leave line 31, and the refused path with is_error True (isError on the wire). In HW2 the MCP agent's host reads the same command from mcp.json, records a discovery event after tools/list, offers the model the list minus host-only tools such as set_alert, and sends every call through the HW1 dispatcher before the client.\n\nClick by click.\n1. The host side: mcp.json says how to start the server, and tools/list, minus the host-only tools, is what the model is offered.\n2. Every call goes through the dispatcher, then the client. The program printed the names, the located handler, the edges from line 31, and the refusal as an error result with is_error True.\n3. The closing: nothing of HW1's dispatcher is thrown away, and the client sits behind it.",
      "window": {
-      "label": "client.py: list the tools, call locate and dataflow, send a refused path",
+      "label": "client.py: start the server over stdio, call its tools, send a refused path",
       "lang": "python",
       "lines": [
+       "import asyncio",
+       "from mcp import Client",
+       "from mcp.client.stdio import StdioServerParameters",
+       "SERVER = StdioServerParameters(command=\".venv/bin/python\", args=[\"cldk-demo/server.py\"])",
+       "CASE = {\"path\": \"testcode/BenchmarkTest00099.py\", \"line\": 46}",
        "async def main():",
        "    async with Client(SERVER) as c:",
        "        print([t.name for t in (await c.list_tools()).tools])",
@@ -1298,31 +1303,19 @@
        "        from31 = [(e[\"to_line\"], e[\"var\"]) for e in edges if e[\"from_line\"] == 31]",
        "        print(len(edges), \"edges; line 31 flows to\", from31)",
        "        bad = await c.call_tool(\"locate\", {\"path\": \"../expectedresults-0.1.csv\", \"line\": 1})",
-       "        print(bad.is_error, bad.content[0].text)"
-      ],
-      "output": {
-       "label": "output",
-       "lines": [
-        "['locate', 'source', 'callers', 'dataflow']",
-        "BenchmarkTest00099_post",
-        "47 edges; line 31 flows to [(32, 'param'), (41, 'param')]",
-        "True Error executing tool locate: refused: ../expectedresults-0.1.csv is not a file of the",
-        "  target"
-       ]
-      }
+       "        print(bad.is_error, bad.content[0].text)",
+       "asyncio.run(main())"
+      ]
      },
      "steps": [
       {
-       "b": 1,
-       "out": false
+       "b": 1
+      },
+      {
+       "b": 2
       },
       {
        "b": 2,
-       "out": true
-      },
-      {
-       "b": 2,
-       "out": true,
        "close": true
       }
      ],
@@ -1340,15 +1333,7 @@
        ],
        [
         "r",
-        " is a script, run with "
-       ],
-       [
-        "c",
-        "exec"
-       ],
-       [
-        "r",
-        "."
+        " is a Python script, run by lecture 4's kernel with the analysis object in scope. The observation is what it printed."
        ]
       ],
       [
@@ -1358,7 +1343,7 @@
        ],
        [
         "r",
-        " is a tool call, sent as "
+        " is a tool call, sent to the server as "
        ],
        [
         "c",
@@ -1372,16 +1357,16 @@
       [
        [
         "b",
-        "Only the server"
+        "Each tool call"
        ],
        [
         "r",
-        " sees each call, so only it can check one."
+        " passes the dispatcher and the server, so each can check it."
        ]
       ]
      ],
      "refs": [],
-     "notes": "Each team builds both agents on its HW1 loop. The code-action agent has one tool, run_python(script): the harness runs the script with exec in a namespace that holds the CLDK object and the workspace path, the kernel of lecture 4 (slide 137), and the observation is what the script prints or raises. The MCP agent sends every call through the HW1 dispatcher and then the MCP client to the server, which runs in another process. The figure leaves out the MCP client and the sandbox on purpose.\n\nThe figure, stage by stage.\n1. The code-action agent: the model sends a Python script, and the harness runs it with exec against the CLDK object and the files, all in one process.\n2. The MCP agent: the model's tool call goes through the host and its dispatcher, as tools/call, to a server in another process.\n3. The verdicts: inside one process there is no call to check, and on the server every call is checked.",
+     "notes": "Each team builds both agents on its HW1 loop. The code-action agent has one tool, run_python(script): the harness runs the script with exec in a namespace that holds the CLDK object and the workspace path, the kernel of lecture 4 (slide 137), and the observation is what the script prints or raises. The MCP agent sends every call through the HW1 dispatcher and then the MCP client to the server, which runs in another process, so the dispatcher can refuse a call before it leaves the host and the server can refuse it again. HW2's trace names the one that refused in a refused result's refused_by field: dispatcher, server or kernel. The figure leaves out the MCP client and the sandbox on purpose.\n\nThe figure, stage by stage.\n1. The code-action agent: the model sends a Python script, lecture 4's kernel runs it with exec against the CLDK object and the files, all in one process, and what the script printed comes back as the observation.\n2. The MCP agent: the model's tool call goes to the host, where the dispatcher sees it, and on as tools/call to a server in another process.\n3. The verdicts: each tool call passes the dispatcher and the server, and either can check it. The calls inside a script reach neither, so there is no call to check.",
      "figure": {
       "stages": [
        "hw2/two-agents-1.png",
@@ -1409,7 +1394,7 @@
        "close": true
       }
      ],
-     "closing": "A tool call crosses a boundary that can check it."
+     "closing": "Each tool call can be checked on its own, and a script runs as one action."
     },
     {
      "id": "4.3",
@@ -1448,7 +1433,7 @@
       ]
      ],
      "refs": [],
-     "notes": "hw2/captures/codeact.py holds lecture 4's kernel (kernel.py, lecture 4 slide 137: exec with stdout redirected, a traceback on error) with namespace {\"an\": an}, the analysis object of the notebook, and runs this script through it (run on 2026-10-15 by hw2/captures/capture.py in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0)). The script locates both alerts, builds each handler's dependence graph by line and asks for a path: 00099 prints the same path as reaches, ['31', '41', '42', '46'], and 00011 prints False. Our first draft converted the node ids to integers and the kernel returned a ValueError traceback on the node 'entry'; that is the observation a model would have read and fixed. Lecture 4, slide 154, asked where CodeAct can confine writes, and the answer was the operating system.\n\nClick by click.\n1. The harness sees one script, so none of the calls inside it passes a dispatcher. The observation arrives: the path for 00099 and False for 00011.\n2. The only place left to confine the script is below the interpreter, the sandbox, as lecture 4 concluded.\n3. The brief's rules, read, write and network, bind both agents, and only the MCP agent has a server to hold the per-alert parts.\n4. The closing: a script cannot be checked call by call, so both agents run inside OpenShell.",
+     "notes": "hw2/captures/codeact.py holds lecture 4's kernel (kernel.py, lecture 4 slide 137: exec with stdout redirected, a traceback on error) with namespace {\"an\": an}, the analysis object of the notebook, and runs this script through it (run on 2026-10-16 by hw2/captures/capture.py in the lecture's .venv (Python 3.12, cldk 2.0.0, codeanalyzer-python 1.5.3, mcp 2.3.0)). The script locates both alerts, builds each handler's dependence graph by line and asks for a path: 00099 prints the same path as reaches, ['31', '41', '42', '46'], and 00011 prints False. Our first draft converted the node ids to integers and the kernel returned a ValueError traceback on the node 'entry'; that is the observation a model would have read and fixed. Lecture 4, slide 154, asked where CodeAct can confine writes, and the answer was the operating system.\n\nClick by click.\n1. The harness sees one script, so none of the calls inside it passes a dispatcher. The observation arrives: the path for 00099 and False for 00011.\n2. The only place left to confine the script is below the interpreter, the sandbox, as lecture 4 concluded.\n3. The brief's rules, read, write and network, bind both agents, and only the MCP agent has a server to hold the per-alert parts.\n4. The closing: a script cannot be checked call by call, so both agents run inside OpenShell.",
      "window": {
       "label": "the model's script, run by lecture 4's kernel with namespace {\"an\": an}",
       "lang": "python",

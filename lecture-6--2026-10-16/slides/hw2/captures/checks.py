@@ -1,5 +1,6 @@
 """The answers the slides state without a window: locate outside a callable and on a file the analyzer never saw, a body
-node's source, a signature with no body, an ambiguous and an undeclared name, and the resolution flag. checks.txt is what
+node's source, a signature with no body, an ambiguous and an undeclared name, the resolution flag,
+and where the callers of get_safe_value are. checks.txt is what
 it prints; the speaker notes quote it.
 
     cd lecture-6--2026-10-16 && SYSTEM_PYTHON=$(uv python find 3.12) .venv/bin/python slides/hw2/captures/checks.py
@@ -21,3 +22,8 @@ for name in ["init", "execute"]:
 print("callers_of('init', in_module='testcode/BenchmarkTest00099.py'):",
       [c.callable for c in an.callers_of("init", in_module="testcode/BenchmarkTest00099.py")])
 print("has_resolution_edges:", an.has_resolution_edges)
+callers = an.callers_of("get_safe_value")
+files = sorted({c.file for c in callers})
+print("callers_of('get_safe_value'):", len(callers), "callers in", len(files), "files,", files[0], "to", files[-1] + ",",
+      "all _post handlers:", all(c.callable.endswith("_post") for c in callers), "| in HW1's scope BenchmarkTest000*:",
+      sum(f.startswith("testcode/BenchmarkTest000") for f in files))

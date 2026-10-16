@@ -6,3 +6,4 @@ callers_of('init'): AmbiguousName: 'init' is ambiguous: 1230 callables match. Na
 callers_of('execute'): SelectorNotInGraph: 1 of 1 callable not in graph: 'execute'
 callers_of('init', in_module='testcode/BenchmarkTest00099.py'): []
 has_resolution_edges: True
+callers_of('get_safe_value'): 74 callers in 74 files, testcode/BenchmarkTest01103.py to testcode/BenchmarkTest01230.py, all _post handlers: True | in HW1's scope BenchmarkTest000*: 0
