@@ -1,0 +1,329 @@
+% Lecture 5 references. Every entry was checked against its source on 2026-10-15
+% (title, author or publisher, date, identifiers); npm-postmark-mcp and openclaw-docs-exec-approvals
+% were added and checked on 2026-10-16. Keys are listed in the week brief.
+
+% ---- The Model Context Protocol ------------------------------------------------------
+
+@misc{mcp-spec-2026,
+  author       = {{Model Context Protocol}},
+  title        = {Model Context Protocol Specification, Revision 2026-07-28},
+  year         = {2026},
+  howpublished = {\url{https://modelcontextprotocol.io/specification/2026-07-28}},
+  note         = {Pages cited: overview, architecture, base protocol, transports (stdio, Streamable HTTP), cancellation, tools, schema reference, changelog. Accessed 2026-10-15}
+}
+@misc{mcp-intro,
+  author       = {{Model Context Protocol}},
+  title        = {What is the Model Context Protocol ({MCP})?},
+  year         = {2026},
+  howpublished = {\url{https://modelcontextprotocol.io/docs/getting-started/intro}},
+  note         = {Accessed 2026-10-15}
+}
+@misc{mcp-connect-local,
+  author       = {{Model Context Protocol}},
+  title        = {Connect to local {MCP} servers},
+  year         = {2026},
+  howpublished = {\url{https://modelcontextprotocol.io/docs/develop/connect-local-servers}},
+  note         = {Claude Desktop and the Filesystem server as the example. Accessed 2026-10-15}
+}
+@misc{mcp-python-sdk,
+  author       = {{Model Context Protocol}},
+  title        = {{MCP} {Python} {SDK}: the official {Python} {SDK} for {Model Context Protocol} servers and clients},
+  year         = {2026},
+  howpublished = {\url{https://github.com/modelcontextprotocol/python-sdk}},
+  note         = {PyPI package \texttt{mcp}. Accessed 2026-10-15}
+}
+@misc{mcp-servers,
+  author       = {{Model Context Protocol}},
+  title        = {Model Context Protocol servers: reference implementations},
+  year         = {2026},
+  howpublished = {\url{https://github.com/modelcontextprotocol/servers}},
+  note         = {Reference servers maintained by the MCP steering group: Everything, Fetch, Filesystem, Git, Memory, Sequential Thinking, Time. Accessed 2026-10-15}
+}
+@misc{mcp-inspector,
+  author       = {{Model Context Protocol}},
+  title        = {{MCP} {Inspector}: visual testing tool for {MCP} servers},
+  year         = {2026},
+  howpublished = {\url{https://github.com/modelcontextprotocol/inspector}},
+  note         = {npm package \texttt{@modelcontextprotocol/inspector}. Accessed 2026-10-15}
+}
+@misc{anthropic2024mcp,
+  author       = {{Anthropic}},
+  title        = {Introducing the {Model Context Protocol}},
+  year         = {2024},
+  month        = nov,
+  howpublished = {\url{https://www.anthropic.com/news/model-context-protocol}},
+  note         = {Published 2024-11-25. Accessed 2026-10-15}
+}
+@misc{langchain-tools,
+  author       = {{LangChain}},
+  title        = {Tools},
+  year         = {2026},
+  howpublished = {LangChain documentation, \url{https://docs.langchain.com/oss/python/langchain/tools}},
+  note         = {Tool calling in LangChain and LangGraph. Accessed 2026-10-15}
+}
+
+% ---- The MCP Inspector vulnerability and its weakness class ---------------------------
+
+@misc{ghsa-7f8r-inspector,
+  author       = {{GitHub Security Advisory}},
+  title        = {Inspector proxy server vulnerabilities ({GHSA-7f8r-222p-6f5g}, {CVE-2025-49596})},
+  year         = {2025},
+  month        = jun,
+  howpublished = {\url{https://github.com/modelcontextprotocol/inspector/security/advisories/GHSA-7f8r-222p-6f5g}},
+  note         = {Published 2025-06-13. CVSS 4.0 base score 9.4 (critical). Affected: \texttt{@modelcontextprotocol/inspector} below 0.14.1; patched in 0.14.1. Credit: R{\'e}my Marot (Tenable). Accessed 2026-10-15}
+}
+@misc{lumelsky2025inspector,
+  author       = {Lumelsky, Avi},
+  title        = {Critical {RCE} Vulnerability in {Anthropic} {MCP} {Inspector} -- {CVE-2025-49596}},
+  year         = {2025},
+  month        = jun,
+  howpublished = {Oligo Security blog, \url{https://www.oligo.security/blog/critical-rce-vulnerability-in-anthropic-mcp-inspector-cve-2025-49596}},
+  note         = {Published 2025-06-27. Accessed 2026-10-15}
+}
+@misc{nvd-cve-2026-23744,
+  author       = {{National Vulnerability Database}},
+  title        = {{CVE-2026-23744}: {MCPJam} inspector remote code execution},
+  year         = {2026},
+  month        = jan,
+  howpublished = {\url{https://nvd.nist.gov/vuln/detail/CVE-2026-23744}},
+  note         = {Published 2026-01-16. Versions 1.4.2 and earlier; fixed in 1.4.3. CVSS 3.1 base score 9.8 (critical). Accessed 2026-10-15}
+}
+@misc{cwe-306,
+  author       = {{MITRE}},
+  title        = {{CWE-306}: Missing Authentication for Critical Function},
+  year         = {2026},
+  howpublished = {Common Weakness Enumeration, version 4.20, \url{https://cwe.mitre.org/data/definitions/306.html}},
+  note         = {Accessed 2026-10-15}
+}
+
+% ---- OWASP MCP Top 10 and the cases cited for its entries -----------------------------
+
+@misc{owasp-mcp-top10,
+  author       = {{OWASP}},
+  title        = {{OWASP} {MCP} Top 10, version 0.1 (beta)},
+  year         = {2026},
+  howpublished = {\url{https://owasp.org/www-project-mcp-top-10/}},
+  note         = {Repository OWASP/www-project-mcp-top-10, commit 165fe0f of 2026-07-29; entry identifiers carry the year 2025 (MCP01:2025 to MCP10:2025). Project lead Vandana Verma Sehgal. Accessed 2026-10-15}
+}
+@misc{ghsa-jh7p-claude-code,
+  author       = {{GitHub Security Advisory}},
+  title        = {{Claude Code} Leaks Data via Malicious Environment Configuration Before Trust Confirmation ({GHSA-jh7p-qr78-84p7}, {CVE-2026-21852})},
+  year         = {2026},
+  month        = jan,
+  howpublished = {\url{https://github.com/anthropics/claude-code/security/advisories/GHSA-jh7p-qr78-84p7}},
+  note         = {Published 2026-01-21. Fixed in Claude Code 2.0.65. Accessed 2026-10-15}
+}
+@misc{lyons2026claudecode,
+  author       = {Lyons, Jessica},
+  title        = {{Claude} collaboration tools left the door wide open to remote code execution},
+  year         = {2026},
+  month        = feb,
+  howpublished = {The Register, \url{https://www.theregister.com/2026/02/26/clade_code_cves/}},
+  note         = {Published 2026-02-26. Reports research by Aviv Donenfeld and Oded Vanunu of Check Point (CVE-2025-59536 and CVE-2026-21852). Accessed 2026-10-15}
+}
+@misc{ghsa-j22h-mcp-server-git,
+  author       = {{GitHub Security Advisory}},
+  title        = {mcp-server-git has missing path validation when using --repository flag ({GHSA-j22h-9j4x-23w5}, {CVE-2025-68145})},
+  year         = {2025},
+  month        = dec,
+  howpublished = {\url{https://github.com/advisories/GHSA-j22h-9j4x-23w5}},
+  note         = {Published 2025-12-17. Accessed 2026-10-15}
+}
+@misc{lakshmanan2026gitmcp,
+  author       = {Lakshmanan, Ravie},
+  title        = {Three Flaws in {Anthropic} {MCP} {Git} Server Enable File Access and Code Execution},
+  year         = {2026},
+  month        = jan,
+  howpublished = {The Hacker News, \url{https://thehackernews.com/2026/01/three-flaws-in-anthropic-mcp-git-server.html}},
+  note         = {Published 2026-01-20. CVE-2025-68143, CVE-2025-68144, CVE-2025-68145, reported by Cyata. Accessed 2026-10-15}
+}
+@misc{beurerkellner2025toolpoisoning,
+  author       = {Beurer-Kellner, Luca and Fischer, Marc},
+  title        = {{MCP} Security Notification: Tool Poisoning Attacks},
+  year         = {2025},
+  month        = apr,
+  howpublished = {Invariant Labs blog, \url{https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks}},
+  note         = {Published 2025-04-01. Accessed 2026-10-15}
+}
+@misc{beurerkellner2025whatsapp,
+  author       = {Beurer-Kellner, Luca and Fischer, Marc},
+  title        = {{WhatsApp} {MCP} Exploited: Exfiltrating your message history via {MCP}},
+  year         = {2025},
+  month        = apr,
+  howpublished = {Invariant Labs blog, \url{https://invariantlabs.ai/blog/whatsapp-mcp-exploited}},
+  note         = {Published 2025-04-07. The confirmation dialog for the send\_message call showed a short message body and hid the exfiltrated history off screen to the right. Accessed 2026-10-15}
+}
+@misc{dardikman2025postmark,
+  author       = {Dardikman, Idan},
+  title        = {First Malicious {MCP} in the Wild: The {Postmark} Backdoor That's Stealing Your Emails},
+  year         = {2025},
+  month        = sep,
+  howpublished = {Koi Security blog, Internet Archive copy, \url{https://web.archive.org/web/20250929094654/https://www.koi.security/blog/postmark-mcp-npm-malicious-backdoor-email-theft}},
+  note         = {Published 2025-09-25; the original address now redirects. Accessed 2026-10-15}
+}
+@misc{lakshmanan2025postmark,
+  author       = {Lakshmanan, Ravie},
+  title        = {First Malicious {MCP} Server Found Stealing Emails in Rogue {Postmark-MCP} Package},
+  year         = {2025},
+  month        = sep,
+  howpublished = {The Hacker News, \url{https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html}},
+  note         = {Published 2025-09-29. Accessed 2026-10-15}
+}
+% Publication times read from the registry's metadata document on 2026-10-16:
+% "created": "2025-09-15T10:44:07.824Z", "1.0.16": "2025-09-17T08:59:23.337Z",
+% "unpublished": {"time": "2025-09-25T03:31:54.381Z", ...}.
+@misc{npm-postmark-mcp,
+  author       = {{npm}},
+  title        = {postmark-mcp: package metadata},
+  year         = {2025},
+  howpublished = {npm registry, \url{https://registry.npmjs.org/postmark-mcp}},
+  note         = {Created 2025-09-15T10:44Z; version 1.0.16 published 2025-09-17T08:59Z; all versions unpublished 2025-09-25. Accessed 2026-10-16}
+}
+@misc{peles2025mcpremote,
+  author       = {Peles, Or},
+  title        = {Critical {RCE} Vulnerability in mcp-remote: {CVE-2025-6514} Threatens {LLM} Clients},
+  year         = {2025},
+  month        = jul,
+  howpublished = {JFrog blog, \url{https://jfrog.com/blog/2025-6514-critical-mcp-remote-rce-vulnerability/}},
+  note         = {Published 2025-07-09. Accessed 2026-10-15}
+}
+@misc{milanta2025githubmcp,
+  author       = {Milanta, Marco and Beurer-Kellner, Luca},
+  title        = {{GitHub} {MCP} Exploited: Accessing private repositories via {MCP}},
+  year         = {2025},
+  month        = may,
+  howpublished = {Invariant Labs blog, \url{https://invariantlabs.ai/blog/mcp-github-vulnerability}},
+  note         = {Published 2025-05-26. Accessed 2026-10-15}
+}
+@misc{goldberg2025mcpservers,
+  author       = {Goldberg, Imri},
+  title        = {Exposing the Unseen: Mapping {MCP} Servers Across the Internet},
+  year         = {2025},
+  month        = jul,
+  howpublished = {Knostic blog, \url{https://www.knostic.ai/blog/mapping-mcp-servers-study}},
+  note         = {Published 2025-07-17. Accessed 2026-10-15}
+}
+@misc{toulas2025asana,
+  author       = {Toulas, Bill},
+  title        = {{Asana} warns {MCP} {AI} feature exposed customer data to other orgs},
+  year         = {2025},
+  month        = jun,
+  howpublished = {BleepingComputer, \url{https://www.bleepingcomputer.com/news/security/asana-warns-mcp-ai-feature-exposed-customer-data-to-other-orgs/}},
+  note         = {Published 2025-06-18. Accessed 2026-10-15}
+}
+
+% ---- MITRE ATLAS and its case studies ---------------------------------------------------
+
+@misc{mitre-atlas-2026,
+  author       = {{MITRE}},
+  title        = {{MITRE ATLAS} ({Adversarial Threat Landscape for AI Systems}), release 2026.09},
+  year         = {2026},
+  month        = sep,
+  howpublished = {\url{https://atlas.mitre.org}; data: mitre-atlas/atlas-data, dist/v6/ATLAS-2026.09.yaml},
+  note         = {Released 2026-09-15. 208 technique entries (120 techniques, 88 sub-techniques), 16 tactics, 40 mitigations, 73 case studies. Accessed 2026-10-15}
+}
+@misc{atlas-cs0045,
+  author       = {{MITRE ATLAS}},
+  title        = {Data Exfiltration via an {MCP} Server used by {Cursor} (case study {AML.CS0045})},
+  year         = {2026},
+  howpublished = {\url{https://atlas.mitre.org/studies/AML.CS0045}},
+  note         = {In ATLAS release 2026.09. Accessed 2026-10-15}
+}
+@misc{atlas-cs0048,
+  author       = {{MITRE ATLAS}},
+  title        = {Exposed {ClawdBot} Control Interfaces Leads to Credential Access and Execution (case study {AML.CS0048})},
+  year         = {2026},
+  howpublished = {\url{https://atlas.mitre.org/studies/AML.CS0048}},
+  note         = {In ATLAS release 2026.09. Accessed 2026-10-15}
+}
+@misc{atlas-cs0049,
+  author       = {{MITRE ATLAS}},
+  title        = {Supply Chain Compromise via Poisoned {ClawdBot} Skill (case study {AML.CS0049})},
+  year         = {2026},
+  howpublished = {\url{https://atlas.mitre.org/studies/AML.CS0049}},
+  note         = {In ATLAS release 2026.09. Accessed 2026-10-15}
+}
+@misc{atlas-cs0050-openclaw-rce,
+  author       = {{MITRE ATLAS}},
+  title        = {{OpenClaw} 1-Click Remote Code Execution (case study {AML.CS0050})},
+  year         = {2026},
+  howpublished = {\url{https://atlas.mitre.org/studies/AML.CS0050}},
+  note         = {Exercise reported by depthfirst; nine steps. In ATLAS release 2026.09. Accessed 2026-10-15}
+}
+@misc{atlas-cs0051-openclaw-c2,
+  author       = {{MITRE ATLAS}},
+  title        = {{OpenClaw} Command \& Control via Prompt Injection (case study {AML.CS0051})},
+  year         = {2026},
+  howpublished = {\url{https://atlas.mitre.org/studies/AML.CS0051}},
+  note         = {Exercise reported by HiddenLayer; eighteen steps. In ATLAS release 2026.09. Accessed 2026-10-15}
+}
+@misc{atlas-cs0053-postmark,
+  author       = {{MITRE ATLAS}},
+  title        = {Poisoned {Postmark} {MCP} Server Email Exfiltration (case study {AML.CS0053})},
+  year         = {2026},
+  howpublished = {\url{https://atlas.mitre.org/studies/AML.CS0053}},
+  note         = {Incident, September 2025; nine steps. In ATLAS release 2026.09. Accessed 2026-10-15}
+}
+@misc{atlas-cs0054,
+  author       = {{MITRE ATLAS}},
+  title        = {Data Exfiltration via Remote Poisoned {MCP} Tool (case study {AML.CS0054})},
+  year         = {2026},
+  howpublished = {\url{https://atlas.mitre.org/studies/AML.CS0054}},
+  note         = {In ATLAS release 2026.09. Accessed 2026-10-15}
+}
+
+% ---- OpenClaw ----------------------------------------------------------------------------
+
+@misc{openclaw-repo,
+  author       = {{OpenClaw}},
+  title        = {{OpenClaw}: an open-source personal {AI} assistant},
+  year         = {2026},
+  howpublished = {\url{https://github.com/openclaw/openclaw}},
+  note         = {Formerly Clawdbot and Moltbot; renamed OpenClaw on 2026-01-29. Accessed 2026-10-15}
+}
+% Checked against https://docs.openclaw.ai/tools/exec-approvals.md (title "Exec approvals") on
+% 2026-10-16: "Gateway-authenticated callers are trusted operators for that Gateway." "Approvals
+% reduce accidental execution risk, but are not a per-user auth boundary".
+@misc{openclaw-docs-exec-approvals,
+  author       = {{OpenClaw}},
+  title        = {Exec approvals},
+  year         = {2026},
+  howpublished = {OpenClaw documentation, \url{https://docs.openclaw.ai/tools/exec-approvals}},
+  note         = {Accessed 2026-10-16}
+}
+@misc{nvd-cve-2026-25253,
+  author       = {{National Vulnerability Database}},
+  title        = {{CVE-2026-25253}: {OpenClaw} sends its gateway token to a {gatewayUrl} taken from a query string},
+  year         = {2026},
+  month        = feb,
+  howpublished = {\url{https://nvd.nist.gov/vuln/detail/CVE-2026-25253}},
+  note         = {Published 2026-02-01. OpenClaw (also Clawdbot, Moltbot) before 2026.1.29. CVSS 3.1 base score 8.8 (high). Accessed 2026-10-15}
+}
+@misc{levin2026openclaw,
+  author       = {Levin, Mav},
+  title        = {1-Click {RCE} To Steal Your {OpenClaw} Data and Keys ({CVE-2026-25253})},
+  year         = {2026},
+  month        = feb,
+  howpublished = {depthfirst, \url{https://depthfirst.com/post/1-click-rce-to-steal-your-moltbot-data-and-keys}},
+  note         = {Published 2026-02-01. Accessed 2026-10-15}
+}
+@misc{mccauley2026openclaw,
+  author       = {McCauley, Conor and Schulz, Kasimir and Tracey, Ryan and Martin, Jason},
+  title        = {Exploring the Security Risks of {AI} Assistants like {OpenClaw}},
+  year         = {2026},
+  month        = feb,
+  howpublished = {HiddenLayer, \url{https://www.hiddenlayer.com/research/exploring-the-security-risks-of-ai-assistants-like-openclaw}},
+  note         = {Published 2026-02-03. Accessed 2026-10-15}
+}
+
+% ---- Sandbox escape -----------------------------------------------------------------------
+
+@inproceedings{marchand2026sandboxescape,
+  author       = {Marchand, Rahul and O Cathain, Art and Wynne, Jerome and Giavridis, Philippos Maximos and Deverett, Sam and Wilkinson, John and Gwartz, Jason and Coppock, Harry},
+  title        = {Quantifying Frontier {LLM} Capabilities for Container Sandbox Escape},
+  booktitle    = {Proceedings of the 43rd International Conference on Machine Learning (ICML)},
+  year         = {2026},
+  eprint       = {2603.02277},
+  archivePrefix = {arXiv},
+  note         = {Authors as listed by ICML 2026 (icml.cc/virtual/2026/poster/66709); arXiv:2603.02277 v3 (2026-08-01) adds Stuart Jennings, Freddy Tuxworth and Tolga H. Dur. Introduces SandboxEscapeBench}
+}

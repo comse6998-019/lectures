@@ -1,0 +1,649 @@
+\section{Conceptual exercises}
+\label{sec:exercises}
+
+For every question, select all correct options. Each question has one or more correct
+options. Explain why your selected options are correct and why the others are incorrect.
+The answers and explanations follow in \cref{sec:exercise-answers}.
+
+\Needspace{19\baselineskip}
+\subsection{How an agent moves through a task}
+\noindent Related material: \cref{sec:efsm}.
+
+\begin{enumerate}[start=1,itemsep=0.7\baselineskip]
+\item\label{exercise:1} \begin{minipage}[t]{\linewidth}
+\textbf{Same step, different situation.} An agent returns to its decision step after reading a file. It is about to run the same decision code as before. Which statements explain how its next action can change?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The saved file result can change what the decision step chooses.
+\item Returning to the same step restores the saved information to its earlier value.
+\item The agent can be at the same step while remembering a different conversation and call count.
+\item A different next action requires adding a new step to the workflow.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:2} \begin{minipage}[t]{\linewidth}
+\textbf{Replies and rules.} Two runs reach the decision step with identical saved information. The model replies differently in the two runs. The program has a fixed rule for choosing the next step from the reply. Which statement best describes the result?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The fixed rule forces the model to give the same reply in both runs.
+\item The runs may take different routes, while the rule still gives one route for each saved state and reply.
+\item Different routes show that the rule must choose randomly.
+\item The rule assigns a probability to each reply.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:3} \begin{minipage}[t]{\linewidth}
+\textbf{Repeating a run.} A team wants to reproduce an agent run exactly. They have the same workflow code and starting information. What else would make the same sequence of decisions possible?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The same model replies, while tool results may vary without consequence.
+\item The same tool results, while model replies may vary without consequence.
+\item A list of all routes the workflow allows, without the results that selected them.
+\item The same relevant model replies and tool results in the same order.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:4} \begin{minipage}[t]{\linewidth}
+\textbf{A small workflow with a long memory.} A workflow has five kinds of step. It keeps every tool result in a list with no fixed length limit. Which statements follow?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The workflow can still have just five kinds of step.
+\item The number of distinct saved situations can have no finite bound.
+\item Every new tool result requires a new kind of step.
+\item The small number of steps makes it possible to list every reachable saved situation in a finite table.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:5} \begin{minipage}[t]{\linewidth}
+\textbf{What needs remembering.} Two visits to the controller have the same latest tool result. In one run, two model calls have been completed; in the other, 40 have been completed, reaching the call limit. Which statements explain what the agent must remember?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The latest tool result alone is enough to decide whether another model call is allowed.
+\item The completed-call total must remain available even when the latest tool result is the same.
+\item The program must retain every earlier model reply solely to enforce the numeric call limit.
+\item Saved information should preserve past facts that can change the next decision, even if it does not preserve every past detail.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:6} \begin{minipage}[t]{\linewidth}
+\textbf{What a tool request changes.} A model reply asks the agent to run a tool. The program checks for that request, sends it to the tool, saves the reply, and counts the completed model call. Which statements are accurate?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The model reply is information that arrived during this step.
+\item The check for a tool request changes the saved call count.
+\item Sending the request to the tool is an action the step asks the outside world to perform.
+\item Saving the reply and adding one to the call count change what later steps can read.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:7} \begin{minipage}[t]{\linewidth}
+\textbf{Possible paths.} A diagram shows a recorded route in blue and other routes in grey. The grey routes depend on model replies or check results that did not occur in the recorded run. Which interpretation is justified?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Each grey route was taken once, but its events were omitted from the log.
+\item A grey route is more likely than a blue route because it has fewer steps.
+\item The blue route is one actual path among several paths the rules permit.
+\item The grey routes become impossible once the blue route is recorded.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:8} \begin{minipage}[t]{\linewidth}
+\textbf{What a log can prove.} A log says a file-reading tool succeeded and reports the length of its result. It omits the result text. Some moves between steps also have no log event. Which conclusions are justified?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The exact file text can be reconstructed from the reported length.
+\item The log can establish that the recorded tool call succeeded.
+\item Every saved value after the tool call can be read directly from the log.
+\item A missing move may be inferred from nearby events and the workflow rules, with that inference identified as such.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:9} \begin{minipage}[t]{\linewidth}
+\textbf{Plan versus workflow.} A planner changes its list of subgoals after seeing repeated tool results. The agent's workflow still has the same named steps. Which statements follow?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The new plan can affect later actions when the controller reads it.
+\item Each new subgoal becomes a new named step in the workflow.
+\item The controller may respond differently even though the workflow wiring did not change.
+\item The program chooses the next step by directly testing the name of the current subgoal.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:10} \begin{minipage}[t]{\linewidth}
+\textbf{A second stall.} The agent has already revised its plan once. Since that revision, three new tool results are identical and show no successful edit. Which statements match the workflow?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The earlier results that triggered revision must be deleted before the new pattern can be noticed.
+\item The new repeated results can cause a stop for lack of progress.
+\item The plan is revised again each time three results match.
+\item The agent can distinguish the new results from the old ones using the saved position where revision occurred.
+\end{enumerate}
+\end{minipage}
+
+\end{enumerate}
+
+\Needspace{19\baselineskip}
+\subsection{What an agent remembers between steps}
+\noindent Related material: \cref{sec:state}.
+
+\begin{enumerate}[start=11,itemsep=0.7\baselineskip]
+\item\label{exercise:11} \begin{minipage}[t]{\linewidth}
+\textbf{A small update.} The controller detects that the call limit has been reached and returns an update that changes only the run's status. What happens to the conversation and observations already saved?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item They remain in the working record unless another update changes them.
+\item They are removed because the controller did not return them.
+\item The controller must copy them into its update to keep them.
+\item The status can change without changing either history.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:12} \begin{minipage}[t]{\linewidth}
+\textbf{A limit outside the prompt.} The program refuses to make a model call after 40 completed calls. The model is never told the number of calls used. Which statement best explains how the limit can still work?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The model will infer the count from the length of the conversation.
+\item The model's reply can cancel a call before the call is made.
+\item The tool history automatically prevents the 41st model call.
+\item The program keeps a count and checks it before every model call.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:13} \begin{minipage}[t]{\linewidth}
+\textbf{Surviving a process stop.} A run stops unexpectedly. Its event log and edited files remain on disk, but the agent saved no checkpoint of its working information or pending step. Which statements follow?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item A new process can resume at the exact pending step from the event log alone.
+\item The saved files may show effects of work that the agent already performed.
+\item The surviving log is useful for studying the run but does not provide everything needed for resumption.
+\item The in-memory conversation and counters necessarily survive because the files do.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:14} \begin{minipage}[t]{\linewidth}
+\textbf{Keep, replace, or add.} The agent needs all tool results to detect repetition, only the latest plan for current work, and a total of completed model calls. Which update choices fit those needs?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Keep adding new tool results to the saved result list.
+\item Replace the old plan when a revised plan becomes current.
+\item Add one to the call total for each completed model call.
+\item Replace the call total with one after each model call.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:15} \begin{minipage}[t]{\linewidth}
+\textbf{An empty list is not a reset.} The agent keeps tool results by appending each update to a saved list. A step returns an empty list, intending to clear the history. Which statements are accurate?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The saved history stays as it was after appending the empty list.
+\item The empty update clears the history because it has no elements.
+\item A direct replacement with an empty list would produce the intended reset.
+\item The history disappears from the list of declared fields.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:16} \begin{minipage}[t]{\linewidth}
+\textbf{A message meant for one step.} A tool step records why progress has stalled so the planner can revise the plan. The planner reads that reason. What should happen next?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Leave the reason active until the revised plan succeeds.
+\item Clear the reason after the planner uses it.
+\item Clear the reason and erase the full tool-result history at the same time.
+\item Keep the reason in a growing list and add an empty list after the planner reads it.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:17} \begin{minipage}[t]{\linewidth}
+\textbf{New evidence after revision.} Three repeated tool results cause a plan revision. The agent keeps the full result history because other steps need it. How can it judge whether work stalls again after revision?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Save the position in the result list where the new plan began.
+\item Check only results added after that saved position.
+\item Treat the old three results as the first three results after revision.
+\item Discard the full history whenever the plan changes.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:18} \begin{minipage}[t]{\linewidth}
+\textbf{Retries and a whole-run budget.} Imagine the agent is extended to retry a failed patch. It clears the failed candidate and check results before the retry. Which choices keep a 40-call limit across all attempts?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Keep the call total when the candidate and checks are cleared.
+\item Reset the call total at each retry because the candidate is new.
+\item Check the retained total before each model call, including calls in the retry.
+\item Tell the model about the limit in its prompt instead of keeping a total.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:19} \begin{minipage}[t]{\linewidth}
+\textbf{Counting every call.} The program stores a completed-call count and refuses a call when the count reaches 40. Which practices are needed to establish that completed calls stay within the limit?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Increase the stored count once for each completed call.
+\item Check the stored count only in the controller, even though the planner and validator also call the model.
+\item Leave the count unchanged on steps that make no model call.
+\item Let a plan revision reset the count if it remains below 40 afterward.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:20} \begin{minipage}[t]{\linewidth}
+\textbf{Declarations and checks.} An agent uses a Python type annotation to list the names and expected types of its saved fields. An editor checks the annotation, but the program adds no run-time validator. Steps may return updates for only some fields. Which statements follow?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The annotation can help the editor detect a step that refers to an undeclared field.
+\item The annotation alone rejects every wrongly typed value returned while the agent runs.
+\item The agent should still start with values for fields its first steps will read.
+\item Because updates can be partial, every field in the starting information may safely be omitted.
+\end{enumerate}
+\end{minipage}
+
+\end{enumerate}
+
+\Needspace{19\baselineskip}
+\subsection{Choosing the next action and knowing when to stop}
+\noindent Related material: \cref{sec:control}.
+
+\begin{enumerate}[start=21,itemsep=0.7\baselineskip]
+\item\label{exercise:21} \begin{minipage}[t]{\linewidth}
+\textbf{What the next step knows.} A step reads a search result but saves only the fact that the search finished. The next-action check needs to decide whether the result mentions the flagged line. Which statements about what this check can use are true?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The check can use the original result because the earlier step saw it.
+\item The check can tell that the search finished, but not whether it mentioned the flagged line.
+\item It could use whether the flagged line was mentioned if the earlier step had saved that detail.
+\item The check can treat the fact that the search finished as evidence that the flagged line appeared in its result.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:22} \begin{minipage}[t]{\linewidth}
+\textbf{Two checks agree.} A workflow tests two possible reasons to continue. For one saved state, both tests say yes. The program tries them in a fixed order and takes the first match. What follows?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Both next steps run, since both tests matched.
+\item The first matching test determines the next step.
+\item The fallback step runs because the two tests conflict.
+\item The model's wording determines which test takes priority.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:23} \begin{minipage}[t]{\linewidth}
+\textbf{A request and a suggestion.} A model reply says, 'Submit the patch now,' and also requests a tool. The run is still active. The programmer's rule sends replies with tool requests to the tools step. Which statements hold?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The tool request is a value that affects the next-action check.
+\item The sentence about submitting overrides the program's rule.
+\item The model has changed the rule for future replies.
+\item The programmer's rule determines what the request means for the next step.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:24} \begin{minipage}[t]{\linewidth}
+\textbf{Different runs, same workflow.} The same compiled workflow handles two alerts. One run revisits the controller many times; the other submits quickly. Which explanations fit?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Every revisit requires the workflow to be compiled again.
+\item Different saved results can make the same next-action rule choose different routes.
+\item Each controller visit is a separate moment in that run, even when it visits the same step.
+\item Compiling the workflow fixes the exact sequence of steps for every run.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:25} \begin{minipage}[t]{\linewidth}
+\textbf{Learning from a failed check.} A proposed patch fails a mechanical check. The workflow sends the reasons back to the controller so it can try again. Which choices support that repair?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Keep the failed proposal and the check's reasons available to the controller.
+\item Erase the conversation so the controller cannot see the failed proposal.
+\item Allow the controller to make a new proposal that replaces the stored patch.
+\item Keep the overall call limit in force while repairs continue.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:26} \begin{minipage}[t]{\linewidth}
+\textbf{Changing a stalled plan.} Three repeated observations show that the current plan is stalled. The workflow allows one plan revision. Which actions make the revision meaningful?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Send the planner back with no reason for the stall.
+\item Give the planner the stall reason and start measuring later observations under the revised plan.
+\item Discard every earlier observation before the planner can revise.
+\item Stop the run if the revised plan later stalls again under its own observations.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:27} \begin{minipage}[t]{\linewidth}
+\textbf{Counting new attempts.} A proposed extension would start a fresh attempt after a final reviewer rejects a patch. It has limits on both attempts and total model calls. What must remain across attempts to make those limits work?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The rejected patch must remain the active patch for the next attempt.
+\item The old plan must remain active because changing it changes the workflow.
+\item The attempt count and spent-call count must survive the reset.
+\item A written reflection can replace an attempt count.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:28} \begin{minipage}[t]{\linewidth}
+\textbf{A limit with a gap.} A run has a limit on model calls. An added tool retry can repeat without calling the model, and a model call can wait indefinitely for a reply. Which concerns remain?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The tool retry needs its own bound or another reason it must stop.
+\item The call limit alone makes every individual operation finish.
+\item A termination argument also needs operations to return or time out.
+\item A successful-patch check ensures the run eventually finds a successful patch.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:29} \begin{minipage}[t]{\linewidth}
+\textbf{A narrow stall detector.} Every search returns a different irrelevant result, so no three results are identical. The run still makes no useful progress. What follows?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item A check for identical results can miss this kind of stalled work.
+\item Changing results show that the search is getting closer to a solution.
+\item Because the stall check does not fire, the run must eventually succeed.
+\item A check before each model call can still stop new calls at the budget.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:30} \begin{minipage}[t]{\linewidth}
+\textbf{What an ending shows.} One trace ends with an accepted status. Another ends after a tool result and has no recorded ending. A third ends with an error status followed by an exception record. Which conclusions are supported?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The accepted status proves the patch truly satisfies the task.
+\item The accepted status shows the run ended and its acceptance procedure passed.
+\item The trace without an ending does not establish whether the run terminated.
+\item The error status identifies the kind of ending, and the following record identifies the exception.
+\end{enumerate}
+\end{minipage}
+
+\end{enumerate}
+
+\Needspace{19\baselineskip}
+\subsection{Tool requests, execution, and access}
+\noindent Related material: \cref{sec:boundary}.
+
+\begin{enumerate}[start=31,itemsep=0.7\baselineskip]
+\item\label{exercise:31} \begin{minipage}[t]{\linewidth}
+\textbf{When updates appear.} The runtime holds proposed updates until every worker in a batch has finished. Two workers read the saved state at the start of the same batch, and one finishes first. Which statements about saved state follow?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item It reads the state available when the batch began.
+\item It sees the first worker's update as soon as that worker finishes.
+\item Workers in a later batch can read the combined update after it is applied.
+\item If both update one field, the runtime can use whichever finished last without a combination rule.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:32} \begin{minipage}[t]{\linewidth}
+\textbf{A file changed before a crash.} A tool edits a file, then its worker crashes before the worker's update to the saved run state is applied. What is possible?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The file edit is automatically undone with the missing state update.
+\item The file has changed even though the saved state does not describe the change.
+\item The next worker must see the crashed worker's partial state update.
+\item The file change becomes visible only when the worker's saved-state update is applied.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:33} \begin{minipage}[t]{\linewidth}
+\textbf{Instructions and enforced limits.} A tool description tells the model to stay inside a workspace, but a search request can still read a sibling folder. Which conclusions follow?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The instruction in the description cannot itself prevent the tool from reading outside files.
+\item The description makes outside reads impossible when the model follows it most of the time.
+\item The model can decide whether a particular outside path is permitted by explaining its intent.
+\item The actual files reached by search must be checked before they are read.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:34} \begin{minipage}[t]{\linewidth}
+\textbf{Who can change a setting.} A new tool takes a run setting as an argument. The dispatcher does not supply that argument, so a model request can fill it. The setting should be controlled by the application. Which change achieves that?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Ask the model in the tool description to leave the setting unchanged.
+\item Give the setting a default value while leaving it available as an argument.
+\item Keep the setting outside arguments the model can supply, or have trusted runtime code supply it.
+\item Accept the model's value whenever it gives a convincing reason.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:35} \begin{minipage}[t]{\linewidth}
+\textbf{A well-formed unsafe request.} One request uses the wrong argument name. Another uses the correct name but points outside the allowed workspace. A third uses a clear string where an integer is expected. What follows?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Checking argument names also proves a path is permitted.
+\item The wrong name can be refused before the tool runs, while the path needs an access check before opening the file.
+\item If the path argument binds to the tool, the file must be opened.
+\item The dispatcher can correct an unambiguous type mismatch without treating it as permission to cross the workspace boundary.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:36} \begin{minipage}[t]{\linewidth}
+\textbf{A useful refusal.} An edit request matches two places in a file, and the tool refuses to choose one. How should a continuing run handle this?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Return a failed result with the reason to the model.
+\item Edit the first match so the model gets some progress.
+\item Make no edit for the refused request.
+\item Allow a later request with enough surrounding context to identify one occurrence.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:37} \begin{minipage}[t]{\linewidth}
+\textbf{Evidence that a tool ran.} A trace shows a model asked to read a file, the request reached the dispatcher, and a successful result records the number of characters returned. What does this establish?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The model's request by itself proves the file was read.
+\item The successful result supports that the reading function ran and returned.
+\item The trace does not reveal the exact returned text from its character count.
+\item The request record alone shows that all access checks passed.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:38} \begin{minipage}[t]{\linewidth}
+\textbf{A new way to read files.} A team has tested that its file-reading tool blocks paths outside the workspace. Later it adds another tool that can read files without using that check. What must the team consider?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Every route that can read a protected file needs a check before the read.
+\item The first tool's test results cover the new tool because both read files.
+\item A prompt instruction to remain in the workspace closes the new route.
+\item A shared gateway helps only if all file-reading routes actually pass through it.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:39} \begin{minipage}[t]{\linewidth}
+\textbf{Where a path really leads.} A workspace is at /tmp/ws. A request names a path containing '..', a symbolic link, or an absolute path. A sibling folder named /tmp/ws-copy also exists. Which checks make sense?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Accept any path whose text begins with /tmp/ws.
+\item Resolve the workspace and candidate to their real destinations before comparing them.
+\item Treat a path that starts inside the workspace as potentially outside after resolution.
+\item Treat an absolute path as inside the workspace once it has been joined to the workspace path.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:40} \begin{minipage}[t]{\linewidth}
+\textbf{One unchecked search route.} A search tool accepts a pattern reaching a sibling folder and returns its lines. The editing tool checks its target path before writing. What can be concluded?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The write boundary has failed because search changed the matching files.
+\item The read boundary has a gap through search.
+\item Checking each matched file's resolved destination before reading would close this search route.
+\item A successful containment test for the other reading tool does not prove search is contained.
+\end{enumerate}
+\end{minipage}
+
+\end{enumerate}
+
+\Needspace{19\baselineskip}
+\subsection{Events and queued work}
+\noindent Related material: \cref{sec:events}.
+
+\begin{enumerate}[start=41,itemsep=0.7\baselineskip]
+\item\label{exercise:41} \begin{minipage}[t]{\linewidth}
+\textbf{A request is waiting.} A planning assistant puts ``run these file checks'' in a work queue. The worker has not picked it up. What does the queued item tell us?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The checks have run because the request is visible in the queue.
+\item The worker may run the checks when the runtime delivers that item.
+\item The queue has already changed the files being checked.
+\item If the request is later delivered, successful execution needs evidence beyond the queued request itself.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:42} \begin{minipage}[t]{\linewidth}
+\textbf{Who runs the worker?} A team writes a function to handle a completed plan and registers it with an event loop. Who controls the response, and who decides when to call the function?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The team decides what the function does when a plan arrives.
+\item The function must directly call every worker that might follow it.
+\item The runtime decides when to invoke the registered function.
+\item The runtime invents the function's rules for updating the plan.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:43} \begin{minipage}[t]{\linewidth}
+\textbf{A message with no reader.} A worker finishes planning and puts ``plan ready'' in the queue, but no worker is registered to receive that kind of item. The runtime removes it and the queue becomes empty. What follows?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The task succeeded because the queue is empty.
+\item A planned next step may have been lost.
+\item No part of the application necessarily chose to stop.
+\item The runtime can recover the missing worker from the plan text.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:44} \begin{minipage}[t]{\linewidth}
+\textbf{Quiet is not success.} A run has no queued work and no worker running. It also has no recorded outcome. Which conclusion is justified?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The run succeeded because every queue is now empty.
+\item The last worker must have decided to stop.
+\item The runtime cannot tell from quietness alone how the run ended.
+\item The run necessarily failed its file checks.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:45} \begin{minipage}[t]{\linewidth}
+\textbf{Save before notifying.} A tools worker gets a file result and wants to notify the controller that results are ready. What ordering protects the next decision?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Notify the controller first; it can infer the file result from the words ``results ready.''
+\item Save the file result before the notification can be delivered.
+\item It is safe to save after notifying because the queue is empty before the notification.
+\item Apply the result once so the controller does not read a duplicate observation.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:46} \begin{minipage}[t]{\linewidth}
+\textbf{One message, two deliveries.} A worker has already added one tool result to the saved history. The runtime accidentally delivers the same completion message again. What risk does this create?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The second delivery proves the tool ran a second time.
+\item The first saved result is automatically removed.
+\item The controller may act twice on one result or append that result twice.
+\item The duplicate makes an explicit stopping outcome unnecessary.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:47} \begin{minipage}[t]{\linewidth}
+\textbf{No reply arrives.} A model call should time out after thirty seconds. This event loop starts work only when an item arrives. What makes the timeout path reachable?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Waiting silently for thirty seconds automatically invokes the timeout worker.
+\item A timer can put a timeout item in the queue when the interval ends.
+\item A note saying ``still waiting'' in the log is enough to invoke the worker.
+\item The timeout needs some source of a new item if the model never replies.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:48} \begin{minipage}[t]{\linewidth}
+\textbf{Work after stopping.} A run declares its outcome, but a ``run tools'' item remains in the queue. How should the runtime treat it?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item It must start the tools worker before recording the outcome.
+\item The pending item alone changes the declared outcome to success.
+\item It may ignore the outcome if the queue still contains work.
+\item It must prevent that pending item from starting a worker.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:49} \begin{minipage}[t]{\linewidth}
+\textbf{One worker or several.} A simple version allows only one pending item or one running worker at a time. A new version allows two workers to run together. What changes in how we describe its progress?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item With one worker at a time, the pending item or running worker identifies the current step.
+\item With two workers running, one step name always describes everything that is happening.
+\item Allowing two workers means the saved information no longer matters.
+\item With two workers running, the workflow may need a description that includes both active steps.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:50} \begin{minipage}[t]{\linewidth}
+\textbf{Comparing two ways to run it.} A team runs the same workflow once by following graph arrows and once by delivering queued items. Both versions run one worker at a time, and the team supplies the same prepared model replies and tool results in the same order. What can comparing saved information after each completed step show?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Matching observations, file effects, checks, and outcomes support agreement for those prepared inputs.
+\item The two versions must take the same amount of clock time.
+\item Agreement does not show what a live model would say if the two versions build different messages.
+\item The comparison does not cover two workers acting at once.
+\end{enumerate}
+\end{minipage}
+
+\end{enumerate}
+
+\Needspace{19\baselineskip}
+\subsection{Budgets and spending}
+\noindent Related material: \cref{sec:budgets}.
+
+\begin{enumerate}[start=51,itemsep=0.7\baselineskip]
+\item\label{exercise:51} \begin{minipage}[t]{\linewidth}
+\textbf{Permission and the bill.} A model provider reports the token charge only after a call finishes. The run has a spending limit. Which jobs must the runtime do?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Decide before the call whether it is allowed to start.
+\item Wait for the bill before deciding whether that same call may start.
+\item Add the actual charge to its spending record after the call.
+\item Assume every model call has the same token cost.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:52} \begin{minipage}[t]{\linewidth}
+\textbf{Spent and set aside.} A run has a limit of 10 units. It has spent 4 and set aside 4 for a call still in progress. A proposed new call could cost up to 3. What follows?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item It may start because only 4 units have been billed so far.
+\item It should be refused for now because the spent amount plus both possible calls would exceed 10.
+\item The unfinished call can be ignored until its final bill arrives.
+\item If the unfinished call later costs only 2, the runtime can reconsider the new call.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:53} \begin{minipage}[t]{\linewidth}
+\textbf{Forecast or safe limit?} A provider's input-token counter gives an estimate, while the request sets an enforced maximum for output tokens. The team wants a strict guarantee that charges never exceed its token budget. Which conclusions follow?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item The input estimate alone guarantees the call cannot cost more than the amount set aside.
+\item The amount set aside must cover a justified upper bound on the whole call's cost.
+\item An enforced output limit gives a bound for that part of the call.
+\item Past estimates that were accurate once prove all later estimates will be upper bounds.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:54} \begin{minipage}[t]{\linewidth}
+\textbf{Two calls at once.} There is room for either of two proposed calls, but not both. Two workers check the available amount at the same moment. What prevents both from starting?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Let each worker check first, then set money aside later.
+\item Start both and correct the record after their bills arrive.
+\item Make checking the remaining amount and setting money aside one indivisible action.
+\item Give both calls the same output limit.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:55} \begin{minipage}[t]{\linewidth}
+\textbf{A call times out.} A model call times out before the runtime receives a reply. The provider might still bill for work already done. What should happen to the money set aside for that call?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Release it at once because a missing reply means the provider did no work.
+\item Record a zero charge and give the full amount to the next call.
+\item Keep it set aside until the provider's usage record shows the actual charge.
+\item Treat the timeout as a failed attempt and reset all spending for the run.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:56} \begin{minipage}[t]{\linewidth}
+\textbf{What does the limit count?} The controller resends a growing conversation on every model call. A team wants the limit to reflect that extra input work. Which choices meet or explain that goal?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Counting only generated output captures the growing input as well.
+\item Counting all processed tokens includes both the sent conversation and generated reply.
+\item A money limit may need separate counts for token kinds with different prices.
+\item Counting calls fixes the token cost of each call.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:57} \begin{minipage}[t]{\linewidth}
+\textbf{An unfinished tool action.} A model reply hits its output limit. It names a valid editing tool and valid arguments, but the replacement text ends partway through. What should the runtime do?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Run the edit because the tool name and argument names are valid.
+\item Inspect why generation stopped before allowing the edit to affect files.
+\item Discard the model call's charge because its proposed edit was unusable.
+\item Count the original call and check the budget again before a retry with a larger output limit.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:58} \begin{minipage}[t]{\linewidth}
+\textbf{Leave room to judge.} A run needs one final model call to assess a patch after file checks pass. The controller can otherwise use all available calls first. Which policy protects the final assessment?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Hold back enough of the run's allowance for the assessment before admitting other calls.
+\item Let the controller use the whole allowance and treat assessment as free.
+\item Reset the spending total when file checks pass.
+\item Skip the starting check for the final call because it comes after the main work.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:59} \begin{minipage}[t]{\linewidth}
+\textbf{Trying again.} A future version starts a fresh attempt after a failed patch. It clears the old candidate and checks. Which choices keep the spending limit meaningful across attempts?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Keep the amount already spent across the whole run.
+\item Reset spending along with the candidate so each attempt has a full new allowance.
+\item Count planner, controller, and final-assessment calls, including retries.
+\item Count only calls that lead to an accepted patch.
+\end{enumerate}
+\end{minipage}
+
+\item\label{exercise:60} \begin{minipage}[t]{\linewidth}
+\textbf{Comparing live runs.} A team compares a graph version and a queue-driven version with a live model. Which choices support a useful comparison, and what can it show?
+\begin{enumerate}[label=\textnormal{(\Alph*)},leftmargin=*,itemsep=0pt]
+\item Run the same tasks with the same model settings, prompts, tools, checks, and budget in both versions.
+\item Use one trial per version because the same random seed makes their replies identical.
+\item Repeat trials from fresh workspaces, restrict tools to those workspaces, and report outcomes alongside usage and exhaustion rates.
+\item Limit the conclusion to the tested model, tasks, prompts, and budget.
+\end{enumerate}
+\end{minipage}
+
+\end{enumerate}
+

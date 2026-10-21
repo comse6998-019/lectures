@@ -77,3 +77,7 @@ pythontex-files-*/
 *.pytxcode
 *.pytxmcr
 *.pytxpyg
+
+*question-bank*
+
+!question-bank/combined-question-bank.pdf

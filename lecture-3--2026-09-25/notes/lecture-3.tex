@@ -1,0 +1,116 @@
+% Week 3 lecture notes: COMS E6998-019, Designing Production Agentic Systems.
+% Student reading for the midterm and the final, written from lecture3.pptx (taught slides only).
+% Build: make (tectonic). VS Code: LaTeX Workshop recipe "tectonic" in .vscode/settings.json.
+
+% ---- Base class: plain article at 9pt, packed with savetrees in extreme mode --------------
+\documentclass[9pt,twocolumn]{extarticle}
+\usepackage[numbers,sort&compress,square]{natbib}   % before savetrees, which tightens its spacing
+% savetrees takes a defined \bibfont to mean biblatex and sets \bibitemsep; give it a dummy length.
+\newlength{\bibitemsep}
+\usepackage[extreme]{savetrees}
+\setlength{\bibsep}{0pt plus 1pt}
+\setlength{\columnsep}{10pt}
+
+\usepackage[T1]{fontenc}
+\usepackage{microtype,etoolbox,ragged2e,parskip}
+\raggedbottom   % two-column pages: do not stretch the parskip glue to fill a column
+\usepackage{graphicx,subcaption,caption,booktabs,multirow,amsmath,amssymb,amsthm}
+\usepackage[most]{tcolorbox}
+\usepackage[colorlinks,linkcolor=violet,citecolor=violet,urlcolor=violet]{hyperref}
+\usepackage[noabbrev,nameinlink,capitalise]{cleveref}
+\captionsetup{font=footnotesize}
+
+% Colours the figures and boxes are drawn in.
+\definecolor{ibmblue}{HTML}{0F62FE}
+\definecolor{ibmfg}{HTML}{161616}
+
+% \bi ... \ei for itemize, \be ... \ee for enumerate (optional argument passed through to enumitem).
+\makeatletter
+\newcommand{\bi}{\@ifnextchar[{\notes@bi@opt}{\begin{itemize}}}
+\def\notes@bi@opt[#1]{\begin{itemize}[#1]}
+\newcommand{\ei}{\end{itemize}}
+\newcommand{\be}{\@ifnextchar[{\notes@be@opt}{\begin{enumerate}}}
+\def\notes@be@opt[#1]{\begin{enumerate}[#1]}
+\newcommand{\ee}{\end{enumerate}}
+\makeatother
+
+% Definitions, numbered within sections.
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+% ---- Further packages --------------------------------------------------------
+\usepackage{tabularx,array,enumitem,listings}
+% Narrow column cells read better ragged-right: X columns and the L{} type used by the tables.
+\renewcommand\tabularxcolumn[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\setlength{\tabcolsep}{3pt}
+\usepackage{tikz,adjustbox}
+\usepackage[section]{placeins}   % floats never cross into the next section
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,fit}
+
+% ---- Graph styles: one look for all five agent graphs ---------------------------
+\tikzset{
+  gnode/.style={draw=ibmfg!60, rounded corners=2pt, fill=white, font=\sffamily\footnotesize,
+                minimum height=7mm, inner sep=4pt, align=center},
+  mnode/.style={gnode, fill=ibmblue!15},
+  rnode/.style={gnode, fill=black!6},
+  tnode/.style={draw=ibmfg!60, ellipse, font=\sffamily\footnotesize, inner sep=3pt},
+  flow/.style={-{Stealth[length=2mm]}, thick, draw=ibmfg!80},
+  back/.style={flow, dashed},
+  lab/.style={font=\sffamily\scriptsize, fill=white, inner sep=1pt, align=center},
+}
+
+% ---- Boxes -----------------------------------------------------------------------
+% demostub: where a listing or trace from the demo (V0 to V4) goes once the demo exists.
+\newtcolorbox{demostub}{enhanced, colback=ibmblue!5, colframe=ibmblue, title={DEMO STUB},
+  fonttitle=\sffamily\bfseries, breakable}
+% figneeded: a figure Rahul sources himself (AIMA, Google guide); names source, figure, page or path, credit.
+\newtcolorbox{figneeded}[1]{enhanced, colback=black!4, colframe=black!50, title={FIGURE NEEDED: #1},
+  fonttitle=\sffamily\bfseries, breakable}
+
+% Definitions are boxed; amsthm keeps their numbering and labels.
+\tcolorboxenvironment{definition}{enhanced, breakable, colback=ibmblue!4, colframe=ibmblue!70!black,
+  boxrule=0.5pt, arc=2pt, left=6pt, right=6pt, top=4pt, bottom=4pt, before skip=8pt, after skip=8pt}
+
+\newcommand{\msa}{\texttt{mini-swe-agent}}     % the running agent's name
+% foodforthought: a prompt for HW1, set off from the text.
+\newtcolorbox{foodforthought}{enhanced, colback=orange!6, colframe=orange!75!black,
+  title={Food for thought for HW1}, fonttitle=\sffamily\bfseries, breakable}
+\lstset{basicstyle=\ttfamily\small, columns=fullflexible, keepspaces=true, breaklines=true,
+  frame=single, framerule=0.3pt, xleftmargin=3.5pt, xrightmargin=3.5pt,
+  literate={'}{{\textquotesingle}}1 {`}{{\textasciigrave}}1}
+\usepackage{wrapfig}
+\setlist{nosep, leftmargin=*}
+\newcommand{\demoref}[1]{\texttt{#1}}   % names of demo artifacts: files, tools, statuses
+\setlist[enumerate]{label=\arabic*.}
+
+% ---- Title -------------------------------------------------------------------------
+\title{Designing Production Agentic Systems\\Lecture 3: Execution machinery and vulnerability triage}
+\author{Rahul Krishna\\Columbia University, COMS E6998-019, Fall 2026}
+\date{Revised October 16, 2026, as reading for the midterm and the final, from the lecture of September 25, 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+These notes are the reading for Lecture~3, written for students preparing for the midterm and the
+final. The first three sections describe how an agent executes, using the planning agent of
+Lecture~2, the version of \msa{} with a planner and a validator: we describe it as an extended state
+machine whose runs follow paths through a computation tree, show how the runtime stores its state as
+a record of fields that reducers merge, and show how that record routes a run, sends it back along
+feedback edges and ends it. They also state what a call budget, a stall check and a trace can and
+cannot establish about how a run ended. The last two sections introduce the problem of the first
+homework: vulnerability management, the discovery of alerts with the static-analysis scanner Bandit,
+and the triage that decides whether an attacker can reach the flaw behind each alert. Each numbered
+section ends with a list of key points for revision.
+\end{abstract}
+\tableofcontents
+
+\input{sections/01-state-machines.tex}
+\input{sections/02-state-records.tex}
+\input{sections/03-routing-stopping.tex}
+\input{sections/04-vulnerability-discovery.tex}
+\input{sections/05-bandit-triage.tex}
+
+\clearpage
+\bibliographystyle{plainnat}
+\bibliography{references}
+\end{document}
