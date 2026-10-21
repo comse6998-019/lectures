@@ -1,0 +1,406 @@
+\section{Case study: attacks on OpenClaw}
+\label{sec:openclaw}
+
+The previous section showed that ATLAS says which actions to restrict, and sometimes that a control
+must sit outside the agent, and that it leaves the choice of the enforcing process to the builder of
+the system (\cref{sec:mitigations}). This section studies two documented attacks on OpenClaw, an
+open-source personal assistant, in which that choice decided the outcome. In both attacks, the
+controls lived inside the agent's own process and configuration, and an attacker who reached the
+agent's settings or controlled its inputs switched them off or got past them. The case makes
+concrete the limitation stated in \cref{sec:mcp}, uses techniques of \cref{sec:attacks}, and meets
+again the missing origin check of the MCP Inspector (\cref{sec:inspector}).
+
+\subsection{OpenClaw and its Gateway}
+\label{sec:openclaw-gateway}
+
+OpenClaw (formerly Clawdbot and Moltbot) is an open-source personal AI assistant that runs on the
+user's own devices \citep{openclaw-repo}. The user talks to it through chat apps that the user
+already has, such as WhatsApp, Telegram, Slack, Discord and Signal. The assistant reads each
+message, calls tools on the user's machine and replies in the same chat. The attacks in this
+section targeted the versions of early 2026.
+
+OpenClaw kept the part that manages the assistant apart from the part that runs the model. A
+\textbf{control plane} is the process that manages the other parts of a system: it holds their
+configuration, starts their work and routes their messages. OpenClaw's control plane was the
+\textbf{Gateway}, a long-running process that owned the connections to the chat apps, the
+conversations and the tools. The Gateway ran on the host machine (\cref{sec:attacks-escape}), the
+machine on which OpenClaw was installed, outside any sandbox. In this section, ``the host'' means
+that machine, a different sense from the MCP host of \cref{sec:mcp-host}.
+
+\Cref{fig:openclaw-parts} shows the Gateway among OpenClaw's other parts. In the figure, look at the
+box labeled ``agent's own configuration'', which holds the two controls described below, and at the
+box labeled ``WebSocket API'', the Gateway API through which a client of the Gateway could rewrite
+them. The parts were the following:
+\bi
+\item \textbf{Channels.} A channel was the Gateway's connection to one chat app, and every message
+from that app reached the Gateway through it.
+\item \textbf{Gateway API.} Every client of the Gateway, such as the command line, the companion
+apps and the browser interface, connected to it through one API, the Gateway API. The API used
+\textbf{WebSocket}, a protocol for a two-way connection that stays open, so that either side can
+send a message at any time. By default it listened only on localhost, the address through which a
+machine reaches its own services (\cref{sec:inspector}).
+\item \textbf{Control UI.} The \textbf{Control UI} was OpenClaw's browser interface to the Gateway.
+Through it, the user changed the configuration, the approvals and the channels.
+\item \textbf{Agent runtime.} The agent runtime held the model and its system prompt. OpenClaw built
+the system prompt of every run from \textbf{prompt files}, Markdown files in the agent's workspace.
+Examples were SOUL.md, which describes the assistant's persona, and HEARTBEAT.md, a checklist for the
+assistant's periodic runs.
+\item \textbf{Tools.} The model acted through built-in tools such as \demoref{exec}, which ran shell
+commands, and \demoref{web\_fetch}, which fetched a web page and returned its text.
+\item \textbf{Sandbox.} Tools could run in a Docker container, a sandbox in the sense of Lecture~4.
+The sandbox was optional and off by default, so tools normally ran on the host.
+\ei
+
+\begin{figure*}[tb]
+  \centering
+  \includegraphics[width=0.86\textwidth]{figures/deck/2207db8869.png}
+  \caption{OpenClaw's parts as documented in January 2026. Chat apps reach the Gateway through
+  channels, the Control UI reaches it through the Gateway API, a WebSocket API on localhost, and the agent runtime
+  builds its system prompt from prompt files. The approval prompt and the sandbox setting sit in the
+  agent's own configuration, which the Gateway API can rewrite. Magenta marks the settings that the
+  attack of \cref{sec:openclaw-rce} turned off.}
+  \label{fig:openclaw-parts}
+\end{figure*}
+
+ATLAS calls \demoref{exec} and \demoref{web\_fetch} the bash skill and the web\_fetch skill. In
+OpenClaw, as in \cref{sec:attacks}, a skill is an installable package of instructions built around a
+SKILL.md file. We therefore call \demoref{exec} and \demoref{web\_fetch} tools and keep the word
+skill for such packages.
+
+The approval prompt and the sandbox setting limited what the model's commands could do:
+\bi
+\item \textbf{Approval prompt.} The \textbf{approval prompt} asked the user to approve a command
+before it ran on the host. It applied the human-in-the-loop pattern of Lecture~2, in which a run
+pauses for a person's decision. Its policy was a file whose fields said when to ask and which
+commands were allowed. An install could also have no approval prompt. In the install that the
+second attack used, \demoref{exec} ran commands on the host with no approval prompt and no sandbox
+(\cref{sec:openclaw-c2}).
+\item \textbf{Sandbox setting.} The \textbf{sandbox setting} decided whether \demoref{exec} ran its
+commands in the Docker container or on the host. It was a key in a configuration file that the
+Gateway owned.
+\ei
+
+Both settings lived in files that the Gateway owned, which we call the agent's own configuration,
+and the Gateway API could rewrite both. The Control UI used the same API to change them, which is
+how the user adjusted them.
+
+The Gateway API admitted a client that presented the \textbf{Gateway token}, the credential for the
+Gateway API. The Control UI held the token in the browser, so that it could connect without asking
+the user each time. OpenClaw treated every client that presented the token as an
+\textbf{operator}, a trusted administrator of that Gateway. The approval prompt protected the host
+from the model's commands. It did not check what each caller was allowed to do, so it did not
+separate one operator from another \citep{openclaw-docs-exec-approvals}.
+
+Holding the token was therefore what made a caller trusted, and any holder could rewrite the
+approval prompt and the sandbox setting through the Gateway API. A control that an API can rewrite
+holds only as long as no attacker reaches that API, and the Gateway that served the API ran outside
+any sandbox. \Cref{sec:mcp} stated this limitation in general: a rule enforced inside the agent's own
+process can be disabled by whatever reaches that process.
+
+\subsection{OpenClaw's case studies in ATLAS}
+\label{sec:openclaw-atlas}
+
+In ATLAS release 2026.09, every case study in which OpenClaw is the target is an exercise
+\citep{mitre-atlas-2026}. As in \cref{sec:threats-atlas}, an exercise documents a research or
+red-team demonstration, where an incident documents a real attack.
+
+In the order of their dates, from late January to early February 2026, the case studies are the
+following:
+\bi
+\item \textbf{Exposed control interfaces.} A researcher found hundreds of OpenClaw control
+interfaces open to the internet, read the agent's credentials from its plaintext configuration, and
+in one instance got the agent to run commands as root inside its container \citep{atlas-cs0048}.
+Some interfaces were open because of a \textbf{reverse proxy}, a server that forwards requests from
+the network to a service on the same machine. The reverse proxy made remote connections look local,
+and the Gateway trusted local connections.
+\item \textbf{A poisoned skill.} A researcher published a skill with a hidden instruction on
+ClawdHub, OpenClaw's public registry of skills, and used a script to inflate its download count
+\citep{atlas-cs0049}. In the first eight hours, 16 users downloaded and ran it in Claude Code, an
+agent that loads the same skill format.
+\item \textbf{One-click remote code execution.} A malicious link let a researcher run commands on
+the machine that ran OpenClaw. We call this attack the one-click chain, because it began with one
+click (\cref{sec:openclaw-rce}). An attack \textbf{chain} is a sequence of steps in which each step
+gives the attacker what the next one needs.
+\item \textbf{Command and control through prompt injection.} A web page turned the assistant into
+a command channel for researchers, an attack we call the command-and-control chain
+(\cref{sec:openclaw-c2}).
+\ei
+
+Both chains show where OpenClaw's controls lived and how the attackers reached them.
+
+\subsection{Remote code execution from one click}
+\label{sec:openclaw-rce}
+
+A malicious link gave a researcher remote code execution (\cref{sec:inspector-cve}) on the machine
+that ran OpenClaw. The vulnerability record of the attack, CVE-2026-25253, covers the step in
+which the Control UI leaked the Gateway token (step 2 below). The record gives a CVSS 3.1 score of
+8.8 and lists the versions before 2026.1.29 as affected \citep{nvd-cve-2026-25253}. ATLAS records the
+attack as the exercise OpenClaw 1-Click Remote Code Execution \citep{atlas-cs0050-openclaw-rce}.
+
+The attack depended on how browsers treat WebSocket connections. The \textbf{same-origin policy} is
+the browser rule that stops a page from reading responses from any origin other than its own. An
+origin, as in \cref{sec:inspector}, is the scheme, the host name and the port of a page's address.
+Browsers do not apply this policy to WebSocket.
+
+A page may open a WebSocket to any server, and once the connection is open the page can send and
+read messages freely. A WebSocket server must therefore check the Origin header of each new
+connection itself. Only that check tells it whether the page that opened the connection belongs to
+a site it trusts.
+
+The attack proceeded as follows, with the steps numbered as in \cref{fig:openclaw-rce}. Each step
+names the control that failed.
+\be
+\item \textbf{The user opened a link.} The attacker's page ran a script in the user's browser. No
+control failed at this point, because a browser runs the scripts of every page it loads.
+\item \textbf{The token went to the attacker.} The script opened the Control UI with a
+\demoref{gatewayUrl} parameter in its address, naming the attacker's server as the Gateway. The
+Control UI connected to that server without asking the user and sent the stored Gateway token. The
+control that failed was the secrecy of the token, because the UI treated a parameter in its own
+address as a trusted setting. The attacker now held the token, and the attacker's script in the
+user's browser used it in the next steps.
+\item \textbf{A cross-site WebSocket reached the Gateway.} The script opened a WebSocket from the
+user's browser to the Gateway on localhost. The control that was missing was the origin check. The
+Gateway checked no Origin header, so it accepted a connection opened by a page from another site.
+Listening only on localhost did not help, because the connection came from the user's own browser
+on the same machine.
+\item \textbf{The script signed in as the operator.} The script signed in with the stolen token. The
+token was genuine, so the Gateway treated the script as the operator. The control that failed was
+authentication. It worked as designed and still could not tell the user from a script that held the
+user's token.
+\item \textbf{The approval prompt was turned off.} A call to \demoref{exec.approvals.set} turned off
+the approval prompt for host commands. The control that failed was the approval prompt itself,
+because its policy was a file that the Gateway API rewrote. Rewriting it required the administrative
+scope, the permission level for changing settings, and the stolen token carried that scope.
+\item \textbf{Commands left the sandbox.} A call to \demoref{config.patch} set the host for
+\demoref{exec} to the Gateway's own machine, so commands ran on the host instead of in the Docker
+container. The control that failed was the sandbox, because the sandbox setting was a configuration
+key that the Gateway owned. Because the sandbox was off by default, this step mattered only on
+installs that had enabled it.
+\item \textbf{A command ran on the host.} A call to \demoref{node.invoke} ran a shell command on the
+host. No control remained, because the approval prompt was off and commands no longer ran in the
+sandbox.
+\ee
+
+\begin{figure*}[tb]
+  \centering
+  \includegraphics[width=0.86\textwidth]{figures/deck/37c6db0214.png}
+  \caption{The one-click chain on the user's machine (CVE-2026-25253). Magenta marks what the
+  adversary controls, and the numbered circles give the order of the steps. The calls to the
+  Gateway are drawn schematically, and the command in the host shell is the researchers' harmless
+  example.}
+  \label{fig:openclaw-rce}
+\end{figure*}
+
+The researcher needed no flaw in the sandbox or in the approval logic, because ``these protections
+are managed via the API itself'' \citep{levin2026openclaw}. The API that let the user adjust the
+controls also let a script with the user's token switch them off.
+
+ATLAS maps each step of the chain to a technique. The preparation steps used Develop Capabilities
+and Stage Capabilities. The numbered steps above then used User Execution: Malicious Link (step 1),
+Exploitation for Credential Access (step 2), Exploitation for Defense Evasion (step 3), Valid
+Accounts (step 4), Modify AI Agent Configuration (step 5), Escape to Host (step 6,
+\cref{sec:attacks}) and Command and Scripting Interpreter (step 7).
+
+\begin{definition}[Modify AI Agent Configuration]
+\label{def:openclaw-modify-config}
+``Adversaries may modify the configuration files for AI agents on a system. This allows malicious
+changes to persist beyond the life of a single agent and affects any agents that share the
+configuration.'' \citep{mitre-atlas-2026}
+\end{definition}
+
+ATLAS lists, among such changes, edits to the system prompt and the weakening of security controls
+that restrict the agent. Modify AI Agent Configuration is also the only technique of this chain whose
+platforms field lists Agentic AI alone. Develop Capabilities lists every platform, and the remaining
+techniques list only Enterprise.
+
+In our reading, most of the chain used techniques that are not specific to AI systems: a stolen
+credential, a missing check in a WebSocket server and a shell command. The step specific to agents
+was the change to the agent's configuration.
+
+A stolen Gateway token was enough to turn off the approval prompt, leave the sandbox and run a
+command on the host. The Inspector's proxy had the same missing origin check before its fix
+(\cref{sec:inspector}). In both cases, a page from another site reached a service on the user's own
+machine. The Inspector's proxy also asked for no credential, whereas the Gateway required a token,
+which this chain had stolen first. A component that acts on requests arriving through a browser
+must check which page sent them.
+
+\subsection{Command and control through a web page}
+\label{sec:openclaw-c2}
+
+A web page that the user asked OpenClaw to summarize turned the assistant into a command channel for
+the researchers who wrote the page \citep{mccauley2026openclaw}. ATLAS records the attack as the
+exercise OpenClaw Command \& Control via Prompt Injection \citep{atlas-cs0051-openclaw-c2}. Unlike
+the one-click chain, it stole no credential and changed no security setting.
+
+The attack began with indirect prompt injection (\cref{sec:threats-matrix}), through the text of a
+web page that a tool returned. It then used a jailbreak. A \textbf{jailbreak} gets a model past the limits it was trained to
+respect. Those limits come from the model's safety alignment, the training that steers it toward
+safe behavior within its task (\cref{sec:mitigations}).
+
+The jailbreak worked through control sequences. \textbf{Control sequences} are the markers of a
+prompt format that tell the model where each part of its input begins and ends. They mark, for
+example, the end of a tool result, the start of a user message, or a passage of the model's own
+reasoning. They are ordinary text, so a page can imitate them.
+
+The goal of the attack was command and control. \textbf{Command and control} is a channel through
+which an attacker sends tasks to a compromised system, here a compromised agent, and the system
+carries them out.
+
+The attack proceeded as follows, with the steps numbered as in \cref{fig:openclaw-c2}:
+\be
+\item \textbf{Preparation.} The researchers read OpenClaw's public repository to learn its prompt
+format. They wrote the injection and hosted a web page, an install script and a to-do list on a
+look-alike site, whose name imitated an OpenClaw resource.
+\item \textbf{The page entered the context.} The user took the look-alike site for a genuine
+OpenClaw resource and asked OpenClaw to summarize the page. \demoref{web\_fetch} returned the page's
+text to the model as a tool result. The safeguard that failed was the user's judgment of which
+sites to trust, and the look-alike name was chosen to mislead it.
+\item \textbf{Indirect prompt injection.} The model read the text of the page as instructions. The
+page told it to set up OpenClaw by running a script. The control that failed was the separation of
+data from instructions in the model's context.
+\item \textbf{A jailbreak with spoofed control sequences.} The page imitated OpenClaw's control
+sequences for the end of a tool result, the start of a user message and the model's reasoning. The
+model therefore treated the page's text as the user's request and as its own reasoning. The control
+that failed was the model's safety alignment.
+\item \textbf{A script ran through \demoref{exec}.} The model called \demoref{exec} with a command
+that downloaded the install script and passed it straight to the shell, in the form
+\texttt{curl\,...\,|\,bash}. No control stopped the call. The install that the researchers used
+asked for no approval and had the sandbox off, and their report names no OpenClaw version.
+\item \textbf{HEARTBEAT.md was changed.} The script appended the researchers' instructions to
+HEARTBEAT.md, a prompt file that stayed on disk. No control guarded it, because the prompt files
+were writable by the agent's own tools.
+\item \textbf{Every new thread was poisoned.} In the early-2026 versions, HEARTBEAT.md went into the
+system prompt of every new thread, that is, every new conversation with the assistant. The
+instructions therefore arrived as trusted input, and the user only had to greet the assistant to
+trigger them. The current documentation of OpenClaw no longer lists HEARTBEAT.md as a prompt file.
+\item \textbf{A command-and-control loop.} The agent fetched a to-do list from the researchers'
+server with \demoref{web\_fetch} and ran each task with \demoref{exec}. From then on, the agent
+carried out the researchers' tasks with the user's tools and credentials.
+\ee
+
+\begin{figure*}[tb]
+  \centering
+  \includegraphics[width=0.86\textwidth]{figures/deck/b94c1445d8.png}
+  \caption{The command-and-control chain. Magenta marks what the adversary controls, and the
+  numbered circles give the order of the steps. The user's request is illustrative, and the text of
+  the page and of HEARTBEAT.md is abbreviated.}
+  \label{fig:openclaw-c2}
+\end{figure*}
+
+The change to HEARTBEAT.md and its reload are the context poisoning of \cref{sec:attacks-memory}. An
+instruction planted in persistent memory takes effect later, in another thread, as trusted input.
+Because the prompt file outlived the thread in which it was changed, the attack also outlived it.
+
+ATLAS maps the chain, after its preparation steps, to techniques that follow the numbered steps
+above: Masquerading and Drive-by Compromise (step 2), LLM Prompt Injection: Indirect (step 3), LLM
+Jailbreak (step 4), AI Agent Tool Invocation (step 5), Modify AI Agent Configuration (step 6), and
+LLM Prompt Injection: Direct and AI Agent Context Poisoning: Thread (step 7). Step 8 maps to two
+separate techniques, AI Agent and Machine Compromise: Local AI Agent.
+
+ATLAS records step 7 as a direct prompt injection. The planted instructions now reached the model
+through its own system prompt, with no tool result in between. AI Agent is a technique of the
+Command and Control tactic, in which an adversary uses an agent on the victim's system as its
+command channel. Modify AI Agent Configuration appears in both chains. In the one-click chain it
+switched off the approval prompt, and here it changed a prompt file.
+
+With nothing switched off, a page that the agent read led it to add the researchers' instructions to
+its own system prompt. In the install that the researchers used, \demoref{exec} ran on the host with
+no approval prompt and no sandbox, and the files that define the agent were writable by the agent.
+The only remaining safeguard was the model's own behavior, and text in a page got past it.
+
+\subsection{The controls that failed}
+\label{sec:openclaw-controls}
+
+Every control that failed or was missing in the two chains was a setting or a file in the agent's
+own configuration, or the behavior of the model that the agent called. \Cref{tab:openclaw-controls}
+lists these controls. For each one, it gives where the control lived, how the attack got past it,
+and the ATLAS mitigations mapped to the technique that the attack used at that point.
+
+\begin{table*}[tb]
+  \caption{Controls that failed or were missing in the two attacks on OpenClaw. The last column lists
+  the mitigations that ATLAS maps to the technique the attack used, with the technique in
+  parentheses.}
+  \label{tab:openclaw-controls}
+  \begin{adjustbox}{width=\textwidth}\begin{tabularx}{\textwidth}{L{0.15\textwidth}L{0.21\textwidth}XL{0.28\textwidth}}
+    \toprule
+    \textbf{Control} & \textbf{Where it lived} & \textbf{How the attack got past it} &
+    \textbf{ATLAS mitigations mapped to the technique} \\
+    \midrule
+    \textbf{The approval prompt for host commands} & A policy file that the Gateway API could
+    rewrite & One-click chain: a call with the stolen token set it to off & AI Red Team only (Modify
+    AI Agent Configuration) \\
+    \midrule
+    \textbf{The sandbox} & A configuration key that the Gateway API could patch & One-click chain: a
+    call with the stolen token set the host for \demoref{exec} to the Gateway's machine & None
+    (Escape to Host) \\
+    \midrule
+    \textbf{The prompt files} & Workspace files that the agent's own tools could write &
+    Command-and-control chain: no check existed, and a script that the agent ran appended the
+    researchers' instructions & AI Red Team only (Modify AI Agent Configuration) \\
+    \midrule
+    \textbf{The model's alignment} & The model and its prompt format & Command-and-control chain:
+    spoofed control sequences in the page got past it & Generative AI Guardrails, Generative AI
+    Guidelines, Generative AI Model Alignment and AI Red Team (LLM Jailbreak) \\
+    \bottomrule
+  \end{tabularx}\end{adjustbox}
+\end{table*}
+
+Each row follows from where OpenClaw placed the control. The approval policy was a
+file that the Gateway API rewrote, with the administrative scope that the stolen token carried. The
+sandbox setting was a key in the agent's own configuration, and the Gateway that owned this file was
+not itself sandboxed. The prompt files were writable by the same tools that the injection controlled.
+The control sequences were part of the prompt format, and untrusted text could repeat them.
+
+ATLAS maps mitigations to techniques, and its case studies name no mitigation
+\citep{mitre-atlas-2026}. The last column therefore lists what ATLAS offers against each technique
+in general. It is not a record of what OpenClaw lacked.
+
+For the changes to the configuration and the escape from the sandbox, ATLAS offers little. Against
+Modify AI Agent Configuration, it maps only AI Red Team (\cref{sec:mitigations-oversight}). None of
+its mappings restricts who may change an agent's configuration. Against Escape to Host, ATLAS maps
+no mitigation at all.
+
+Against LLM Jailbreak, ATLAS maps AI Red Team together with mitigations that act on the model and its
+inputs. Generative AI Guardrails screen what passes between users, tools and the model. Generative
+AI Guidelines and Generative AI Model Alignment shape the model's behavior through its instructions
+and its training, and belong to the family \emph{Harden the model itself}
+(\cref{sec:mitigations-placement}).
+In the second attack, OpenClaw did not filter the control sequences out of the fetched page, and they
+got past the model's own safety alignment \citep{mccauley2026openclaw,atlas-cs0051-openclaw-c2}.
+
+Every row has the same cause. Each control could be changed or bypassed through a path that the
+agent itself offered: the Gateway API rewrote the settings, the agent's own tools wrote the prompt
+files, and text in a page steered the model. In the one-click chain, the script reached the settings
+through the Gateway API with a stolen token. In the command-and-control chain, the injected
+instructions led the agent's own tools to write the file.
+
+The case illustrates the limitation stated in \cref{sec:mcp}: a rule enforced inside the agent's own
+process and configuration can be disabled by whoever reaches the agent's settings or controls its
+inputs. ATLAS names what to restrict. It does not name the process that should enforce the
+restriction (\cref{sec:mitigations}). OpenClaw placed every one of these controls within reach of the
+Gateway API, the agent's own tools or the text that the agent read.
+
+\subsection*{Key points}
+\bi
+\item OpenClaw's Gateway, its control plane, ran on the host outside any sandbox, and any caller
+holding the Gateway token was a trusted operator who could rewrite the approval prompt and the
+sandbox setting through the Gateway API.
+\item In the one-click chain (CVE-2026-25253), the Control UI sent its token to a server named in its
+own address, and the Gateway accepted a cross-site WebSocket because it checked no Origin header, so
+a page could sign in as the operator.
+\item With the stolen token, the script turned off the approval prompt for host commands, moved
+\demoref{exec} out of the sandbox and ran a command on the host, all through the Gateway API that the
+user also used to adjust these controls.
+\item In the command-and-control chain, a page that the agent summarized used indirect prompt
+injection and spoofed control sequences to make the agent run a script, which wrote the researchers'
+instructions into HEARTBEAT.md, a prompt file that the early-2026 versions loaded into every new
+thread.
+\item The command-and-control chain changed no security setting, because in the install that the
+researchers used, \demoref{exec} ran on the host with no approval prompt and no sandbox, and the
+prompt files were writable by the agent's own tools.
+\item Modify AI Agent Configuration appears in both chains, and ATLAS maps only AI Red Team to it and
+no mitigation at all to Escape to Host.
+\item Every control that failed was a setting or a file in the agent's own configuration, or the
+behavior of the model that the agent called, and the attackers reached each one through the Gateway
+API, the agent's own tools or the text of a page.
+\ei

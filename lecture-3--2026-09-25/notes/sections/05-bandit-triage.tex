@@ -1,0 +1,645 @@
+\section{Bandit alerts and triage}
+\label{sec:triage}
+
+\Cref{sec:discovery} named the weaknesses that HW1's alerts point to and the attacker against whom
+each one matters. This section describes the alerts themselves, which are what the agent you build in
+HW1 receives and must label. We show how Bandit reads a program, what its rules and alert records
+contain, and when a matched weakness is a vulnerability, using alerts from the development set with
+and without a real flaw behind them. We then explain why every alert needs triage, what each kind of
+triage mistake costs, how alerts are prioritized, and what a label must carry.
+
+\subsection{How Bandit reads a program}
+\label{sec:triage-tree}
+
+Bandit finds alerts by matching shapes in the structure of a program, without running it. A
+\textbf{syntax tree} is the tree that a parser builds from source code. Each node stands for one
+construct of the language, such as an assignment, a function call or a name, and the children of a
+node are the parts of that construct. Bandit parses each Python file into the syntax tree that
+Python's own parser produces \citep{python-ast} and runs every rule against the nodes of the tree
+\citep{bandit}.
+
+A rule, as \cref{sec:discovery} defined it, is a pattern, a message and metadata. In Bandit, the
+pattern is a shape in the syntax tree, for example a call to a function with a given name. When a
+node has that shape, the rule reports an alert at the line where the node occurs, together with the
+rule's message and its severity (\cref{sec:triage-severity}).
+
+What a rule can see is limited to the part of the tree it reads. A rule reads the node it matched and
+a few nodes near it, which record the call as it is written: which function is called and what is
+passed to it. The rule does not follow a name back through the assignments that gave the name its
+value. It therefore learns nothing about where an argument's value came from. When the argument is a
+variable, as \texttt{fb} is in \cref{fig:triage-tree}, the rule cannot tell whether the variable holds
+a value read from a request or a constant assigned a few lines earlier.
+
+Every Bandit alert reports a matched shape and leaves open where the data at that shape comes from.
+Whether data from an attacker can reach the matched call is the question that triage answers
+(\cref{sec:triage-undecided}).
+
+\begin{figure*}[t]
+  \centering
+  \begin{adjustbox}{width=\textwidth}\input{figures/triage-ast-rule.tikz}\end{adjustbox}
+  \caption{One line of Radicale, its syntax tree and Bandit's rule B301. The highlighted path leads
+  from the assignment to the called name, \texttt{pickle.load}, which the rule finds in its list of
+  names and reports as an alert. The argument \texttt{fb} is a leaf that the rule never reads.}
+  \label{fig:triage-tree}
+\end{figure*}
+
+\Cref{fig:triage-tree} follows one match from a line of code to an alert. The line comes from
+Radicale, a calendar server and one of HW1's held-out targets. It loads a stored object from the
+open file \texttt{fb} and unpacks it into two variables. Python's parser turns the line into an
+assignment node. Its target is a tuple of two names, and its value is a call. The function called is
+the attribute \texttt{load} of the name \texttt{pickle}, and the one argument is the name
+\texttt{fb}.
+
+Bandit reads the called name, \texttt{pickle.load}, along the highlighted path and looks it up in
+the list of names held by rule B301. The name is on the list, so B301 reports an alert on this line.
+The argument appears in the tree only as the leaf \texttt{Name fb}, and the rule never visits it.
+Even that leaf holds only the variable's name. The bytes that the file will contain exist only when
+the program runs, and whether an attacker could have written them decides whether this alert is
+real.
+
+Bandit reads Python only. Other SAST tools, such as Semgrep and CodeQL, do the same job for many
+languages.
+
+\subsection{A rule in Bandit's source}
+\label{sec:triage-rule}
+
+In Bandit's source, the simplest rules are short data structures. Each holds a list of function
+names, a message, a CWE and a severity, and Bandit calls such a list of names a blacklist. Other
+rules, such as B102 for \texttt{exec} and B608 for SQL text, are short functions. Each of them
+inspects the matched node and returns a message, a CWE, a severity and a confidence.
+
+\Cref{lst:triage-b301} shows the entry for B301, the rule that matched the line of
+\cref{fig:triage-tree} \citep{bandit}. The function \texttt{build\_conf\_dict} builds the entry from
+a name, an identifier, a CWE, the names to match, the message and an optional severity.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[breakatwhitespace=true, basicstyle=\ttfamily\footnotesize, caption={Bandit's entry for rule B301, with the list of names shortened.}, label=lst:triage-b301]
+utils.build_conf_dict(
+    "pickle",
+    "B301",
+    issue.Cwe.DESERIALIZATION_OF_UNTRUSTED_DATA,
+    [
+        "pickle.loads",
+        "pickle.load",
+        "pickle.Unpickler",
+        # ... nine more names, from dill.loads
+        # to pandas.read_pickle
+    ],
+    "Pickle and modules that wrap it can be unsafe when used to "
+    "deserialize untrusted data, possible security issue.",
+)
+\end{lstlisting}
+\end{minipage}
+
+The parts of the entry are the following:
+\bi
+\item \textbf{Name and identifier.} The strings \texttt{"pickle"} and \texttt{"B301"} name the
+rule. The identifier B301 appears in every alert the rule produces.
+\item \textbf{CWE.} The constant \texttt{DESERIALIZATION\_OF\_UNTRUSTED\_DATA} stands for CWE-502,
+deserialization of untrusted data. \textbf{Deserialization} is the step that turns stored bytes back
+into objects. Every alert of the rule carries this CWE.
+\item \textbf{Names to match.} The list holds the functions the rule matches, each written as a
+\textbf{qualified name}: the function's name together with the module it belongs to, as in
+\texttt{pickle.load}. Besides three names from \texttt{pickle}, the list holds nine names from
+modules that wrap it, from \texttt{dill} to \texttt{pandas.read\_pickle}.
+\item \textbf{Message.} The two strings at the end form the text reported with each alert.
+\item \textbf{Severity.} The entry gives none, so its alerts take the default, MEDIUM.
+\ei
+
+The message states the reason for the rule. \texttt{pickle} is Python's format for saving objects as
+bytes. Loading a pickle can make Python call functions that the bytes name, so an attacker who
+controls the bytes can make the program run code of their choosing.
+
+The rule knows nothing about what is unpickled. It matches the name of the function, so it reports
+every call to \texttt{pickle.load} in the same way, whether the bytes come from a file the program
+wrote itself or from a request. Every one of those alerts receives the same message, CWE and
+severity.
+
+\subsection{Severity and confidence}
+\label{sec:triage-severity}
+
+Every Bandit rule attaches two estimates to its alerts, a severity and a confidence. The
+\textbf{severity} of a rule is its estimate of the harm if the flaw is real. Its
+\textbf{confidence} is its estimate of how often the matched shape is that flaw. Bandit grades both
+as LOW, MEDIUM or HIGH.
+
+\Cref{tab:triage-severity} gives both estimates for the rules that fire on HW1's three targets, as
+Bandit 1.9.4, the version HW1 uses, reported them. Most of these rules estimate MEDIUM harm. The
+weak-hash rule B324 and the shell rule B602 estimate HIGH harm, and the rules for SQL text and for
+requests without a timeout have LOW confidence.
+
+\begin{table*}[t]
+  \caption{Severity and confidence of the Bandit rules that fire on HW1's three targets.}
+  \label{tab:triage-severity}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{L{0.16\linewidth}XL{0.13\linewidth}L{0.13\linewidth}}
+    \toprule
+    \textbf{Rule} & \textbf{What it matches} & \textbf{Severity} & \textbf{Confidence} \\
+    \midrule
+    \textbf{B608} & SQL text built in a string & MEDIUM & LOW \\
+    \textbf{B301, B614, B615} & \texttt{pickle}, \texttt{torch.load}, downloads from the Hugging Face Hub not pinned to a commit & MEDIUM & HIGH \\
+    \textbf{B102, B307} & \texttt{exec}, \texttt{eval} & MEDIUM & HIGH \\
+    \textbf{B314, B317, B318} & Standard XML parsers, which are unsafe on outside data & MEDIUM & HIGH \\
+    \textbf{B324} & MD5 or SHA1 in \texttt{hashlib} & HIGH & HIGH \\
+    \textbf{B602} & A subprocess started through the shell & HIGH & HIGH \\
+    \textbf{B113} & Requests sent without a timeout & MEDIUM & LOW \\
+    \bottomrule
+  \end{tabularx}\end{adjustbox}
+\end{table*}
+
+One rule adjusts its confidence to the code it matched. B608, the SQL rule, reports MEDIUM
+confidence when the SQL text is built inside the call that runs it. In the development set's cases
+the text is built in one statement and run in another, and there B608 reports LOW confidence.
+
+B602, the shell rule, adjusts its severity to the code it matched in a similar way. It reports HIGH
+severity when the shell command is built at run time, as in Radicale's alert, and LOW severity when
+the command is a literal string. HW1's filter drops such LOW alerts.
+
+Both estimates were made before anyone read the code around the match. They are decided when the
+rule is written, and the rule assigns them from the matched shape alone. B301's entry gives no
+confidence, and Bandit gives every alert of a rule built from a list of names HIGH confidence. Most
+rules give every alert the same two values, and even B608 looks only at the statement it matched.
+
+Neither estimate says where the data at the matched call comes from. B301, for example, reports HIGH
+confidence on each of Radicale's pickle alerts, although whether any of them is a vulnerability
+depends on who can write the files they load (the threat model of \cref{sec:discovery}).
+
+HW1 filters alerts by severity alone. It keeps every alert of MEDIUM or HIGH severity, whatever its
+confidence. A rule with LOW confidence, such as B608 or B113, therefore still produces alerts that
+the agent must triage.
+
+\subsection{One run and one alert record}
+\label{sec:triage-record}
+
+A Bandit run produces a list of alerts, and each alert reaches the agent as one structured record.
+HW1's brief fixes the command for each target. For Radicale, Bandit scans the server's package
+recursively, skips its tests, keeps the alerts of MEDIUM severity or higher and writes its results as
+JSON. At the commit HW1 uses \citep{radicale}, this run reports ten alerts:
+\bi
+\item \textbf{B301 (pickle).} Seven alerts, each a call that loads pickled data, with MEDIUM
+severity and HIGH confidence.
+\item \textbf{B602 (shell).} One alert, a subprocess started through the shell, with HIGH severity
+and HIGH confidence.
+\item \textbf{B324 (weak hash).} One alert, a use of MD5 or SHA1, with HIGH severity and HIGH
+confidence.
+\item \textbf{B113 (timeout).} One alert, a request sent without a timeout, with MEDIUM severity and
+LOW confidence.
+\ei
+
+The same command on the same commit returns the same ten alerts, as \cref{sec:discovery} explained
+for every target. Any difference between the labels of two runs of a triage agent on Radicale
+therefore comes from triage.
+
+\Cref{lst:triage-alert} shows the record of the alert on the line of \cref{fig:triage-tree},
+shortened. The record is JSON, and its fields name the rule, give its estimates and its CWE, and
+locate the match:
+\bi
+\item \textbf{Rule.} \demoref{test\_id} names the rule, B301. \demoref{test\_name} is
+\texttt{blacklist} for every rule built from a list of names. A rule written as a function puts the
+function's name there instead, such as \texttt{hashlib} for B324.
+\item \textbf{Estimates.} \demoref{issue\_severity} and \demoref{issue\_confidence} carry the rule's
+two estimates.
+\item \textbf{CWE.} \demoref{issue\_cwe} gives the CWE number and a link to its entry in the
+catalogue. It names the kind of flaw the rule believes it found, here CWE-502.
+\item \textbf{Location.} \demoref{filename} and \demoref{line\_number} say where the match is.
+\ei
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[breakatwhitespace=true, basicstyle=\ttfamily\footnotesize, caption={One Bandit alert record, as the agent receives it, with its message, code, position and documentation fields cut.}, label=lst:triage-alert]
+{
+  "test_id": "B301",
+  "test_name": "blacklist",
+  "issue_severity": "MEDIUM",
+  "issue_confidence": "HIGH",
+  "issue_cwe": {
+    "id": 502,
+    "link": "https://cwe.mitre.org/data/definitions/502.html"
+  },
+  "filename": "radicale/sharing/files.py",
+  "line_number": 131
+}
+\end{lstlisting}
+\end{minipage}
+
+The full record also holds the rule's message in \demoref{issue\_text}, the exact position of the
+match in \demoref{line\_range}, \demoref{col\_offset} and \demoref{end\_col\_offset}, the lines around
+the match in \demoref{code}, and a link to the rule's documentation in \demoref{more\_info}.
+
+Nothing in the record says where the loaded bytes come from. Apart from the position and the code of
+the match, the record holds only what the rule supplies: its identifier, its message, its CWE and its
+two estimates. Finding out where the data comes from is left to the agent.
+
+\subsection{Vulnerability and exploit}
+\label{sec:triage-vulnerability}
+
+A weakness becomes a vulnerability when a running program lets an attacker reach it. A weakness, as
+\cref{sec:discovery} defined it, is a kind of flaw, such as building a database query by pasting a
+value into its text. One occurrence of a weakness in a program counts as a vulnerability only when
+a threat source, such as an attacker, could exploit it.
+
+\begin{definition}[Vulnerability]
+\label{def:triage-vulnerability}
+``Weakness in an information system, system security procedures, internal controls, or
+implementation that could be exploited or triggered by a threat source.''
+\citep{nist-glossary-vulnerability}
+\end{definition}
+
+Stated in terms of a program, a \textbf{vulnerability} is a weakness an attacker can reach in a
+running program. An \textbf{exploit} is an input that reaches it. A weakness in a program is a
+vulnerability when all of the following hold:
+\bi
+\item \textbf{A path.} The attacker's data enters at the attack surface and travels to a sink, the
+call where it does harm (\cref{sec:discovery}).
+\item \textbf{Nothing removes the danger.} No step on the way makes the data harmless. Binding the
+value as a parameter of a query, checking the input, and putting a constant in the value's place are
+examples of such steps.
+\item \textbf{The harm matters.} The result is a harm that the threat model says we must prevent,
+such as running code that the attacker wrote.
+\ei
+
+These conditions give a label its meaning. A label of 1 claims that a path from the attack surface
+to the sink exists under the threat model, with nothing on it that removes the danger. A label of 0
+claims that no such path exists.
+
+HW1 calls an alert with a label of 1 a potential vulnerability. The word \emph{potential} marks that
+triage reaches its label by reading the code, without running it. Proving the flaw with a
+reproduction is the later stage of validation (\cref{sec:discovery}).
+
+A label of 1 makes a claim about a path, so its rationale has to show that path: where the data
+enters, how it travels and where it does harm. A rationale for a label of 0 names what blocks the
+path, such as a step that removes the danger. The lines of code that a reviewer can read to check a
+rationale are its \textbf{evidence}.
+
+\subsection{SQL injection: a real alert and a false positive}
+\label{sec:triage-sql}
+
+The same rule can fire on a real vulnerability and on safe code, because the shape it matches is
+present in both. An alert with no flaw behind it is a \textbf{false positive}, also called a false
+alarm. \Crefrange{lst:triage-sql-real}{lst:triage-xpath} quote test cases of the development set,
+the first 99 test cases of OWASP BenchmarkPython \citep{owasp-benchmarkpython}, whose answer key says
+which cases are real. Each listing quotes the test case with its own line numbers, and a line
+\texttt{...} marks lines left out.
+
+The first case is a real SQL injection, the kind of flaw that Lecture~2's worked alert patched. In
+Lecture~2, the query was built by interpolation: the code pasted a value into the query text. In
+\cref{lst:triage-sql-real}, the value of a form field that the client sends is stored in a
+configuration object and read back as \texttt{bar} at line 42, along the path that
+\cref{sec:discovery} traced from line 31.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[breakatwhitespace=true, basicstyle=\ttfamily\footnotesize, caption={A real SQL injection: BenchmarkTest00099, lines 42 to 49.}, label=lst:triage-sql-real]
+42  bar = conf52528.get('section52528', 'keyB-52528')
+    ...
+46  sql = f'SELECT username from USERS where password = \'{bar}\''
+47  con = helpers.db_sqlite.get_connection()
+48  cur = con.cursor()
+49  cur.execute(sql)
+\end{lstlisting}
+\end{minipage}
+
+Line 46 pastes \texttt{bar} into the query text with an f-string, and line 49 runs that text. The
+request's value becomes part of the statement, so it can change what the statement does. A password
+such as \lstinline|' OR '1'='1|, for example, closes the quoted string early and adds a condition that
+every row satisfies. That input is an exploit. The label is 1, and the answer key marks the case as
+a real SQL injection, CWE-89. Bandit's B608 fires on the f-string.
+
+The second case (\cref{lst:triage-sql-false}) draws an alert from the same rule, B608, because its
+query text is also written as an f-string. Line 41 sets \texttt{bar} to a constant, and the condition
+at line 42 is always true, so line 43 replaces it with \texttt{param}, the value of a cookie the
+client sends. This detour, like the one in \cref{sec:discovery}, hides from a scanner that
+\texttt{bar} holds the client's value. The attacker's data therefore reaches the call at line 50.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[breakatwhitespace=true, basicstyle=\ttfamily\footnotesize, caption={A false positive from the same rule: BenchmarkTest00011, lines 41 to 50.}, label=lst:triage-sql-false]
+41  bar = "This should never happen"
+42  if 'should' in bar:
+43      bar = param
+    ...
+47  sql = f'SELECT username from USERS where password = ?'
+48  con = helpers.db_sqlite.get_connection()
+49  cur = con.cursor()
+50  cur.execute(sql, (bar,))
+\end{lstlisting}
+\end{minipage}
+
+The value travels as a parameter. As in the patch of Lecture~2, the query text holds a placeholder,
+the \texttt{?}, and the value is passed beside the statement as a bound parameter, the tuple
+\texttt{(bar,)}. The database treats a bound parameter as data only, so the value cannot change the
+statement. The f-string interpolates nothing, and B608 fires only because the string has the shape
+it matches.
+
+The label is 0, and the placeholder and the tuple are its evidence. The answer key marks this case
+and its neighbor, BenchmarkTest00012, as safe. The attacker's data reaches the sink here, yet there
+is no vulnerability, because a step on the way removes the danger.
+
+\subsection{Code injection: \texttt{exec} and \texttt{eval}}
+\label{sec:triage-code}
+
+A call that runs text as Python code is dangerous only when the text can hold code an attacker
+wrote. The function \texttt{exec} runs a string as Python statements, and \texttt{eval} evaluates a
+string as a Python expression. Bandit reports every call to either, B102 for \texttt{exec} and B307
+for \texttt{eval}.
+
+In \cref{lst:triage-code-real}, \texttt{param} holds the value of a cookie, which the client can set
+to anything. Line 47 stores it in a configuration object, line 48 reads it back unchanged as
+\texttt{bar}, and line 51 passes it to \texttt{exec}.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[breakatwhitespace=true, basicstyle=\ttfamily\footnotesize, caption={A real code injection: BenchmarkTest00074, lines 47 to 51.}, label=lst:triage-code-real]
+47  conf90091.set('section90091', 'keyB-90091', param)
+48  bar = conf90091.get('section90091', 'keyB-90091')
+    ...
+50  try:
+51      exec(bar)
+\end{lstlisting}
+\end{minipage}
+
+Whatever the cookie holds runs as Python, so the label is 1. The answer key marks the case as a real
+code injection, CWE-94. Bandit's B102 attaches CWE-78, OS command injection, to the same call. The
+two numbers differ, and both belong to the Injection family (\cref{sec:discovery}).
+
+\Cref{lst:triage-code-false} passes the same kind of cookie value to \texttt{eval}. Lines 41 to 43,
+left out of the listing, wrap the cookie value in two fixed strings, and the slice at line 44 cuts
+them off again, so \texttt{bar} is the cookie value.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[breakatwhitespace=true, basicstyle=\ttfamily\footnotesize, caption={A false positive on eval: BenchmarkTest00073, lines 44 to 54.}, label=lst:triage-code-false]
+44  bar = string41416[4:-17]
+    ...
+46  if not bar.startswith('\'') or not bar.endswith('\'') or '\'' in bar[1:-1]:
+        ...
+50      return RESPONSE
+    ...
+52  try:
+        ...
+54          eval(bar)
+\end{lstlisting}
+\end{minipage}
+
+The check at line 46 returns early unless \texttt{bar} starts and ends with a single quote and holds
+no other single quote. The only text that reaches \texttt{eval} is therefore a plain string literal,
+such as \lstinline|'hello'|. Evaluating a string literal produces the string and runs no code.
+
+The label is 0, and the check at line 46 is its evidence. The answer key marks the case as safe. B307
+matched the call to \texttt{eval} as it matches every such call, and the check that removes the
+danger lies outside the shape it reads.
+
+\subsection{A weak hash}
+\label{sec:triage-hash}
+
+Some labels rest on the algorithm and its purpose, with no data flow to trace. In
+\cref{lst:triage-hash}, line 65 creates an MD5 hash object, line 66 feeds it the input, and line 68
+takes the digest, the fixed-length value that the hash function computes from its input. Lines 69
+and 70 append the digest to a password file. A later line of the case reports that a sensitive value
+was hashed and stored.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[breakatwhitespace=true, basicstyle=\ttfamily\footnotesize, caption={A weak hash for a sensitive value: BenchmarkTest00057, lines 65 to 70.}, label=lst:triage-hash]
+65  hash = hashlib.md5()
+66  hash.update(input)
+    ...
+68  result = hash.digest()
+69  f = open(f'{helpers.utils.TESTFILES_DIR}/passwordFile.txt', 'a')
+70  f.write(f'hash_value={base64.b64encode(result)}\n')
+\end{lstlisting}
+\end{minipage}
+
+Here the harm comes from the algorithm itself, so the call to \texttt{hashlib.md5} plays the role of
+the sink. MD5 is no longer considered strong enough to protect a sensitive value such as a password.
+The flaw is the choice of MD5 for this purpose, whatever value reaches it. A label of 1 on this alert
+therefore claims that a secret is protected with an algorithm too weak for it, and its rationale
+traces no path from the attack surface. The same call hashing a cache key would be label 0, because
+a cache key protects nothing secret.
+
+The answer key marks all five hash cases that Bandit flags as real, with CWE-328, use of a weak
+hash. Bandit's B324 attaches CWE-327, use of a broken or risky cryptographic algorithm. Both belong
+to the Cryptographic Failures family.
+
+\subsection{An XML alert and an unreported XPath query}
+\label{sec:triage-xpath}
+
+An alert can fall on a harmless line while a nearby line has the shape of a flaw that no rule
+reports. In \cref{lst:triage-xpath}, B314 fires on line 55, a call to an XML parser. Parsing XML that
+an attacker supplies can be dangerous, which is why the rule exists. The file parsed here, however,
+is one that the program ships, so no attacker data reaches the parser. The alert is therefore a false
+positive, and its label is 0.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[breakatwhitespace=true, basicstyle=\ttfamily\footnotesize, caption={An XML alert on a fixed file and an XPath query: BenchmarkTest00013, lines 41 to 57.}, label=lst:triage-xpath]
+41  bar = "alsosafe"
+42  if param:
+43      lst = []
+44      lst.append('safe')
+45      lst.append(param)
+46      lst.append('moresafe')
+47      lst.pop(0)
+48      bar = lst[1]
+    ...
+54  try:
+55      root = ET.parse(f'{helpers.utils.RES_DIR}/employees.xml')
+56      query = f"/Employees/Employee[@emplid=\'{bar}\']"
+57      nodes = elementpath.select(root, query)
+\end{lstlisting}
+\end{minipage}
+
+Line 56 builds an XPath query by pasting \texttt{bar} into it. XPath is a query language that
+selects parts of an XML document, and pasting a request value into an XPath query is XPath
+injection, CWE-643. Bandit has no rule for this shape.
+
+In this case the shape is harmless. Line 41 sets \texttt{bar} to the constant
+\lstinline|'alsosafe'|. When \texttt{param} is not empty, lines 43 to 48 build the list
+\lstinline|['safe', param, 'moresafe']|, remove its first element and take the second of those left,
+so \texttt{bar} becomes the constant \lstinline|'moresafe'|. Either way, \texttt{bar} holds a
+constant at line 56.
+
+The benchmark includes safe variants of each kind of flaw it tests, and this case is one of them.
+Its answer key lists it under XPath injection and marks it safe.
+
+The real XPath cases of the development set show what discovery misses. A real XPath injection gets
+no alert at all, because Bandit has no rule for it, and the development set has two such cases. A
+real flaw that is left unreported, or reported and then dismissed, is a \textbf{false negative}. The
+two real XPath cases are false negatives of discovery.
+
+\subsection{What discovery leaves undecided}
+\label{sec:triage-undecided}
+
+On the development set we can measure the scanner against the answer key, and the measurement shows
+what discovery leaves for triage. The 99 cases hold 34 real flaws. Bandit reports 18 alerts in 17
+files, because one file carries two alerts. Each case is one file, so we count the alerts by file.
+
+\Cref{tab:triage-undecided} sorts the outcomes. Its first two rows divide the 17 reported files, and
+its third row counts the real flaws that receive no alert. The last row picks out the path-traversal
+cases, whose 8 real flaws are among those 26.
+
+\begin{table}[htbp]
+  \caption{Bandit's alerts on the development set, compared with the answer key.}
+  \label{tab:triage-undecided}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{XL{0.36\linewidth}}
+    \toprule
+    \textbf{Outcome} & \textbf{Count} \\
+    \midrule
+    \textbf{Reported, and real} & 8 files \\
+    \textbf{Reported, and safe} & 9 files \\
+    \textbf{Real, and unreported} & 26 cases \\
+    \textbf{Path-traversal cases, no rule} & 21 cases, 0 alerts \\
+    \bottomrule
+  \end{tabularx}\end{adjustbox}
+\end{table}
+
+The \textbf{precision} of a discovery tool is the share of its alerts that are real. Its
+\textbf{recall} is the share of the real flaws that it reports. These two measures summarize the
+table. Counted by file, Bandit's precision on the development set is 8/17, about 0.47, and its
+recall is 8/34, about 0.24.
+
+About half of the alerts are false positives, and most of the real flaws go unreported. Of the 34
+real flaws, 26 receive no alert. Some of them belong to kinds of flaw for which Bandit has no rule.
+The development set's 21 path-traversal cases (\cref{sec:discovery}) receive no alert at all, and 8
+of them are real.
+
+Triage, the second stage of vulnerability management (\cref{sec:discovery}), decides for each alert
+whether the match is a flaw an attacker can reach, using the code and the threat model. It works
+only on the alerts that discovery hands it. It can remove false positives and so raise precision. It
+cannot recover the real flaws that received no alert, so it cannot raise recall.
+
+\subsection{The cost of each kind of mistake}
+\label{sec:triage-cost}
+
+A triage stage can be wrong in two directions, and the two mistakes cost different people. Applied to
+triage, a false positive is a safe alert labeled 1 and passed on to a reviewer, and a false negative
+is a real flaw labeled 0 and dismissed. For a triage stage, precision is the share of the alerts
+labeled 1 that are real, and recall is the share of the real flaws among its alerts that it labels 1.
+\bi
+\item \textbf{A false positive passed on.} It costs a reviewer's time, because someone must read the
+code to find that nothing is wrong. At scale it also costs the reviewers' trust in the tool, which is
+useful only while people act on what it reports.
+\item \textbf{A real flaw dismissed.} The flaw stays in the released product, and the cost falls on
+the users and systems that an attacker harms through it.
+\ei
+
+A 2026 study, available as a preprint, measured both mistakes for agents that filter the alerts of
+SAST tools \citep{xiong2026sifting}. It ran four tools, CodeQL, Joern, Semgrep and SonarQube, on the
+Java version of the OWASP Benchmark \citep{owasp-benchmark}, a suite of test cases of the same kind
+as BenchmarkPython. Together the four tools flagged 98.3\% of the benchmark's non-vulnerable cases.
+
+Agents built on several agent frameworks then reviewed the alerts. The best configuration paired
+SWE-agent with the model Claude Sonnet 4. SWE-agent is the published reactive agent that Lecture~2
+compared with Agentless. In this configuration, the share of non-vulnerable cases still flagged fell
+to 6.3\%.
+
+On the benchmark's real vulnerabilities, the same configuration labeled 22.25\% as false positives,
+about a fifth. These are false negatives of triage, real flaws that the agent dismissed. Such agents
+are therefore suited to supporting a reviewer's decision. Letting them suppress alerts automatically
+and unconditionally would have discarded about a fifth of the real flaws on this benchmark.
+
+The study shows, on one benchmark, that an agent can remove most false positives and that the same
+agent dismisses a substantial share of real flaws. It is a result on Java test cases. It does not
+measure Python code, Bandit, or the agent HW1 asks for.
+
+The high share of false positives is not limited to benchmarks. In one industry report, about 91\%
+of the alerts that SAST tools raised were noise, that is, false positives (Ghost Security, 2025, as
+quoted by \citet{feiglin2026sastbench}).
+
+On the development set, comparing the labels of the agent you build in HW1 with the answer key
+measures both kinds of mistake.
+
+\subsection{Prioritization}
+\label{sec:triage-priority}
+
+When more alerts are real than a team can fix at once, triage also orders them, using the signals it
+has. \textbf{Prioritization} is the ordering of alerts by expected harm, so that a reviewer's time
+goes to the worst plausible flaw first. The signals differ in what they cost to obtain:
+\bi
+\item \textbf{Severity and confidence.} They come from the rule (\cref{sec:triage-severity}), so they
+cost nothing to read. Most rules give the same pair to every alert, so these signals rarely separate
+two alerts of the same rule.
+\item \textbf{Harm in context and reachability.} The code shows how much harm a flaw of the alert's
+family would do in this program, and whether data from an entry point can reach the flagged line. An
+agent learns both by reading that code, which costs model calls.
+\item \textbf{Signals about exploitation.} Public sources describe how published vulnerabilities are
+exploited. The Known Exploited Vulnerabilities catalogue of the US Cybersecurity and Infrastructure
+Security Agency (CISA) lists flaws that have been exploited in the wild \citep{cisa-kev}. The Exploit
+Prediction Scoring System (EPSS) estimates the probability that a published vulnerability will be
+exploited in the wild in the next 30 days \citep{first-epss}. Both describe published
+vulnerabilities that have a CVE identifier (\cref{sec:discovery}). HW1 leaves both out.
+\ei
+
+HW1's label is the coarsest priority a triage stage can give. It sorts the alerts into two groups,
+the potential vulnerabilities that deserve a reviewer's time (label 1) and the rest (label 0), with
+no order inside either group.
+
+\subsection{What a label must carry}
+\label{sec:triage-label}
+
+A label is useful only when a reviewer can check it, so each label carries a rationale and evidence.
+The rationale, as \cref{sec:discovery} defined it, is the text that justifies the label. HW1 records
+the evidence as a list of line ranges in the target's files. \Cref{lst:triage-row} shows one row of
+HW1's output file, \texttt{report.json}, in the format of the brief, filled in for the eval case of
+\cref{sec:triage-code}.
+
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[breakatwhitespace=true, basicstyle=\ttfamily\footnotesize, caption={One row of report.json for the alert on eval in BenchmarkTest00073, with three fields cut.}, label=lst:triage-row]
+{
+  "alert_id": "owasp-BenchmarkTest00073-py-54-B307",
+  "test_id": "B307",
+  "line": 54,
+  "label": 0,
+  "status": "classified",
+  "rationale": "Attacker: an anonymous client who controls the request. Line 46 admits only a quoted literal, so eval runs no code.",
+  "evidence": [
+    {"path": "testcode/BenchmarkTest00073.py",
+     "start_line": 44, "end_line": 54}
+  ]
+}
+\end{lstlisting}
+\end{minipage}
+
+The fields of the row are the following:
+\bi
+\item \textbf{Identity.} \demoref{alert\_id} names the alert by target, test case, line and rule.
+\demoref{test\_id} and \demoref{line} repeat the rule and the line. The full row also carries the
+alert's path, severity and confidence.
+\item \textbf{Label.} The label is 0, for the reason given in \cref{sec:triage-code}.
+\item \textbf{Status.} The row's status says whether the agent classified the alert. It is
+\demoref{classified} when the agent did, \demoref{budget\_exhausted} when the run's token budget ran
+out before the agent classified the alert, and \demoref{error} when classification failed. HW1's
+token budget caps the tokens that all model calls of one run may use, across every alert. It differs
+from the planning agent's call budget, which counts model calls. The row's status is the status of
+this row and differs from the terminal status of a run (\cref{sec:routing}).
+\item \textbf{Rationale.} Two sentences state the threat model and the reason: the check at line 46
+admits only a quoted literal, so \texttt{eval} runs no code.
+\item \textbf{Evidence.} Lines 44 to 54 of the test case hold the line that sets \texttt{bar}, the
+check and the call to \texttt{eval}.
+\ei
+
+A reviewer accepts a label only when the rationale and the evidence let them check it. With this
+row, a reviewer reads the cited lines and can confirm the label without repeating the agent's
+investigation. A label of 1 needs the same support. Its rationale names the entry point, the path and
+the sink (\cref{sec:triage-vulnerability}), or, for a weak hash, the secret that the algorithm
+protects (\cref{sec:triage-hash}), and its evidence covers each of them.
+
+Every rationale also states the threat model it assumed (\cref{sec:discovery}). For BenchmarkPython
+that is an anonymous web client who controls the whole request, as the rationale of
+\cref{lst:triage-row} states.
+
+\subsection*{Key points}
+\bi
+\item Bandit parses each Python file into a syntax tree and reports an alert wherever a rule's shape
+matches, such as a call to a named function, so an alert records a matched shape and nothing about
+where the argument's value came from.
+\item The simplest Bandit rules, such as B301, are lists of qualified function names with a CWE, a
+message and a severity, and every rule assigns its severity and confidence from the matched shape
+alone, so neither estimate says whether an attacker can reach a particular match.
+\item A vulnerability is a weakness an attacker can reach in a running program, and a label of 1
+claims, under the threat model, a path from the attack surface to the sink with nothing on it that
+removes the danger, or, for a weak hash, a secret protected by too weak an algorithm.
+\item The same rule fires on real vulnerabilities and on false positives, because a bound parameter,
+a check on the input or a constant value removes the danger without changing the shape the rule
+matches.
+\item On the development set, about half of Bandit's alerts are false positives (precision about
+0.47 by file) and most real flaws receive no alert (recall about 0.24), and triage can raise the
+first figure but never the second.
+\item A false positive passed on by triage costs reviewers time and trust, a dismissed real flaw stays
+in the released product, and in one study agents removed most false positives while dismissing about
+a fifth of the real vulnerabilities.
+\item HW1's label of 1 or 0 is the coarsest form of prioritization, the ordering of alerts by expected
+harm, and a reviewer accepts it only when its rationale and line evidence let them check it.
+\ei

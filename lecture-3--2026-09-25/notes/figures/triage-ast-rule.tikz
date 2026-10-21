@@ -1,0 +1,62 @@
+% One Bandit match, in three panels: one line of Radicale, its syntax tree, and the name list of
+% rule B301. The highlighted path is what the rule reads: the called name, pickle.load. The
+% argument fb is a leaf the rule never visits. Redrawn for the notes from
+% lecture-3--2026-09-25/slides/figures/hw1-ast-rule.tikz (lecture3-hw.pptx slide 21), without the
+% file-path labels. Styles are local so the figure needs nothing beyond the notes' preamble.
+\begin{tikzpicture}[
+  tn/.style={gnode, font=\sffamily\small, minimum height=7mm, inner sep=4pt},
+  card/.style={draw=ibmfg!60, rounded corners=3pt, fill=white, inner sep=6pt, align=left,
+               font=\sffamily\small},
+  hl/.style={draw=ibmblue, line width=1.3pt},
+  tree/.style={draw=ibmfg!45, thick},
+  path/.style={draw=ibmblue, line width=1.3pt},
+  hit/.style={-{Stealth[length=2mm]}, draw=ibmblue, line width=1.2pt, rounded corners=3pt},
+  arr/.style={-{Stealth[length=2mm]}, thick, draw=ibmfg!80, rounded corners=3pt},
+  figcap/.style={font=\sffamily\small, inner sep=1pt, align=center, text=black!60},
+  tag/.style={font=\sffamily\small, fill=white, inner sep=1pt, align=center},
+]
+  % left: the line of code
+  \node[card, font=\ttfamily\small, minimum height=10mm] (code) at (0,0.6)
+        {(version, row) = pickle.load(fb)};
+  \node[figcap, below=1.5mm of code] {one line of Radicale};
+
+  % middle: the tree
+  \node[tn] (assign) at (7.0, 2.4) {Assign};
+  \node[tn] (tuple) at (5.2, 1.1) {Tuple};
+  \node[tn, hl] (call) at (8.8, 1.1) {Call};
+  \node[tn] (v) at (4.0,-0.4) {Name\,version};
+  \node[tn] (r) at (6.2,-0.4) {Name\,row};
+  \node[tn, hl] (attr) at (8.2,-0.4) {Attribute};
+  \node[tn] (fb) at (10.2,-0.4) {Name\,fb};
+  \node[tn, hl] (pk) at (7.1,-1.9) {Name\,pickle};
+  \node[tn, hl] (ld) at (9.2,-1.9) {attr\,load};
+  \draw[tree] (assign) -- (tuple);
+  \draw[path] (assign) -- (call);
+  \draw[tree] (tuple) -- (v);
+  \draw[tree] (tuple) -- (r);
+  \draw[path] (call) -- (attr);
+  \draw[tree] (call) -- (fb);
+  \draw[path] (attr) -- (pk);
+  \draw[path] (attr) -- (ld);
+  \node[figcap] at (7.0,-2.9) {its syntax tree};
+
+  % right: the rule
+  \node[card, text width=33mm] (rule) at (13.9, 0.6)
+        {\textbf{Rule B301}\\[2pt]
+         names to match:\\
+         {\ttfamily\small pickle.loads}\\
+         {\ttfamily\small\color{ibmblue}\bfseries pickle.load}\\
+         {\ttfamily\small pickle.Unpickler}\\
+         {\ttfamily\small dill.loads}\ \ldots};
+  \node[figcap, below=1.5mm of rule] {a list of names};
+  \node[tag, below=6mm of rule, text=ibmblue, font=\sffamily\small\bfseries]
+        {match: alert B301 on this line};
+
+  % the arrows between panels
+  \draw[arr] (code.east) -- ++(0.7,0) |- node[tag, pos=0.75, above] {parse} (assign.west);
+  % past Name fb, never through it: along the leaf row, then up, then into the card
+  \coordinate (entry) at ($(rule.west)+(0,-0.15)$);
+  \coordinate (turn) at ($(fb.east)+(0.45,0)$);
+  \draw[hit] (ld.east) -- (ld.east -| turn) -- (turn |- entry) -- (entry);
+  \node[tag, anchor=south west, text=ibmblue] at ($(ld.east)+(0.12,0.1)$) {pickle.load};
+\end{tikzpicture}

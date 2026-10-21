@@ -1,0 +1,94 @@
+\section*{Course context}
+\phantomsection
+\makeatletter
+\def\@currentlabel{Course context}\def\@currentlabelname{Course context}%
+\def\cref@currentlabel{[context][1][]Course context}%
+\makeatother
+\crefformat{context}{#2#1#3}\Crefformat{context}{#2#1#3}
+\label{sec:logistics}
+\addcontentsline{toc}{section}{Course context}
+
+This section places Lecture~2 within the course. It gives the question that motivates the course,
+the four units of the semester, and what the exams assess. The question also explains why we treat
+the model as one component of a larger system.
+
+\subsection*{The question that motivates the course}
+
+The course is built around the following question:
+\begin{quote}
+How do we place a \emph{probabilistic} model \emph{inside a software system} without surrendering
+the \emph{guarantees} expected of production software?
+\end{quote}
+In this question, the \textbf{model} is a large language model, the component that generates a
+reply to each request it receives. The table below explains why each phrase in italics belongs in
+the question.
+
+\begin{center}
+\begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{@{}L{0.3\linewidth}X@{}}
+  \toprule
+  \textbf{Phrase} & \textbf{Why it is in the question} \\
+  \midrule
+  \textbf{Probabilistic} & The model samples each reply from a probability distribution, so two
+    calls with the same input can return different outputs. Components that use the model's output
+    must not assume that the outputs agree. \\
+  \addlinespace
+  \textbf{Inside a software system} & The model is one component among several. Other components
+    call it, validate its output, and can refuse that output. \\
+  \addlinespace
+  \textbf{Guarantees} & A guarantee is a promise that a system makes to its callers: a behavior
+    that a caller is entitled to expect and to rely on every time. \\
+  \bottomrule
+\end{tabularx}\end{adjustbox}
+\end{center}
+
+Together, the three phrases describe the problem that the course studies. A production system must
+keep its guarantees on every call. The model inside it, by contrast, can answer the same request
+differently each time. The course asks how the other components of the system, which call the model
+and validate its output, can keep those guarantees.
+
+The agent that we build around the model (\cref{sec:agents} defines the term) is also one component
+of a larger system, which we call a \textbf{production agentic system}. By the end of the semester,
+we will design such a system.
+
+\subsection*{How the semester is organized}
+
+The semester is divided into four units, each devoted to one part of a production agentic system.
+The table below lists the units in order, with the weeks that each one takes, its subject, and the
+part of the system that it studies.
+
+\par\vskip 0pt plus 1fil\penalty500\vskip 0pt plus -1fil\relax
+\begin{center}
+\begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{@{}L{0.17\linewidth}L{0.34\linewidth}X@{}}
+  \toprule
+  \textbf{Unit (weeks)} & \textbf{Subject} & \textbf{What it studies} \\
+  \midrule
+  \textbf{1 (1--3)} & Agent architectures and control & The orchestrator: who chooses the next
+    operation, and who decides to stop \\
+  \addlinespace
+  \textbf{2 (4--6)} & Tool interfaces and concurrency & The tools and the subagents: their
+    contracts, their dependencies, and bounded fan-out (independent operations run in parallel,
+    with a limit on how many run at the same time) \\
+  \addlinespace
+  \textbf{3 (8--9)} & Context, state, and persistence & Memory and context: what survives
+    truncation of the context (the input that the model receives in one call), and what survives a
+    restart \\
+  \addlinespace
+  \textbf{4 (10--12)} & Deployment, recovery, and observability & The service around the agent,
+    its tools, and its memory: partial failure, retries, and traces \\
+  \bottomrule
+\end{tabularx}\end{adjustbox}
+\end{center}
+
+Lecture~2 belongs to Unit~1, agent architectures and control. Unit~1 studies the
+\textbf{orchestrator}, the component that decides which operation runs next and when the agent
+stops.
+
+\subsection*{What the exams assess}
+
+The exams are written and closed book. They assess conceptual understanding, architectural
+reasoning, and the ability to analyze system behavior.
+\bi
+\item \textbf{Midterm.} The midterm, on October~23, lasts 40 minutes and covers Units~1 and~2.
+\item \textbf{Final.} The final, on December~17, lasts 40 minutes and covers Units~1 to~4.
+\ei
+Because Lecture~2 belongs to Unit~1, both exams cover the material in these notes.

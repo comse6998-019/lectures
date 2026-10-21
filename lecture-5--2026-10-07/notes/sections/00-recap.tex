@@ -1,0 +1,131 @@
+\section*{Recap of Lecture 4}
+\phantomsection
+\makeatletter
+\def\@currentlabel{Recap of Lecture~4}\def\@currentlabelname{Recap of Lecture~4}%
+\def\cref@currentlabel{[recap][1][]Recap of Lecture~4}%
+\makeatother
+\crefformat{recap}{#2#1#3}\Crefformat{recap}{#2#1#3}
+\label{sec:recap}
+\addcontentsline{toc}{section}{Recap of Lecture 4}
+
+Lecture~4 opened the tools node of \msa{}, the node of the course's running agent that runs the
+tools the model requests. It studied the harness, the program that runs the model loop and executes
+tool calls for the model. This recap restates the parts of that lecture on which this lecture builds: the
+tool contract, the dispatcher, the guarantees of the harness, and the integration problem that the
+Model Context Protocol (MCP) addresses. The Lecture~4 notes, \emph{Tool calls, contracts and
+execution boundaries}, give the full treatment.
+
+A tool contract is the written specification of a tool, and Lecture~4 divided it into five parts:
+\bi
+\item \textbf{Purpose.} The contract states what the tool does.
+\item \textbf{Arguments.} The contract lists the arguments that the tool accepts, with the
+constraints on their values.
+\item \textbf{Results and errors.} The contract states what a successful call returns and how a
+failed call is reported.
+\item \textbf{Side effects.} The contract states the changes a call makes besides returning its
+result, such as changes to files.
+\item \textbf{Execution constraints.} The contract limits where and how the tool may operate, for
+example by requiring that every file the tool writes lies inside the run's own copy of the code
+base.
+\ei
+\msa{} has three tools. \demoref{read\_file} and \demoref{search} only read, and \demoref{edit} is
+the only tool that writes files.
+
+The model receives only part of the contract, the tool definition. It consists of the tool's name,
+a description of its purpose, and the argument schema, which gives the names and types of the
+arguments and the constraints on their values. The tool's implementation and the dispatcher, the
+component of the harness that executes each tool call, define the rest of the contract: the
+results, the errors, the side effects and the execution constraints.
+
+A description is text that the model reads. It can state a rule, but nothing in it stops a call
+that breaks the rule, so a description alone enforces nothing. A constraint holds only where code in
+the implementation or in the dispatcher checks it. \Cref{sec:mcpcontract} returns to the five parts
+of the contract and asks which of them MCP enforces, and \cref{sec:attacks} uses the same parts to
+describe what an attacker alters in a tool.
+
+The workspace is the disposable copy of the code base that one run may read and edit. The
+dispatcher receives each tool request, executes it against the workspace, and returns an
+observation to the model. An observation is the tool's result as the harness records it.
+
+The dispatcher holds the registry, the workspace root and the trace, and the model never touches any
+of them. The registry maps each tool name to the function that implements the tool. The workspace
+root is the path of the workspace, and the trace is the log of events that the harness writes
+during a run.
+
+The tools node passes each tool call in the model's reply to the dispatcher. The dispatcher finds
+the tool in the registry, binds the model's arguments to the parameters of the tool function, and
+calls the function with the workspace root, which it supplies itself. It records the request and its
+result in the trace and returns the observation, which the tools node turns into a tool message, the
+message that carries one tool result back to the model. The model never calls a tool
+function directly. It can only ask for a call, and the dispatcher decides whether and how the call
+runs.
+
+In \msa{}, the dispatcher, the tool functions and their checks all run in the agent's own process.
+\Cref{sec:mcp} begins by explaining why a check that runs inside that process can be switched off or
+avoided.
+
+A guarantee is a property that the harness promises for every run, such as that only registered
+tools run. Lecture~4 asked which component enforces each guarantee, and
+\cref{tab:recap-guarantees} collects the answers. The row to look at is the one about reads, the
+only guarantee that no component enforces.
+
+\begin{table}[htbp]
+  \caption{The guarantees of the harness of \msa{} and where each is enforced. Reads are not
+  confined to the workspace.}
+  \label{tab:recap-guarantees}
+  \begin{adjustbox}{width=\linewidth}\begin{tabularx}{\linewidth}{@{}L{0.36\linewidth}X@{}}
+    \toprule
+    \textbf{Guarantee} & \textbf{Where it is enforced} \\
+    \midrule
+    \textbf{Only registered tools run} & The dispatcher checks the registry before calling a tool. \\
+    \textbf{Arguments match the tool's parameters} & The dispatcher binds the arguments and converts
+      unambiguous type mismatches. \\
+    \textbf{Writes stay inside the workspace} & The \demoref{edit} tool, the only writer, checks
+      paths with the path check. \\
+    \textbf{Reads stay inside the workspace} & Not enforced. The glob of \demoref{search} bypasses
+      the path check. \\
+    \textbf{No model call after the budget is exhausted} & Each model node checks the budget before
+      calling the model. \\
+    \bottomrule
+  \end{tabularx}\end{adjustbox}
+\end{table}
+
+The path check, through which \demoref{edit} enforces the guarantee about writes, accepts a path
+only if it resolves to a location inside the workspace root. The model nodes are the nodes that
+call the model. Each of them checks the budget, the limit on the number of model calls in a run,
+before it calls the model. Every enforcer in the table is code that runs before the effect it protects.
+
+Reads are not confined, because \demoref{search} skips the path check. The model may supply
+\demoref{search} with a glob, a file pattern with wildcards that selects the files to search.
+\demoref{search} applies the glob to the workspace root and opens every file that the glob matches,
+so a glob that climbs out of the root lets the tool read files outside the workspace. The path
+check itself is correct. \demoref{search} is a route to the files that does not pass through it.
+
+Native tool calling, studied in Lecture~4, makes the tool call part of the model API, with one
+format per vendor. It standardizes the exchange between a model and an application, and it leaves
+the integration between an application and a tool to each application. An integration is the code
+that lets one application use one tool: the tool's definition in the application's format, and the
+code that carries out the five operations of a tool call. That code finds the tool, binds the
+arguments, checks policy (the rules that decide whether a requested call is allowed), runs the tool
+and observes the result. The work multiplies for the following reasons:
+\bi
+\item \textbf{Vendor formats.} Each vendor defines its own format, so every application converts
+between formats. Each vendor's strict mode, which makes the model's arguments match the argument
+schema, accepts a different subset of JSON Schema, so even the argument schema must be adapted for
+each vendor.
+\item \textbf{Repeated operations.} Each application re-implements the five operations for every
+tool it uses.
+\item \textbf{Place and language.} Tools live in the process and language of the application that
+uses them, so a tool written as a Python function cannot serve an application written in
+TypeScript.
+\ei
+
+As a result, $N$ applications and $M$ tools need $N \times M$ integrations, one for each pair, which
+is the $N \times M$ integration problem. A shared protocol reduces the count to $N + M$, because
+each application and each tool implements the protocol once. For three applications and three
+tools, the count falls from nine to six. MCP, which Lecture~4 introduced
+briefly, is such a protocol for the tool side, and \cref{sec:mcp} studies it in full.
+
+This lecture reads \cref{tab:recap-guarantees} from the attacker's side, where each unenforced row
+marks a fault that an adversary can use (\cref{sec:threats}), and it moves the tools out of the
+harness.
