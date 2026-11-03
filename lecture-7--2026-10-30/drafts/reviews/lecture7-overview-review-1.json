@@ -1,0 +1,21 @@
+{
+  "target": "drafts/lecture7-overview.html",
+  "review": 1,
+  "decision": "annotated",
+  "confirmed": [
+    "Part I can repeat OpenShell in detail so students who missed that class can follow the live example and complete HW2.",
+    "After the break, Part II starts a separate, literature-led introduction to context and compaction: the objectives, evidence, mechanisms, and how to handle the tradeoffs.",
+    "Next week develops keeping these contexts in state, ownership, checkpointing, resumption, and replay.",
+    "Timing proposal: 50 minutes + 10-minute break + 50 minutes."
+  ],
+  "requested_changes": [
+    {
+      "target": "Part II · Context and compaction",
+      "feedback": "In this section, we'll include long horizon and extremely long horizon planning and it's ramification—need literature on this too."
+    },
+    {
+      "target": "Section planning and review workflow",
+      "feedback": "Don't prepare it, walk through every detail with the instructor and convert decision points into details specs to implement into slides. Persist the specs so as to facilitate reuse.\n\nOnly begin slide work after the plans have been approved for the whole section."
+    }
+  ]
+}

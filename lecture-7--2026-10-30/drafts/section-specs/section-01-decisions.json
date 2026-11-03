@@ -1,0 +1,117 @@
+{
+  "section": 1,
+  "title": "OpenShell through two access checks",
+  "stage": "plan revised from saved instructor annotations; approval pending",
+  "plan_approved": false,
+  "spec_approved": false,
+  "decisions": [
+    {
+      "id": "prerequisite_background",
+      "question": "For the OpenShell reintroduction, what can we assume students already understand about processes, containers, and operating-system permissions?",
+      "answer": "Assume minimal",
+      "consequence": "Introduce required process, container, and permission concepts from first principles."
+    },
+    {
+      "id": "entry_point",
+      "question": "With minimal OS background, where should the OpenShell recap begin?",
+      "answer": "Cyberbird immediately: explain each OS concept as its agent needs it.",
+      "selection": "second option",
+      "consequence": "Begin with Cyberbird. Explain the required operating-system concepts in the context of its operations.",
+      "status": "Application choice superseded by application_revision; full-loop and application-led teaching choices retained."
+    },
+    {
+      "id": "opening_application_loop",
+      "question": "What should students see Cyberbird doing first in the OpenShell recap?",
+      "answer": "The whole loop--run bandit, classify, then patch--we'll move the HW1 solution into cyberbird and use that.",
+      "consequence": "Open with the complete Bandit, classification, and patching loop. Use the HW1 solution moved into Cyberbird as the teaching application.",
+      "status": "Application choice superseded by application_revision; full-loop and application-led teaching choices retained."
+    },
+    {
+      "id": "execution_environment_order",
+      "question": "Where should the opening Bandit, classification, and patching loop run?",
+      "answer": "Correct: run on the host first, then OpenShell",
+      "consequence": "Demonstrate the complete application on the host before running it inside OpenShell."
+    },
+    {
+      "id": "demonstration_workload",
+      "question": "What workload should we use for the host and OpenShell runs?",
+      "answer": "A small OWASP slice will do!",
+      "consequence": "Use a small OWASP slice for both runs, with a true positive and a false positive as proposed in the selected option."
+    },
+    {
+      "id": "sandbox_motivation",
+      "question": "After the host run, how should we motivate the move into OpenShell?",
+      "answer": "I am leaning toward showing an access we want to restrict, then using that as an anchor to explain openshell",
+      "status": "confirmed by the subsequent access-example answer",
+      "consequence": "After the host loop, expose an access to restrict and use it to explain OpenShell's execution boundary and components."
+    },
+    {
+      "id": "access_examples",
+      "question": "Which access should anchor the OpenShell explanation?",
+      "answer": "Yes, that works for me. We can also add the unapproved network (maybe a different model API provider as the next example)",
+      "consequence": "Use a direct OWASP answer-key read as the first example, followed by an unapproved network request. Another model API provider is a suggested destination; the exact destination is undecided."
+    },
+    {
+      "id": "worked_example_sequence",
+      "question": "Shall we follow this sequence: host agent loop, answer-key read, explain OpenShell, filesystem policy, sandbox run and denial, then second-provider request and network policy?",
+      "answer": "Sure",
+      "consequence": "Complete the filesystem example end to end before introducing the network example. This sequence agreement does not approve the complete section plan or a revised time allocation."
+    },
+    {
+      "id": "remove_hw2_debrief",
+      "question": "Feedback on the proposed separate eight-minute HW2 responsibilities segment.",
+      "answer": "We can drop the 8 minute segment.",
+      "consequence": "Remove the separate HW2 responsibilities debrief from the section plan and lecture overview. The full plan remains awaiting review."
+    },
+    {
+      "id": "lecture_date_revision",
+      "answer": "November 6th\n",
+      "consequence": "Display November 6, 2026 on active lecture planning documents. Preserve the existing working directory."
+    },
+    {
+      "id": "hw1_familiarity",
+      "answer": "Students worked on this in their HW1--they already know all this. ",
+      "consequence": "Keep the host baseline and answer-key probe brief. Use HW1 familiarity while retaining minimal OS prerequisites."
+    },
+    {
+      "id": "image_preparation_clarification",
+      "answers": [
+        "❓ Clarify this",
+        "prepared by whom? me?"
+      ],
+      "consequence": "Clarify the image contents and include its build, verification, and reproducible launch instructions in lecture implementation work after spec approval."
+    },
+    {
+      "id": "closing_delivery",
+      "annotation_type": "DELETION",
+      "original_text": "ask students to ",
+      "consequence": "Present the closing policy/component/evidence recap directly."
+    },
+    {
+      "id": "application_revision",
+      "answer": "I have HW1-sol, we can use that for this. No need to migrate to cyberbird",
+      "supersedes": [
+        "entry_point",
+        "opening_application_loop"
+      ],
+      "consequence": "Use existing HW1-sol directly; preserve the full-loop, host-first then sandbox sequence. Remove the Cyberbird migration preparation task."
+    }
+  ],
+  "preparation": [
+    {
+      "item": "Use the existing HW1-sol directly and prepare the small OWASP fixture.",
+      "status": "selected; new host/sandbox comparison needs rehearsal"
+    },
+    {
+      "item": "Build and verify the lecture demo image, then deliver reproducible build and launch instructions.",
+      "status": "planned implementation work after separate plan and spec approval"
+    }
+  ],
+  "proposals_for_plan_review": [
+    "Combine the overview's first three OpenShell sections into one continuous 42-minute worked example.",
+    "Leave the remaining eight minutes of the confirmed 50-minute first half available for questions or demo overrun; this pacing proposal is separate from the instructor's decision to remove the HW2 debrief.",
+    "Compress the familiar HW1 opening from nine minutes to two and allocate the recovered time to OpenShell policy, launch, and access checks; retain the proposed 42-minute teaching total."
+  ],
+  "next_decision": "Review the complete section plan in Plannotator, including proposed section boundary and timing",
+  "lecture_date": "2026-11-06"
+}

@@ -1,0 +1,175 @@
+{
+  "section": 1,
+  "source": "saved Plannotator annotation draft, retrieved after instructor reported feedback in chat",
+  "source_path": "/Users/rkrsn/.plannotator/drafts/a36f1264ffccafc3.json",
+  "submitted_review_result": false,
+  "plan_approved": false,
+  "spec_approved": false,
+  "saved_draft": {
+    "annotations": [
+      {
+        "id": "ec483f7e-834f-474d-b618-5a16a97c9efa",
+        "blockId": "block-1",
+        "startOffset": 12,
+        "endOffset": 22,
+        "type": "COMMENT",
+        "text": "November 6th\n",
+        "originalText": "October 30",
+        "createdA": 1793634478294,
+        "author": "Rahul Krishna",
+        "startMeta": {
+          "parentTagName": "P",
+          "parentIndex": 0,
+          "textOffset": 12
+        },
+        "endMeta": {
+          "parentTagName": "P",
+          "parentIndex": 0,
+          "textOffset": 22
+        }
+      },
+      {
+        "id": "db4e4ccb-43c3-4093-87a2-e49047868449",
+        "blockId": "block-26",
+        "startOffset": 2145,
+        "endOffset": 2640,
+        "type": "COMMENT",
+        "text": "Students worked on this in their HW1--they already know all this. ",
+        "originalText": "0:00–0:06\tHost agent loop\tCyberbird scans the small OWASP slice with Bandit, classifies its alerts, and patches the true positive. Show the report and diff. Identify the reads, workspace writes, subprocesses, and model calls that support this work.\n0:06–0:09\tAnswer-key access\tMake a direct, instructor-initiated read of the answer key from the host. Establish why the agent must be excluded from it. Ask students to predict what changes when the same operation runs inside the intended sandbox.",
+        "createdA": 1793635039708,
+        "author": "Rahul Krishna",
+        "startMeta": {
+          "parentTagName": "TD",
+          "parentIndex": 0,
+          "textOffset": 0
+        },
+        "endMeta": {
+          "parentTagName": "TD",
+          "parentIndex": 5,
+          "textOffset": 218
+        }
+      },
+      {
+        "id": "97abea90-3500-456a-9b81-5d2b390281cb",
+        "blockId": "block-26",
+        "startOffset": 1231,
+        "endOffset": 1245,
+        "type": "COMMENT",
+        "text": "❓ Clarify this",
+        "originalText": "prepared image",
+        "createdA": 1793635090806,
+        "author": "Rahul Krishna",
+        "startMeta": {
+          "parentTagName": "TD",
+          "parentIndex": 14,
+          "textOffset": 19
+        },
+        "endMeta": {
+          "parentTagName": "TD",
+          "parentIndex": 14,
+          "textOffset": 33
+        },
+        "isQuickLabel": true
+      },
+      {
+        "id": "d551fcb8-11da-427e-87e7-bda80492d9a2",
+        "blockId": "block-26",
+        "startOffset": 1231,
+        "endOffset": 1245,
+        "type": "COMMENT",
+        "text": "prepared by whom? me?",
+        "originalText": "prepared image",
+        "createdA": 1793635108035,
+        "author": "Rahul Krishna",
+        "startMeta": {
+          "parentTagName": "TD",
+          "parentIndex": 14,
+          "textOffset": 19
+        },
+        "endMeta": {
+          "parentTagName": "TD",
+          "parentIndex": 14,
+          "textOffset": 33
+        }
+      },
+      {
+        "id": "a52c4f29-71da-4229-be4c-cb558f1896cb",
+        "blockId": "block-26",
+        "startOffset": 2023,
+        "endOffset": 2039,
+        "type": "DELETION",
+        "originalText": "ask students to ",
+        "createdA": 1793635193230,
+        "author": "Rahul Krishna",
+        "startMeta": {
+          "parentTagName": "TD",
+          "parentIndex": 20,
+          "textOffset": 31
+        },
+        "endMeta": {
+          "parentTagName": "TD",
+          "parentIndex": 20,
+          "textOffset": 47
+        }
+      },
+      {
+        "id": "fba118ae-ca49-4def-90b8-a21d17ac0874",
+        "blockId": "block-31",
+        "startOffset": 40,
+        "endOffset": 183,
+        "type": "COMMENT",
+        "text": "I have HW1-sol, we can use that for this. No need to migrate to cyberbird",
+        "originalText": "The HW1-to-Cyberbird migration and this exact two-case host/sandbox comparison have not been implemented or rehearsed in this planning session.",
+        "createdA": 1793635243709,
+        "author": "Rahul Krishna",
+        "startMeta": {
+          "parentTagName": "P",
+          "parentIndex": 11,
+          "textOffset": 40
+        },
+        "endMeta": {
+          "parentTagName": "P",
+          "parentIndex": 11,
+          "textOffset": 183
+        }
+      }
+    ],
+    "codeAnnotations": [],
+    "globalAttachments": [],
+    "draftGeneration": 7,
+    "ts": 1793635244216
+  },
+  "resolutions": [
+    {
+      "annotation_id": "ec483f7e-834f-474d-b618-5a16a97c9efa",
+      "status": "applied to current plan",
+      "related_decision": "lecture_date_revision"
+    },
+    {
+      "annotation_id": "db4e4ccb-43c3-4093-87a2-e49047868449",
+      "status": "applied to current plan",
+      "related_decision": "hw1_familiarity"
+    },
+    {
+      "annotation_id": "97abea90-3500-456a-9b81-5d2b390281cb",
+      "status": "applied to current plan",
+      "related_decision": "image_preparation_clarification"
+    },
+    {
+      "annotation_id": "d551fcb8-11da-427e-87e7-bda80492d9a2",
+      "status": "applied to current plan",
+      "related_decision": "image_preparation_clarification"
+    },
+    {
+      "annotation_id": "a52c4f29-71da-4229-be4c-cb558f1896cb",
+      "status": "applied to current plan",
+      "related_decision": "closing_delivery"
+    },
+    {
+      "annotation_id": "fba118ae-ca49-4def-90b8-a21d17ac0874",
+      "status": "applied to current plan",
+      "related_decision": "application_revision"
+    }
+  ],
+  "pacing_proposal": "Two-minute familiar host baseline and answer-key probe; reclaimed seven minutes allocated to policy, sandbox launch/checks, and network explanation. Total proposed teaching time remains 42 minutes."
+}

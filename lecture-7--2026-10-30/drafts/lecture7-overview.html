@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lecture 7 — overall structure for review</title>
+<style>
+  :root { color-scheme: light dark; --paper:#fff; --ink:#202936; --muted:#5b6673; --rule:#d9dee4; --accent:#28285E; --soft:#f0f1f7; }
+  @media (prefers-color-scheme:dark) { :root { --paper:#14181e; --ink:#e6e9ed; --muted:#a4afbc; --rule:#343c47; --accent:#bec6f0; --soft:#222935; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font:17px/1.55 Charter,"Iowan Old Style",Georgia,serif; }
+  main { max-width:68rem; margin:auto; padding:2.5rem 1.5rem 4rem; }
+  h1 { font-size:2.3rem; line-height:1.15; margin:.4rem 0 1rem; }
+  h2 { font-size:1.5rem; line-height:1.25; margin:2.4rem 0 .5rem; }
+  h3 { font-size:1.12rem; margin:1.4rem 0 .3rem; }
+  p,li { max-width:78ch; }
+  .meta { color:var(--muted); margin:.2rem 0; }
+  .scope { background:var(--soft); padding:1rem 1.3rem; margin:1.5rem 0; }
+  .scope p { margin:.4rem 0; }
+  .table-scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; margin:1rem 0; font-size:.96rem; }
+  th,td { text-align:left; vertical-align:top; border-top:1px solid var(--rule); padding:.65rem .7rem; }
+  th { color:var(--muted); font-size:.88rem; }
+  td:first-child { width:3rem; font-weight:bold; color:var(--accent); }
+  td:nth-child(2) { width:8rem; white-space:nowrap; }
+  td:nth-child(3) { width:17rem; font-weight:bold; }
+  a { color:var(--accent); text-underline-offset:2px; }
+  li { margin:.45rem 0; }
+  .break { padding:.7rem 1rem; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); margin:2rem 0; }
+  @media (max-width:720px) { body { font-size:16px; } main { padding:1.5rem 1rem 3rem; } table { min-width:42rem; } h1 { font-size:1.9rem; } }
+  @media print { body { background:white; color:black; font-size:11pt; } main { max-width:none; padding:0; } tr,.scope { break-inside:avoid; } a { color:black; } }
+</style>
+</head>
+<body>
+<main>
+  <p class="meta">COMS E6998-019 · Lecture 7 · Friday, October 30, 2026</p>
+  <h1>Sandboxed execution; context, compaction, and extended planning</h1>
+  <p><b>Earlier HTML copy.</b> Use the <a href="lecture7-overview.md">current Markdown overview</a>. Plans and specs continue in Markdown.</p>
+  <p class="meta">Overall structure · Green light recorded in chat · Section plans and specs reviewed separately</p>
+
+  <div class="scope">
+    <p><b>This review decides the section set, order, and broad allocation of time.</b> The instructor decides which sections belong and whether they flow.</p>
+    <p>For each section, we first walk through its plan and review that plan in Plannotator. After plan approval, we work through the implementation details and review the detailed spec separately in Plannotator. Slide work begins only after both approvals.</p>
+  </div>
+
+  <h2>The starting point</h2>
+  <ul>
+    <li>Lecture 6 stopped a few slides after the policy discussion.</li>
+    <li>Part I can repeat OpenShell in detail so students who missed that class can follow the live example and complete HW2.</li>
+    <li>After the break, Part II starts a separate, literature-led introduction to context and compaction: the objectives, evidence, mechanisms, and how to handle the tradeoffs. It also covers long-horizon and extremely long-horizon planning and their implications for context management.</li>
+    <li>Next week develops keeping these contexts in state, ownership, checkpointing, resumption, and replay.</li>
+  </ul>
+  <p><b>Timing:</b> 50 minutes + 10-minute break + 50 minutes. Confirmed in the first review; allocations within each half remain open to discussion.</p>
+
+  <h2>Part I · OpenShell and a live example</h2>
+  <p><b>Outcome:</b> students can explain the components, reason about a policy, and follow the launch and testing of an agent inside a sandbox.</p>
+  <div class="table-scroll"><table>
+    <thead><tr><th>§</th><th>Elapsed</th><th>Proposed section</th><th>Purpose and progression</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>0:00–0:08<br>8 min</td><td>OpenShell components and execution</td><td>Reintroduce processes, file requests, and connections. Explain the gateway, runtime, supervisor, and kernel. Establish what an image supplies and what a running sandbox enforces.</td></tr>
+      <tr><td>2</td><td>0:08–0:22<br>14 min</td><td>Policy, permissions, and credentials</td><td>Read and explain filesystem and network policy. Show the consequences of directory grants, the caller/endpoint match, provider credentials, and effective permissions.</td></tr>
+      <tr><td>3</td><td>0:22–0:42<br>20 min</td><td>Live Cyberbird example</td><td>Create a sandbox from a prepared image, run one repair, and inspect its trace and patch. Predict and test allowed and denied operations. Explain the evidence at each boundary.</td></tr>
+      <tr><td>4</td><td>0:42–0:50<br>8 min</td><td>Enforcement responsibilities in HW2</td><td>Separate fixed restrictions from per-alert checks. Connect the example to the team's policy, MCP server, launch instructions, and the staff's direct tests. Leave time for questions.</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>Proposed flow:</b> understand the components → predict a policy's effects → observe a real run → map the evidence to HW2.</p>
+
+  <div class="break"><b>0:50–1:00 · Break, 10 minutes.</b> Close the OpenShell example. Part II begins with its own problem and motivation.</div>
+
+  <h2>Part II · Context, compaction, and extended planning</h2>
+  <p><b>Outcome:</b> students understand what context management aims to preserve, how planning and continued execution over long and extremely long horizons change those requirements, and how to choose and evaluate the available mechanisms.</p>
+  <div class="table-scroll"><table>
+    <thead><tr><th>§</th><th>Elapsed</th><th>Proposed section</th><th>Purpose and progression</th></tr></thead>
+    <tbody>
+      <tr><td>5</td><td>1:00–1:06<br>6 min</td><td>The objectives of context management</td><td>Define the input to one model invocation. Separate context capacity, cumulative cost, task quality, faithfulness, and access to supporting sources.</td></tr>
+      <tr><td>6</td><td>1:06–1:12<br>6 min</td><td>Evidence about long-context use</td><td>Use <i>Lost in the Middle</i> and <i>RULER</i> to discuss evidence position and task-dependent performance. Keep the studies' model, task, and date scope explicit.</td></tr>
+      <tr><td>7</td><td>1:12–1:20<br>8 min</td><td>Planning over extended task horizons</td><td>Include both long-horizon and extremely long-horizon planning. Discuss decomposition, grounded replanning, pending commitments, and goal/progress continuity across context boundaries. Distinguish plan depth, context length, elapsed execution time, and simulated duration. Use LLM-Planner, Vending-Bench, and long-running coding harnesses as different kinds of evidence.</td></tr>
+      <tr><td>8</td><td>1:20–1:28<br>8 min</td><td>Selection, retrieval, and compression</td><td>Compare retaining source text, fetching material as needed, extracting tokens, and generating compacted accounts. Use LLMLingua-2 as a research example and first-party context-engineering guidance for operational practices.</td></tr>
+      <tr><td>9</td><td>1:28–1:40<br>12 min</td><td>Designing a compaction policy</td><td>Discuss triggers, retained material, summaries, source references, and checks. Ask what a later planning step needs: goals, completed subgoals, pending work, assumptions, and evidence. Use one short independent example to expose a lost update or exception.</td></tr>
+      <tr><td>10</td><td>1:40–1:48<br>8 min</td><td>Evaluating context across long runs</td><td>Compare downstream success, evidence preservation, faithfulness, compression, and total work. Include repeated compaction, goal drift, repeated work, and whether the next plan remains grounded in observations.</td></tr>
+      <tr><td>—</td><td>1:48–1:50<br>2 min</td><td>Connection to next week</td><td>Name the next questions: who owns the constructed context, how it is saved, and how it participates in checkpointing, resume, and replay.</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>Proposed flow:</b> define the objectives → examine context-use evidence → study the demands of extended planning → distinguish the mechanisms → design a policy → evaluate it across a run.</p>
+  <p><b>Pacing change:</b> the added eight-minute planning section fits within the confirmed 50-minute half by shortening the introductory objectives, context-benchmark detail, and methods survey. The worked compaction example and evaluation remain.</p>
+
+  <h3>Literature proposed for the planning section</h3>
+  <ul>
+    <li><b>Planning and replanning:</b> Song et al., <a href="https://dki-lab.github.io/LLM-Planner/">LLM-Planner</a>, ICCV 2023. High-level action sequences are revised using observed objects and completed subgoals. Its embodied simulation supplies a concrete planning mechanism; the context-retention implications are a course interpretation.</li>
+    <li><b>Extremely long simulated horizons:</b> <a href="https://arxiv.org/abs/2502.15840">Vending-Bench</a> and <a href="https://andonlabs.com/evals/vending-bench-2">Vending-Bench 2</a>, 2025. The successor follows a business over a simulated year, with delayed effects and ongoing commitments. Its horizon is simulated calendar time; its score concerns continued business operation and final money balance.</li>
+    <li><b>Continuity across context windows:</b> Justin Young / Anthropic, <a href="https://www.anthropic.com/research/effective-harnesses-for-long-running-agents">Effective harnesses for long-running agents</a>, November 2025. This first-party web-app engineering report connects incremental plans, progress records, and verification. Its experiments motivate examining the information a compacted context must carry into a later session.</li>
+  </ul>
+  <p><b>Scope for discussion:</b> use long and extremely long horizons as descriptive categories, with each source's actual horizon stated. A plan's depth, an agent's wall-clock runtime, and a simulated year are separate measurements. This week examines planning and information requirements; next week develops state ownership, durable checkpoints, resume, and replay.</p>
+
+  <h2>How we will review the sections</h2>
+  <ol>
+    <li>Review the overall structure in Plannotator. The instructor's subsequent chat green light is recorded in the decision log.</li>
+    <li>Walk through the next section's plan with the instructor: objective, prerequisites, scope, argument, evidence, examples, teaching sequence, transitions, and timing. Persist the plan and review it in Plannotator. Obtain approval for the whole section plan.</li>
+    <li>After plan approval, walk through the details with the instructor: intended slide content, exact examples, figure and build instructions, speaker explanations, and production choices. Persist these decisions as a reusable spec under <code>drafts/section-specs/</code>.</li>
+    <li>Review the complete detailed spec separately in Plannotator. Resolve open decisions and obtain spec approval. Plan approval and spec approval are distinct.</li>
+    <li>After both approvals, produce and arrange the section's slides. Review the resulting section in Plannotator and apply the instructor's feedback.</li>
+    <li>Repeat for each retained section. Reopen a spec or the overview whenever the instructor changes the section or the lecture's flow.</li>
+  </ol>
+  <p>Each section spec will preserve the approved teaching sequence, intended slide content, exact examples and evidence, figure and build instructions, speaker notes, timing and cuts, and the approval record. See the <a href="section-specs/index.html">section-spec register</a>.</p>
+  <p>The earlier detailed HTML draft remains provisional working material. The instructor's decisions and approved section plans and specs determine the slides. The next review target is <a href="section-specs/section-01-plan.html">Section 1's plan</a>.</p>
+
+  <h2>Changes from your first review</h2>
+  <ul>
+    <li><b>Confirmed:</b> the detailed OpenShell reintroduction, the separate literature-led Part II, next week's state/recovery focus, and the 50 + 10 + 50 timing.</li>
+    <li><b>Added to Part II:</b> long-horizon and extremely long-horizon planning, its context/compaction implications, and supporting literature.</li>
+    <li><b>Revised workflow:</b> section-plan walkthrough → persisted plan → plan approval → detailed-spec walkthrough → persisted spec → spec approval → slide work → section review.</li>
+  </ul>
+  <p class="meta">The <a href="reviews/lecture7-overview-review-1.json">first review's decision record</a> preserves the annotations. The <a href="reviews/lecture7-overview-chat-green-light.json">chat green light and workflow clarification</a> records the later approval and the separate plan/spec review stages.</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "target": "drafts/lecture7-overview.html",
+  "approval_source": "chat",
+  "approval_evidence": "lgtm, what's next?",
+  "plannotator_review_2_result": null,
+  "clarifications": [
+    {
+      "decision": "The long-horizon planning literature serves the context and compaction discussion: what information must survive for a sound next decision or revised plan.",
+      "evidence": "lgtm, what's next?"
+    },
+    {
+      "decision": "The instructor reviews section plans and detailed specs separately, in that order. Both approvals precede slide work.",
+      "evidence": "I review the specs and the plans both jfyi--plan first, then specs."
+    }
+  ],
+  "next_stage": "Section 1 plan discussion and review",
+  "section_plan_approved": false,
+  "section_spec_approved": false,
+  "planning_format": {
+    "format": "Markdown",
+    "evidence": "Yeah, let's stick with that please. Let's pick up where we left off."
+  }
+}

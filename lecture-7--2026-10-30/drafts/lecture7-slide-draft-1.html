@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lecture 7 — slide draft 1</title>
+<style>
+  :root {
+    --paper: #ffffff; --ink: #1e2833; --muted: #5b6673; --rule: #d9dee4;
+    --blue: #2b5ba8; --blue-soft: #e7eef9; --grey: #6b7482; --grey-soft: #eef0f2; --code-bg: #f1f3f5;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14181e; --ink: #e6e9ed; --muted: #9aa4af; --rule: #2a323c;
+      --blue: #7fa4e6; --blue-soft: #1c2b45; --grey: #a9b1bb; --grey-soft: #232a33; --code-bg: #1d242c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14181e; --ink: #e6e9ed; --muted: #9aa4af; --rule: #2a323c;
+    --blue: #7fa4e6; --blue-soft: #1c2b45; --grey: #a9b1bb; --grey-soft: #232a33; --code-bg: #1d242c;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: inherit; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Charter", "Bitstream Charter", "Iowan Old Style", "Source Serif 4", Georgia, serif;
+    font-size: 17px; line-height: 1.55; font-variant-numeric: tabular-nums;
+  }
+  a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  code { font-family: "Maple Mono NF", ui-monospace, monospace; font-size: 0.88em; background: var(--code-bg); padding: 0.05em 0.3em; border-radius: 3px; }
+  pre { font-family: "Maple Mono NF", ui-monospace, monospace; font-size: 0.82rem; line-height: 1.45; background: var(--code-bg); padding: 0.7rem 0.9rem; border-radius: 4px; overflow-x: auto; margin: 0.6rem 0 0.4rem; max-width: 70ch; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .wrap { max-width: 70rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+
+  header .course { margin: 0 0 0.75rem; color: var(--muted); font-size: 0.95rem; }
+  header h1 { margin: 0; font-size: clamp(1.9rem, 4vw, 2.6rem); line-height: 1.12; font-weight: 600; letter-spacing: -0.01em; max-width: 30ch; }
+  header .sub { margin: 0.75rem 0 0; font-size: 1.15rem; color: var(--muted); max-width: 58ch; }
+
+  .thesis { margin: 2.25rem 0 0; padding: 1.25rem 1.5rem; border-left: 4px solid var(--blue); background: var(--blue-soft); max-width: 64ch; }
+  .thesis p { margin: 0 0 0.75rem; }
+  .thesis p:last-child { margin-bottom: 0; }
+
+  .strip { margin: 2.5rem 0 0; }
+  .strip h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.6rem; }
+  .bar-scroll { overflow-x: auto; padding-bottom: 0.25rem; }
+  .bar { display: flex; gap: 2px; height: 3.4rem; min-width: 38rem; }
+  .bar a, .bar span { display: flex; flex-direction: column; justify-content: center; align-items: center; text-decoration: none; color: var(--ink); line-height: 1.15; font-size: 0.85rem; min-width: 0; }
+  .bar a b { font-weight: 600; }
+  .bar a small, .bar span small { color: var(--muted); font-size: 0.75rem; }
+  .bar .p1 { background: var(--blue-soft); border-bottom: 3px solid var(--blue); }
+  .bar .p2 { background: var(--grey-soft); border-bottom: 3px solid var(--grey); }
+  .bar .brk { background: repeating-linear-gradient(135deg, transparent 0 6px, var(--rule) 6px 8px); border-bottom: 3px solid var(--rule); }
+  .bar .qa { border: 1px dashed var(--rule); border-bottom: 3px solid var(--rule); }
+  .bar a:hover, .bar a:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+  .axis { position: relative; height: 1.3rem; min-width: 38rem; margin-top: 0.3rem; color: var(--muted); font-size: 0.8rem; }
+  .axis span { position: absolute; top: 0; transform: translateX(-50%); }
+  .axis span:first-child { transform: none; }
+  .axis span:last-child { transform: translateX(-100%); }
+  .strip .cap { margin: 0.75rem 0 0; color: var(--muted); font-size: 0.92rem; max-width: 64ch; }
+
+  .part { margin-top: 3.25rem; }
+  .part > h2 { font-size: 1.55rem; font-weight: 600; margin: 0 0 0.25rem; letter-spacing: -0.005em; }
+  .part > .span { margin: 0 0 1.5rem; color: var(--muted); max-width: 64ch; }
+  .seg { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 0 1.5rem; padding: 1.4rem 0 1.6rem; border-top: 1px solid var(--rule); }
+  .seg:last-of-type { border-bottom: 1px solid var(--rule); }
+  .when { color: var(--muted); font-size: 0.95rem; line-height: 1.4; padding-top: 0.2rem; }
+  .when .range { display: block; color: var(--ink); }
+  .when .dur { display: block; }
+  .when .count { display: block; margin-top: 0.4rem; font-size: 0.85rem; }
+  .seg h3 { margin: 0; font-size: 1.22rem; font-weight: 600; line-height: 1.3; }
+  .seg h3 .n { color: var(--blue); margin-right: 0.45rem; }
+  .p2seg h3 .n { color: var(--grey); }
+  .aim { margin: 0.35rem 0 0.4rem; color: var(--muted); max-width: 64ch; }
+
+  .slide { padding: 1rem 0 1rem; border-top: 1px dashed var(--rule); max-width: 70ch; }
+  .slide:first-of-type { border-top: none; padding-top: 0.7rem; }
+  .slide h4 { margin: 0 0 0.5rem; font-size: 1.05rem; font-weight: 600; line-height: 1.35; }
+  .slide h4 .sn { color: var(--muted); font-weight: 400; margin-right: 0.55rem; }
+  .slide ul, .slide ol { margin: 0; padding-left: 1.2rem; }
+  .slide li { margin: 0 0 0.35rem; }
+  .slide .take { margin: 0.6rem 0 0; }
+  .slide .take b { font-weight: 600; }
+  .slide .notes { margin: 0.55rem 0 0; font-size: 0.93rem; color: var(--muted); }
+  .slide .notes b { color: var(--ink); font-weight: 600; }
+  .slide .build { margin: 0.35rem 0 0; font-size: 0.9rem; color: var(--muted); font-style: italic; }
+  .reuse { margin: 0.7rem 0 0; padding-left: 1.1rem; max-width: 70ch; }
+  .reuse li { margin: 0 0 0.5rem; }
+  .reuse li b { font-weight: 600; }
+  .cut { color: var(--muted); }
+
+  .meta { margin: 1rem 0 0; font-size: 0.92rem; color: var(--muted); max-width: 72ch; }
+  .meta b { color: var(--ink); font-weight: 600; }
+  .brk-row { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 0 1.5rem; padding: 1rem 0; border-top: 1px solid var(--rule); color: var(--muted); }
+  .brk-row .range { color: var(--ink); }
+
+  .matrix { border-collapse: collapse; width: 100%; font-size: 0.92rem; margin: 0.5rem 0 0.2rem; }
+  .matrix th, .matrix td { text-align: left; vertical-align: top; padding: 0.35rem 0.5rem; border-top: 1px solid var(--rule); }
+  .matrix th { font-weight: 600; }
+  .matrix thead th { border-top: none; color: var(--muted); }
+  .table-scroll { overflow-x: auto; }
+
+  .notes-sec, .reading, .legend, .glossary { margin-top: 3rem; max-width: 68ch; }
+  .notes-sec h2, .reading h2, .legend h2, .glossary h2 { font-size: 1.3rem; font-weight: 600; margin: 0 0 0.75rem; }
+  .notes-sec h3 { font-size: 1rem; font-weight: 600; margin: 1.2rem 0 0.4rem; }
+  .notes-sec ul, .reading ul { margin: 0; padding-left: 1.15rem; }
+  .notes-sec li, .reading li { margin-bottom: 0.5rem; }
+  .reading h3 { font-size: 1rem; font-weight: 600; margin: 1.1rem 0 0.4rem; }
+  .legend p { margin: 0.25rem 0; color: var(--muted); font-size: 0.95rem; }
+  .glossary dl { margin: 0; }
+  .glossary dt { font-weight: 600; margin-top: 0.6rem; }
+  .glossary dd { margin: 0.1rem 0 0 0; }
+
+  @media (max-width: 720px) {
+    .wrap { padding: 1.75rem 1rem 3rem; }
+    .seg, .brk-row { grid-template-columns: 1fr; gap: 0.35rem 0; }
+    .when .range, .when .dur { display: inline; }
+    .when .dur::before { content: " — "; }
+    .when .count { display: block; }
+  }
+  @media print {
+    body { font-size: 10.5pt; color: #000; background: #fff; }
+    .wrap { max-width: none; padding: 0; }
+    .slide, .brk-row, .thesis { break-inside: avoid; }
+    .bar a, .bar span { color: #000; }
+    a { color: #000; text-decoration: none; }
+  }
+  .bar .dm { background: var(--blue-soft); border-bottom: 3px dashed var(--blue); outline: 1px dashed var(--blue); outline-offset: -1px; }
+  .slide.demo h4 .sn { color: var(--blue); }
+  .slide.demo { border-left: 3px solid var(--blue); padding-left: 0.9rem; }
+  .chain td:first-child, .chain th:first-child { white-space: nowrap; }
+
+  .bar { min-width: 62rem; }
+  .bar a, .bar span { overflow: hidden; text-align: center; }
+  .bar a:last-child small { display: none; }
+  .slide h4 { max-width: 65ch; }
+  .matrix code { overflow-wrap: anywhere; }
+  .reading li, .notes-sec li { margin-bottom: 0.65rem; }
+  .reading a, .notes-sec a { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="course">Designing Production Agentic Systems, Columbia, Fall 2026 · Lecture 7 · Friday, October 30</p>
+  <h1>Sandboxed execution; context and compaction</h1>
+  <p class="sub">Earlier working material, retained for reference. The current structure is in <a href="lecture7-overview.html">the overview under review</a>. Section details will be settled with the instructor, persisted as specs, and approved for the whole section before slide work begins. This earlier draft has not been updated to the revised long-horizon planning scope.</p>
+</header>
+
+<section class="thesis" aria-label="Scope and teaching objectives">
+  <p><strong>Where we start.</strong> Lecture 6 reached a few slides beyond the policy discussion. Part I deliberately revisits the components and policy before applying them. Students who missed that class need a complete path from the image to a running, restricted agent.</p>
+  <p><strong>Part I objective.</strong> Explain how an OpenShell policy affects a running program, launch a prepared agent under that policy, and identify which component permits or refuses an operation. Connect those observations to HW2's required sandbox, policy, and server checks.</p>
+  <p><strong>Part II objective.</strong> Explain why context needs management, read the claims and limits of several research results, compare the available mechanisms, and judge a compaction policy by the information and task performance it preserves.</p>
+  <p><strong>The break separates the two subjects.</strong> OpenShell has its own complete example. The context literature begins with its own problem and objectives. Next week considers how contexts are represented in state and preserved for checkpointing, resume, and replay.</p>
+  <p><strong>How to read this draft.</strong> New slide proposals use segment.slide numbers. Bullets and tables are candidate slide text; <b>Takeaway</b> is the closing line; <b>Notes</b> is spoken explanation or evidence; <b>Build</b> is a production instruction. A demo block describes terminal or notebook work. These are conceptual slides; incremental builds will increase the final deck's slide count.</p>
+  <p><strong>Timing proposal.</strong> 50 minutes, a 10-minute break, then 50 minutes. All times are elapsed from the start of class. This follows the 110-minute span of the reference drafts and remains a planning assumption.</p>
+</section>
+
+<section class="strip" aria-label="Timeline">
+  <h2>Timeline</h2>
+  <div class="bar-scroll">
+    <div class="bar" role="list">
+      <a class="p1" style="flex:8" href="#seg-1" role="listitem"><b>1</b><small>8 · recap</small></a>
+      <a class="p1" style="flex:14" href="#seg-2" role="listitem"><b>2</b><small>14 · policy</small></a>
+      <a class="dm" style="flex:20" href="#seg-3" role="listitem"><b>3</b><small>20 · live</small></a>
+      <a class="p1" style="flex:8" href="#seg-4" role="listitem"><b>4</b><small>8 · HW2</small></a>
+      <span class="brk" style="flex:10" role="listitem"><small>break · 10</small></span>
+      <a class="p2" style="flex:8" href="#seg-5" role="listitem"><b>5</b><small>8 · objectives</small></a>
+      <a class="p2" style="flex:9" href="#seg-6" role="listitem"><b>6</b><small>9 · evidence</small></a>
+      <a class="p2" style="flex:10" href="#seg-7" role="listitem"><b>7</b><small>10 · methods</small></a>
+      <a class="p2" style="flex:13" href="#seg-8" role="listitem"><b>8</b><small>13 · compaction</small></a>
+      <a class="p2" style="flex:8" href="#seg-9" role="listitem"><b>9</b><small>8 · evaluation</small></a>
+      <a class="p2" style="flex:2" href="#seg-10" role="listitem"><b>10</b><small>2</small></a>
+    </div>
+    <div class="axis" aria-hidden="true"><span style="left:0">0:00</span><span style="left:27.27%">0:30</span><span style="left:54.55%">1:00</span><span style="left:81.82%">1:30</span><span style="left:100%">1:50</span></div>
+  </div>
+  <p class="cap">Widths are proportional to minutes. Blue marks OpenShell; the dashed block is the live example. Grey marks the separate context and compaction introduction. Each segment links to its proposed slides.</p>
+</section>
+
+<section class="part" id="part-1">
+  <h2>Part I: OpenShell, from policy to a running agent</h2>
+  <p class="span">0:00–0:50. A deliberate reintroduction, a twenty-minute live example, and an HW2 debrief. Use the existing OpenShell figures; preserve time for predicting and observing refusals.</p>
+
+  <article class="seg" id="seg-1">
+    <div class="when"><span class="range">0:00–0:08</span><span class="dur">8 min</span><span class="count">3 conceptual slides</span></div>
+    <div>
+      <h3><span class="n">1</span>Reconstruct the execution boundary</h3>
+      <p class="aim">Make the components and their jobs clear before asking students to read YAML.</p>
+      <div class="slide">
+        <h4><span class="sn">1.1</span>Where a forbidden read is stopped</h4>
+        <ul>
+          <li>The model produces Python that opens the answer key.</li>
+          <li>The harness executes that Python inside the sandbox.</li>
+          <li>The program requests a file from the operating system.</li>
+          <li><b>Opening poll:</b> which component can refuse that direct file read?</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> Generated code eventually requests an operating-system operation.</p>
+        <p class="notes"><b>Notes.</b> Offer the system prompt, dispatcher, kernel policy, and image as choices. The intended answer is the kernel policy, assuming the image contains the file and its ordinary permissions admit the read. A dispatcher only mediates operations that pass through it. Withholding the file from an image is another valid design, so state that the file exists in this example. Return to the poll during the direct probe.</p>
+        <p class="build">Build: model reply → executed program → open request → kernel decision. Reveal the final decision after the poll.</p>
+      </div>
+      <div class="slide">
+        <h4><span class="sn">1.2</span>OpenShell divides the enforcing work</h4>
+        <div class="table-scroll"><table class="matrix"><thead><tr><th>Component</th><th>Job in this example</th></tr></thead><tbody>
+          <tr><td>Gateway and compute driver</td><td>Accept management requests and create the running environment.</td></tr>
+          <tr><td>Sandbox runtime</td><td>Install restrictions before the workload starts.</td></tr>
+          <tr><td>Kernel</td><td>Apply the filesystem restrictions to workload processes.</td></tr>
+          <tr><td>Supervisor</td><td>Check outbound connections and handle authorized provider requests.</td></tr>
+        </tbody></table></div>
+        <p class="take"><b>Takeaway.</b> A file request and a model request follow different enforcement paths.</p>
+        <p class="notes"><b>Notes.</b> Reintroduce each component without assuming attendance at Lecture 6. On the course's Mac setup the Linux kernel runs inside the Colima VM. The agent and its MCP server are workload processes. Distinguish management operations from workload operations. The course guide and captured runs describe OpenShell 0.1.4; this draft does not claim these commands describe an untested later release. <a href="#src-guide">Course guide</a>; <a href="#src-feasibility">feasibility record</a>.</p>
+        <p class="build">Build: reuse the architecture figure from Lecture 6, slides 90–113. Highlight the file path and network path in separate builds; retain the original figure's labels.</p>
+      </div>
+      <div class="slide">
+        <h4><span class="sn">1.3</span>An image supplies a sandbox's files</h4>
+        <ul>
+          <li><b>Image:</b> the agent, dependencies, interpreter, and target files.</li>
+          <li><b>Sandbox:</b> an instance running under a selected policy.</li>
+          <li><b>Workspace:</b> the writable copy used for analysis and patches.</li>
+          <li><b>Exec:</b> another command started inside that sandbox.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> Packaging supplies the files; the running sandbox applies the policy.</p>
+        <p class="notes"><b>Notes.</b> Show a small image directory tree beside the running components. The HW2 image puts the target at <code>/target</code>, dependencies under <code>/app</code>, and permitted working files under <code>/sandbox/work</code>. Install dependencies during the image build because the runtime network policy permits only the model endpoint. The older Cyberbird image uses a different fixture path; label it explicitly when shown. <a href="#src-brief">HW2, sandbox image and launch section</a>.</p>
+        <p class="build">Build: show image contents, then instance plus policy, then the writable workspace. Explain a prepared Dockerfile rather than waiting for a full image build in class.</p>
+      </div>
+    </div>
+  </article>
+
+  <article class="seg" id="seg-2">
+    <div class="when"><span class="range">0:08–0:22</span><span class="dur">14 min</span><span class="count">4 conceptual slides</span></div>
+    <div>
+      <h3><span class="n">2</span>Read and write the policy</h3>
+      <p class="aim">Connect every permission to a program operation, then predict what will happen in the live example.</p>
+      <div class="slide">
+        <h4><span class="sn">2.1</span>Filesystem grants include descendants</h4>
+        <pre><code>filesystem_policy:
+  include_workdir: true
+  read_only: [/bin, /usr, /lib, /lib64, /etc, /proc,
+              /dev/urandom, /app,
+              /target/testcode, /target/helpers, /target/app.py]
+  read_write: [/sandbox, /tmp, /dev/null]
+landlock:
+  compatibility: hard_requirement</code></pre>
+        <ul>
+          <li>A listed directory grants access to files beneath it.</li>
+          <li>Listing selected code directories leaves the answer key outside the grant.</li>
+          <li><code>hard_requirement</code> makes unavailable enforcement a startup failure.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> Draw the directory tree before granting its parent.</p>
+        <p class="notes"><b>Notes.</b> This excerpt comes from the HW2 example; it is only the filesystem portion of a policy. The answer key can exist in the image and remain unreadable inside the sandbox. In the older Cyberbird image, <code>/app</code> also contains the fixture and key, so granting that whole tree exposes them. In the HW2 layout, <code>/app</code> holds application dependencies and the target lives separately. Explain the directory layouts alongside the YAML. The writable sandbox and temporary directories also need explanation; the target's original files remain outside those writable trees. <a href="#src-brief">HW2, access rules and enforcement</a>.</p>
+        <p class="build">Build: code directories and answer-key sibling as a tree. First reveal the broad grant and all descendants; then reveal the selected-directory grants. Split the YAML across builds at 11 pt in the eventual deck.</p>
+      </div>
+      <div class="slide">
+        <h4><span class="sn">2.2</span>Network rules name programs and endpoints</h4>
+        <pre><code>network_policies:
+  model_provider:
+    endpoints:
+      - host: host.lima.internal
+        port: 8080
+        protocol: tcp
+    binaries:
+      - path: /usr/local/bin/python3.12</code></pre>
+        <ul>
+          <li>The program, destination, and port must match an allowed request.</li>
+          <li>The same destination requested by another program can be refused.</li>
+          <li>The same program requesting another destination can be refused.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> Predict the caller and destination together.</p>
+        <p class="notes"><b>Notes.</b> This is the course's Colima/local-model pattern, with a <code>tcp</code> endpoint. The hostname is specific to that setup. The cloud example instead uses a <code>rest</code> endpoint with explicit <code>enforcement: enforce</code> and an access preset that permits POST. Keep the two schemas distinct. The captured local run admits Python and refuses <code>curl</code> to the model endpoint. Read the logged reason before attributing a connection error to policy. <a href="#src-feasibility">Feasibility record</a>; <a href="#src-policy-local">local policy example</a>.</p>
+        <p class="build">Build: source executable → destination:port. Ask the room to predict Python/model, curl/model, and Python/unlisted-site before revealing the policy decisions.</p>
+      </div>
+      <div class="slide">
+        <h4><span class="sn">2.3</span>Providers supply credentials upstream</h4>
+        <ul>
+          <li>The provider attachment keeps the real cloud key outside the workload.</li>
+          <li>The workload receives a placeholder used on its permitted request path.</li>
+          <li>The supervisor supplies the real credential for the authorized provider.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> Credential storage and request permissions need separate decisions.</p>
+        <p class="notes"><b>Notes.</b> Two minutes. Reuse the credential-substitution figure and state the consequence: the workload can still make permitted requests using the attached authority. Endpoint restrictions and upstream account permissions remain relevant. The live local-model example needs no cloud key. For a cloud provider, inspect the additional provider network grant in the effective policy. Never print a real key during the demonstration. <a href="#src-brief">HW2, model-provider setup</a>; Lecture 6 slides 159–169.</p>
+        <p class="build">Build: placeholder on the workload side, real credential outside, substitution at the supervisor. Give the provider path one figure and keep the local demonstration's path labelled separately.</p>
+      </div>
+      <div class="slide">
+        <h4><span class="sn">2.4</span>Inspect the effective permissions</h4>
+        <ul>
+          <li>Read the policy written by the team.</li>
+          <li>Inspect baseline and provider additions with <code>policy get --full</code>.</li>
+          <li>Test a permitted operation and a forbidden operation.</li>
+          <li>Use process errors for file probes and denial logs for network probes.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> Check the effective grant and the observed operation.</p>
+        <p class="notes"><b>Notes.</b> The recorded setup adds baseline paths and may add a provider policy. The filesystem refusals in the course captures do not appear in the network log; use the program's permission error and a controlled comparison. A denied write to a root-owned file alone cannot distinguish ordinary file permissions from Landlock. Explain what each observation establishes. <a href="#src-feasibility">Feasibility record, final policies and probes</a>.</p>
+        <p class="build">Build: written YAML → effective grant → probe → observed result. Keep inspection commands visible during the live example rather than adding a command catalogue.</p>
+      </div>
+    </div>
+  </article>
+
+  <article class="seg" id="seg-3">
+    <div class="when"><span class="range">0:22–0:42</span><span class="dur">20 min</span><span class="count">4 live blocks</span></div>
+    <div>
+      <h3><span class="n">3</span>Run Cyberbird and test its boundary</h3>
+      <p class="aim">Students see a working agent, make predictions, and use direct probes to distinguish the checks.</p>
+      <div class="slide demo">
+        <h4><span class="sn">3.1</span>Create and enter the sandbox</h4>
+        <ol>
+          <li>Show the prepared image's directory tree and the narrowed policy.</li>
+          <li>Identify the model endpoint, output directory, and withheld key.</li>
+          <li>Create the sandbox from that image with the selected policy.</li>
+          <li>Inspect readiness, then start a command with <code>sandbox exec</code>.</li>
+        </ol>
+        <p class="take"><b>Takeaway.</b> The workload begins under the selected restrictions.</p>
+        <p class="notes"><b>Notes.</b> Four minutes. Explain the difference between the host terminal and a command inside the sandbox. Use the prepared Colima setup, with the local model already reachable. The recorded <code>exec</code> invocation passes the model address explicitly because image environment values were not inherited in that tested setup. Final command strings belong in the rehearsal sheet after a fresh successful run. <a href="#src-cyberbird">Captured Cyberbird commands</a>.</p>
+        <p class="build">Demo: one terminal for management and probes, one view for the agent trace. Keep the image build off the live path; show its recipe before creating the instance.</p>
+      </div>
+      <div class="slide demo">
+        <h4><span class="sn">3.2</span>Follow one repair through the sandbox</h4>
+        <ol>
+          <li>Run one known Cyberbird alert.</li>
+          <li>Point to the model request, tool request, observation, and runtime routing.</li>
+          <li>Inspect the proposed edit and the three acceptance checks.</li>
+          <li>Open the resulting trace and patch.</li>
+        </ol>
+        <p class="take"><b>Takeaway.</b> A useful repair can complete within a restricted environment.</p>
+        <p class="notes"><b>Notes.</b> Six minutes. The historical Cyberbird capture repaired <code>BenchmarkTest00283.py</code>, using eight model calls, with an accepted patch. Its scan and fixture layout differ from HW2's fixed alert set. Present it as the running course agent. The guide records a narrowed-policy run that still repaired the alert. Neither capture establishes that a new run will use the same calls or finish in the same time. Keep the saved trace ready if the live model stalls. <a href="#src-run">Recorded repair</a>; <a href="#src-guide">guide, worked example</a>.</p>
+        <p class="build">Demo: narrate a few requests, then inspect the final trace. Reveal acceptance only after showing which checks the runtime applied. Let students read the SQL patch.</p>
+      </div>
+      <div class="slide demo">
+        <h4><span class="sn">3.3</span>Probe the sandbox directly</h4>
+        <ol>
+          <li>Read permitted source and write a harmless file in the permitted workspace.</li>
+          <li>Read the answer key directly from a process inside the sandbox.</li>
+          <li>Attempt a write outside the writable workspace paths.</li>
+          <li>Request the model endpoint from the wrong binary, then request an unlisted endpoint.</li>
+        </ol>
+        <p class="take"><b>Takeaway.</b> Direct probes test the boundary without relying on a model's choice.</p>
+        <p class="notes"><b>Notes.</b> Seven minutes. Ask for a prediction before each category. The answer-key read bypasses Cyberbird's own path check and answers the opening poll. Show the contrast between the old broad <code>/app</code> grant and a narrowed grant; prepare separate sandboxes because the filesystem policy is fixed at startup. For a write probe, choose an ordinarily writable location outside the policy's writable paths and verify the control outside the restricted instance. A simple permission error without that control can have more than one cause. For network probes, inspect the logged policy reason. <a href="#src-probes">Historical probes</a>; <a href="#src-guide">narrowed-policy comparison</a>.</p>
+        <p class="build">Demo: show each expected category on a prediction slide, then the real terminal output. Use paths from the rehearsed image. Keep source reads and writes inside disposable course-owned files.</p>
+      </div>
+      <div class="slide demo">
+        <h4><span class="sn">3.4</span>Match each result to its enforcing layer</h4>
+        <ul>
+          <li>Read the effective filesystem and network grants.</li>
+          <li>Match the answer-key permission error to the narrowed file policy.</li>
+          <li>Match network denials to their logged caller and destination.</li>
+          <li>Try another case file within the permitted source tree.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> The grant explains both the refusals and the remaining access.</p>
+        <p class="notes"><b>Notes.</b> Three minutes. Another case remains readable under the kernel's directory grant. This is the transition to HW2's input-dependent server check. Do not claim a live MCP per-alert refusal from the existing four-tool CLDK demonstration server: that interface is a reference pattern, and students implement their own HW2 restrictions. A labelled call-path diagram suffices for the server part here.</p>
+        <p class="build">Demo: end with the directory tree beside the effective policy. Keep the other-case read visible for the next segment's explanation.</p>
+      </div>
+    </div>
+  </article>
+
+  <article class="seg" id="seg-4">
+    <div class="when"><span class="range">0:42–0:50</span><span class="dur">8 min</span><span class="count">2 conceptual slides</span></div>
+    <div>
+      <h3><span class="n">4</span>Apply the example to HW2</h3>
+      <p class="aim">Separate the fixed sandbox restrictions from the alert-dependent checks students must implement.</p>
+      <div class="slide">
+        <h4><span class="sn">4.1</span>Fixed and per-alert restrictions</h4>
+        <div class="table-scroll"><table class="matrix"><thead><tr><th>Rule</th><th>What enforces it in HW2?</th></tr></thead><tbody>
+          <tr><td>The answer key and <code>.git</code> stay inaccessible</td><td>The sandbox's filesystem policy.</td></tr>
+          <tr><td>Target edits stay in the workspace</td><td>The filesystem policy, with server checks on MCP writes.</td></tr>
+          <tr><td>Network access reaches only the model</td><td>The network policy and supervisor.</td></tr>
+          <tr><td>OWASP reads stay within the current case</td><td>The MCP server's current-alert checks.</td></tr>
+          <tr><td>Edits touch only the alert's file</td><td>The MCP server's current-alert checks.</td></tr>
+        </tbody></table></div>
+        <p class="take"><b>Takeaway.</b> The server supplies the alert-dependent restriction.</p>
+        <p class="notes"><b>Notes.</b> Five minutes. The host-only <code>set_alert</code> selects the alert; it is never offered to the model. Both CodeAct and MCP agents run inside the sandbox. A CodeAct script has the kernel restrictions but lacks the MCP server's per-alert checks. The startup filesystem policy grants the code tree, so a current-alert rule needs knowledge held by the server. HW2 also forbids executing the target's code; a rescan runs Bandit. A file-read allow-list alone does not prevent an interpreter from executing readable source. Avoid a blanket claim that every OpenShell policy is immutable: network/provider policy has its own update mechanisms. <a href="#src-brief">HW2, access rules and enforcement</a>.</p>
+        <p class="build">Build: one request path with the server check, then a direct code-action path. Add each restriction at the component that holds it.</p>
+      </div>
+      <div class="slide">
+        <h4><span class="sn">4.2</span>How HW2 checks the restrictions</h4>
+        <ul>
+          <li>Submit <code>policy.yaml</code>, <code>mcp.json</code>, and reproducible launch instructions.</li>
+          <li>Staff start the sandbox and send raw MCP requests.</li>
+          <li>Staff bypass the server to test the kernel restrictions.</li>
+          <li>Your trace identifies server and kernel refusals.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> Each required restriction needs an observable place of enforcement.</p>
+        <p class="notes"><b>Notes.</b> Three minutes, including questions. Point to the corresponding brief sections and explain that teams do not build the staff test harness. A broad startup grant cannot be repaired by a tool description. The current brief gives November 20 as the deadline; older Lecture 6 closing slides still say November 13. The brief also promises a classroom Cyberbird-in-OpenShell demonstration. This session supplies that example. <a href="#src-brief">HW2, guardrail tests and rubric</a>.</p>
+        <p class="build">Build: config files → staff launch → raw MCP probe → sandbox probe. Put the submission checklist in the reading notes rather than enlarging the slide.</p>
+      </div>
+    </div>
+  </article>
+</section>
+
+<div class="brk-row" id="break" aria-label="Break"><div class="when"><span class="range">0:50–1:00</span><span class="dur">10 min</span></div><div><b>Break.</b> Close the OpenShell example. Part II begins a separate subject with a new opening question.</div></div>
+
+<section class="part" id="part-2">
+  <h2>Part II: Context and compaction</h2>
+  <p class="span">1:00–1:50. A new topic after the break: what context must accomplish, what the literature measures, and how to reduce context while preserving useful information. Six segments, 50 minutes. Four readings anchor the discussion; the procedures and invented example are course synthesis.</p>
+
+  <article class="seg p2seg" id="seg-5">
+    <div class="when"><span class="range">1:00–1:08</span><span class="dur">8 min</span><span class="count">3 conceptual slides</span></div>
+    <div>
+      <h3><span class="n">5</span>The objectives of context management</h3>
+      <p class="aim">Define the object being managed and the competing objectives before introducing methods.</p>
+      <div class="slide">
+        <h4><span class="sn">5.1</span>Context supplies one model invocation</h4>
+        <ul>
+          <li><b>Instructions and tool definitions</b> describe the task and the available operations.</li>
+          <li><b>Messages, examples and observations</b> supply the interaction so far.</li>
+          <li><b>Selected external material</b> supplies documents, source text, search results or other evidence.</li>
+          <li><b>The system assembles this input</b> before each invocation; some available information stays outside it.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> Context management chooses which information reaches each invocation.</p>
+        <p class="notes"><b>Notes.</b> Anthropic's Applied AI team, <a href="https://www.anthropic.com/research/effective-context-engineering-for-ai-agents">Effective context engineering for AI agents</a>, September 29, 2025, defines context engineering as curating the tokens supplied during inference. This is a first-party engineering account. Our list organizes its examples for the course. Avoid treating the article's broad explanations of attention or its claims about all models as established universal results.</p>
+        <p class="build">Build: a request box with four labelled inputs. Keep the surrounding documents visible outside the box.</p>
+      </div>
+      <div class="slide">
+        <h4><span class="sn">5.2</span>Useful context serves the next task</h4>
+        <ul>
+          <li><b>Task quality:</b> preserve the evidence, constraints and distinctions needed for a sound answer or action.</li>
+          <li><b>Efficiency:</b> control input length, total token use and elapsed time, including the work of selecting or compressing input.</li>
+          <li><b>Faithfulness:</b> keep claims supported and preserve conditions that change their meaning.</li>
+          <li><b>Source access:</b> keep a usable route back to source material when details are needed.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> Choose a context policy against explicit task and resource objectives.</p>
+        <p class="notes"><b>Notes.</b> This four-objective formulation is course synthesis. Pan et al., <a href="https://aclanthology.org/2024.findings-acl.57/">LLMLingua-2</a>, Findings of ACL 2024, §3.1, motivates token reduction, informativeness and faithfulness. Source access is an additional system design objective here. Ask the room what information an accurate one-sentence summary could still omit that a later question would require.</p>
+        <p class="build">Build: four short objective rows; leave detailed metrics for segment 9.</p>
+      </div>
+      <div class="slide">
+        <h4><span class="sn">5.3</span>Capacity and cumulative cost differ</h4>
+        <div class="table-scroll"><table class="matrix">
+          <thead><tr><th>Quantity</th><th>Question it answers</th><th>Consequence</th></tr></thead>
+          <tbody>
+            <tr><td>Context capacity</td><td>How much can this invocation accommodate?</td><td>Plan the input and leave capacity for generation within the model's limits.</td></tr>
+            <tr><td>Cumulative token use</td><td>How much text is processed or generated over all invocations?</td><td>Repeated history contributes again; compression and retrieval also consume resources.</td></tr>
+            <tr><td>Latency and monetary cost</td><td>How long does the full task take, and what is charged?</td><td>Measure the actual system, including caching and auxiliary calls.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="take"><b>Takeaway.</b> A request can fit while the full run exceeds its budget.</p>
+        <p class="notes"><b>Notes.</b> These are accounting distinctions, with no vendor prices or API assumptions. Token counts alone do not determine charges: caching and different operations can have different prices. Define a course budget explicitly before comparing alternatives.</p>
+        <p class="build">Build: one bounded request beside a row of repeated invocations. Label the diagrams schematics; use no invented benchmark values.</p>
+      </div>
+    </div>
+  </article>
+
+  <article class="seg p2seg" id="seg-6">
+    <div class="when"><span class="range">1:08–1:17</span><span class="dur">9 min</span><span class="count">2 conceptual slides</span></div>
+    <div>
+      <h3><span class="n">6</span>What long-context experiments show</h3>
+      <p class="aim">Read two controlled studies as evidence about how to evaluate context use.</p>
+      <div class="slide">
+        <h4><span class="sn">6.1</span>Evidence position changes performance</h4>
+        <ul>
+          <li><b>Liu et al., TACL 2024:</b> vary the position of relevant information in multi-document question answering and key-value retrieval.</li>
+          <li><b>The reported pattern:</b> performance is often strongest when relevant information appears near the beginning or end, and weaker in the middle.</li>
+          <li><b>The scope:</b> the finding concerns the models, prompts and tasks evaluated in the study. A present system needs its own measurement.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> Test where relevant evidence appears in the supplied context.</p>
+        <p class="notes"><b>Notes.</b> Nelson F. Liu et al., <a href="https://aclanthology.org/2024.tacl-1.9/">Lost in the Middle: How Language Models Use Long Contexts</a>, Transactions of the Association for Computational Linguistics 12, 157–173, 2024. The controlled tasks and positional results support the slide. The paper's open-domain QA case study also distinguishes retriever recall from reader accuracy: adding retrieved material need not yield proportional answer gains. Do not generalize its numerical results to current models.</p>
+        <p class="build">Build: the same relevant passage in three positions. Accompany it with the paper's qualitative finding, labelled with study and year; do not invent a performance curve.</p>
+      </div>
+      <div class="slide">
+        <h4><span class="sn">6.2</span>Effective context depends on the task</h4>
+        <ul>
+          <li><b>Hsieh et al., COLM 2024:</b> RULER extends simple needle retrieval with multiple needles, tracing and aggregation tasks.</li>
+          <li><b>The reported result:</b> strong simple-retrieval performance coexists with degradation on longer or more demanding test configurations.</li>
+          <li><b>The scope:</b> these are synthetic tests of the evaluated models. Application success requires application-level tests.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> Measure the operations your task requires across the lengths you expect.</p>
+        <p class="notes"><b>Notes.</b> Cheng-Ping Hsieh et al., <a href="https://arxiv.org/abs/2404.06654">RULER: What's the Real Context Size of Your Long-Context Language Models?</a>, COLM 2024. The abstract reports 17 models and 13 representative tasks, with drops as context length increases. Keep the distinction between a supported input length and a task-dependent empirical result. RULER measures model context use; it does not directly evaluate an agent compaction policy.</p>
+        <p class="build">Build: a task table with retrieval, tracing and aggregation. State what must be preserved for each; keep numerical benchmark tables in the reading.</p>
+      </div>
+    </div>
+  </article>
+
+  <article class="seg p2seg" id="seg-7">
+    <div class="when"><span class="range">1:17–1:27</span><span class="dur">10 min</span><span class="count">3 conceptual slides</span></div>
+    <div>
+      <h3><span class="n">7</span>Four ways to manage context</h3>
+      <p class="aim">Distinguish selecting material, fetching it when needed, deleting source tokens and generating a replacement summary.</p>
+      <div class="slide">
+        <h4><span class="sn">7.1</span>Retention and retrieval choose material</h4>
+        <div class="table-scroll"><table class="matrix">
+          <thead><tr><th>Operation</th><th>What enters the request</th><th>What can go wrong</th></tr></thead>
+          <tbody>
+            <tr><td>Retain</td><td>Selected original messages, passages or tool results</td><td>A selection rule can discard a detail the next task needs.</td></tr>
+            <tr><td>Retrieve</td><td>Material fetched using a query or source reference</td><td>The query can miss evidence; a reference can become stale or inaccessible.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="take"><b>Takeaway.</b> Selection and retrieval determine which source material is available.</p>
+        <p class="notes"><b>Notes.</b> Anthropic's <a href="https://www.anthropic.com/research/effective-context-engineering-for-ai-agents">2025 engineering article</a>, “Context retrieval and agentic search,” describes keeping lightweight identifiers and loading material through tools when required. Its account is practitioner guidance. The failure cases and the retain/retrieve distinction in this table are course synthesis. Retrieval here includes ordinary file and search tools.</p>
+        <p class="build">Build: two paths from source documents to a request: immediate selection and fetch by reference.</p>
+      </div>
+      <div class="slide">
+        <h4><span class="sn">7.2</span>Extractive compression selects tokens</h4>
+        <ul>
+          <li><b>Pan et al., Findings of ACL 2024:</b> LLMLingua-2 trains a classifier to preserve or discard source tokens.</li>
+          <li><b>The method:</b> learn from an extractive compression dataset distilled from an LLM, using bidirectional context to make selection decisions.</li>
+          <li><b>The evaluation:</b> compare compression with downstream task scores and latency on several datasets.</li>
+          <li><b>The limit:</b> preserving selected source tokens still requires checking whether the necessary meaning survives deletion.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> Evaluate the compressed input through the task it must support.</p>
+        <p class="notes"><b>Notes.</b> Zhuoshi Pan et al., <a href="https://aclanthology.org/2024.findings-acl.57/">LLMLingua-2: Data Distillation for Efficient and Faithful Task-Agnostic Prompt Compression</a>, Findings of ACL 2024, 963–981. §§3–4 describe distillation and token classification. Evaluations include MeetingBank and several out-of-domain datasets. The last bullet is a course caution inferred from deletion: lexical selection alone supplies no application-specific guarantee. Reported gains are specific to the evaluated configurations; avoid promising a fixed compression ratio or speedup.</p>
+        <p class="build">Build: a short source passage with selected words highlighted, then the selected sequence. Label it a schematic of extraction.</p>
+      </div>
+      <div class="slide">
+        <h4><span class="sn">7.3</span>Abstractive compaction rewrites history</h4>
+        <ul>
+          <li><b>Input:</b> selected conversation history or observations.</li>
+          <li><b>Transformation:</b> generate a shorter account of the information needed to continue.</li>
+          <li><b>Replacement:</b> assemble subsequent context using that account and any deliberately retained material.</li>
+          <li><b>Risk:</b> omissions and unsupported statements can change what the next invocation believes.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> A generated summary becomes another representation that needs checking.</p>
+        <p class="notes"><b>Notes.</b> Anthropic's <a href="https://www.anthropic.com/research/effective-context-engineering-for-ai-agents">2025 article</a>, “Compaction,” describes summarizing history and continuing with a fresh context. It warns about aggressive loss and recommends evaluating on complex traces. This is an engineering account rather than a controlled comparison of compaction methods. LLMLingua-2 also discusses omitted details and hallucination during generated compression. The four-method taxonomy is the course's organizing scheme.</p>
+        <p class="build">Build: retain, retrieve, extract and rewrite in one comparison figure. Keep the distinction between obtaining material and transforming its representation explicit.</p>
+      </div>
+    </div>
+  </article>
+
+  <article class="seg p2seg" id="seg-8">
+    <div class="when"><span class="range">1:27–1:40</span><span class="dur">13 min</span><span class="count">3 conceptual slides; invented example</span></div>
+    <div>
+      <h3><span class="n">8</span>Compaction as a design procedure</h3>
+      <p class="aim">Turn the objectives into a procedure and inspect exactly what an illustrative summary preserves.</p>
+      <div class="slide">
+        <h4><span class="sn">8.1</span>A compaction policy specifies choices</h4>
+        <ol>
+          <li><b>Specify the objective and trigger:</b> which future tasks must the context support, and when should compaction run?</li>
+          <li><b>Select the inputs:</b> identify material to retain verbatim, summarize or leave available through references.</li>
+          <li><b>Generate the replacement:</b> state facts, decisions, conditions, unresolved questions and source references explicitly.</li>
+          <li><b>Check and assemble:</b> test required details, inspect the resulting request and measure the total work.</li>
+        </ol>
+        <p class="take"><b>Takeaway.</b> Specify what the replacement must preserve before compressing.</p>
+        <p class="notes"><b>Notes.</b> This is a proposed engineering procedure, synthesized for the course from the objectives and mechanisms just discussed. Each choice is a policy to evaluate. A token threshold is one possible trigger; task boundaries or changes in information relevance can also motivate a check. Keep durable storage and recovery protocols for next week.</p>
+        <p class="build">Build: four boxes, with a return arrow from failed checks to selection or generation.</p>
+      </div>
+      <div class="slide">
+        <h4><span class="sn">8.2</span>A deadline update includes an exception</h4>
+        <p><b>Invented teaching example.</b> The two passages concern release R7.</p>
+        <div class="table-scroll"><table class="matrix">
+          <thead><tr><th>Source</th><th>Passage</th></tr></thead>
+          <tbody>
+            <tr><td><code>release-policy@v3</code>, §2</td><td>Routine changes must land before Friday 18:00 UTC. Emergency security fixes may land later after incident-lead approval.</td></tr>
+            <tr><td><code>release-notice@v2</code>, §1</td><td>For R7, the freeze moves to Thursday 18:00 UTC. The emergency exception remains.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="take"><b>Takeaway.</b> Preserve the applicable deadline, the exception and the approval condition.</p>
+        <p class="notes"><b>Notes.</b> These documents and versions are invented. Ask which words a shorter representation must retain to answer: “Can an emergency security fix land after the R7 freeze?” Then ask what evidence is needed before answering whether a particular change qualifies. The exercise concerns selection and meaning, with no experimental model-performance claim.</p>
+        <p class="build">Build: show the passages first; reveal the required details on the next advance. Keep source labels beside the passages.</p>
+      </div>
+      <div class="slide">
+        <h4><span class="sn">8.3</span>Compare two compacted representations</h4>
+        <div class="table-scroll"><table class="matrix">
+          <thead><tr><th>Candidate</th><th>Replacement context</th><th>Assessment</th></tr></thead>
+          <tbody>
+            <tr><td>A</td><td>R7 changes stop Friday at 18:00 UTC.</td><td>Keeps an obsolete deadline and loses the exception and its condition.</td></tr>
+            <tr><td>B</td><td>R7 routine changes must land before Thursday 18:00 UTC. Emergency security fixes may land later with incident-lead approval. Sources: <code>release-policy@v3</code> §2; <code>release-notice@v2</code> §1. Pending: establish whether the proposed fix qualifies and has approval.</td><td>Preserves the decision-relevant conditions and a route to the sources.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="take"><b>Takeaway.</b> Compare the replacement against the questions it must answer.</p>
+        <p class="notes"><b>Notes.</b> Both candidates are invented. B is longer because the objective requires more distinctions. Its references are meaningful only if the original versions remain available. A summary may preserve one task's answer and omit details needed for another; ask the room to propose such a follow-up. Inspect a mock assembled request containing B, retained instructions and the current question. Label it illustrative.</p>
+        <p class="build">Build: candidates side by side, then reveal the assessment. Expand candidate B in the planning layout; split it into a build pair in a later deck.</p>
+      </div>
+    </div>
+  </article>
+
+  <article class="seg p2seg" id="seg-9">
+    <div class="when"><span class="range">1:40–1:48</span><span class="dur">8 min</span><span class="count">2 conceptual slides</span></div>
+    <div>
+      <h3><span class="n">9</span>Evaluating a context policy</h3>
+      <p class="aim">Evaluate preservation and resource use together, using questions that expose consequential information loss.</p>
+      <div class="slide">
+        <h4><span class="sn">9.1</span>Measure quality and total work</h4>
+        <div class="table-scroll"><table class="matrix">
+          <thead><tr><th>Measure</th><th>What to inspect</th></tr></thead>
+          <tbody>
+            <tr><td>Downstream success</td><td>Correct answers or actions on the tasks the context must support.</td></tr>
+            <tr><td>Evidence preservation</td><td>Required facts, exceptions, conditions and usable source references.</td></tr>
+            <tr><td>Faithfulness</td><td>Unsupported additions, changed meanings and unresolved uncertainty presented as settled.</td></tr>
+            <tr><td>Compression</td><td>Original and replacement token counts, with the ratio convention stated.</td></tr>
+            <tr><td>Total work</td><td>Compression calls, retrieval, downstream calls, latency and actual charges.</td></tr>
+          </tbody>
+        </table></div>
+        <p class="take"><b>Takeaway.</b> Compare task quality at a measured total cost.</p>
+        <p class="notes"><b>Notes.</b> This evaluation rubric is course synthesis. LLMLingua-2 provides a concrete precedent for reporting downstream scores, compression and latency together. Include uncompressed input and a simple selection baseline. Where feasible, compare methods at matched input budgets and report uncertainty across repeated model runs. Compression ratio alone cannot establish that a policy serves its task.</p>
+        <p class="build">Build: an empty results grid with quality and resource columns. Leave cells blank until measured; no illustrative values that could be mistaken for results.</p>
+      </div>
+      <div class="slide">
+        <h4><span class="sn">9.2</span>Stress the details compaction can lose</h4>
+        <ul>
+          <li><b>Position and length:</b> move decisive evidence and vary the surrounding material.</li>
+          <li><b>Conditions and exceptions:</b> ask follow-ups that change when a rule applies.</li>
+          <li><b>Updates and provenance:</b> introduce a revised source and require the answer to identify its basis.</li>
+          <li><b>Repeated compaction:</b> check which essential details survive successive replacements.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> Build tests around the information your decisions depend on.</p>
+        <p class="notes"><b>Notes.</b> Position and length follow the evaluation logic of Lost in the Middle and RULER. The remaining tests are proposed application tests, with no claimed result from those papers. For the invented example, ask about a routine change after Thursday, an approved emergency fix, and a fix whose approval is unknown. Verify source access separately from summary wording.</p>
+        <p class="build">Build: three follow-up questions on the invented example, with the supporting clause identified on reveal.</p>
+      </div>
+    </div>
+  </article>
+
+  <article class="seg p2seg" id="seg-10">
+    <div class="when"><span class="range">1:48–1:50</span><span class="dur">2 min</span><span class="count">1 conceptual slide</span></div>
+    <div>
+      <h3><span class="n">10</span>Next week</h3>
+      <div class="slide">
+        <h4><span class="sn">10.1</span>Contexts become part of execution state</h4>
+        <ul>
+          <li><b>Today:</b> choose, transform and evaluate what an invocation receives.</li>
+          <li><b>Next week:</b> keep these contexts in state to support resume and replay, alongside checkpointing.</li>
+        </ul>
+        <p class="take"><b>Takeaway.</b> The context we construct becomes part of the execution we must preserve.</p>
+        <p class="notes"><b>Notes.</b> Connect the context representations to the next lecture, which develops state ownership, checkpoint boundaries, resume, and replay.</p>
+        <p class="build">Build: a short closing pointer. Keep the architecture for next week's lecture.</p>
+      </div>
+    </div>
+  </article>
+</section>
+
+
+<section class="glossary" id="glossary">
+  <h2>Glossary</h2>
+  <dl>
+    <dt>Image; sandbox</dt><dd>A packaged filesystem and software environment; an instance running under a policy.</dd>
+    <dt>Filesystem grant</dt><dd>Permission to access a listed path and its descendants under the specified mode.</dd>
+    <dt>Effective policy</dt><dd>The permissions in force, including runtime baseline and provider additions.</dd>
+    <dt>Fixed; per-alert restriction</dt><dd>A rule that holds throughout the run; a rule whose decision depends on the current alert.</dd>
+    <dt>Model context</dt><dd>The information included in a particular model invocation, including its instructions, conversation, tools, and selected evidence.</dd>
+    <dt>Context window</dt><dd>The model/API's capacity constraint for a request, with the applicable output and other token accounting rules.</dd>
+    <dt>Working set</dt><dd>The subset of available information selected for the next invocation.</dd>
+    <dt>Retrieval</dt><dd>Loading source material in response to a current information need.</dd>
+    <dt>Extractive compression</dt><dd>Reducing an input by retaining selected parts of its existing text.</dd>
+    <dt>Abstractive compaction</dt><dd>Replacing accumulated material with a generated account that preserves the information needed for continuing the task.</dd>
+    <dt>Provenance</dt><dd>The identity and version of the evidence supporting a retained statement.</dd>
+  </dl>
+</section>
+
+<section class="notes-sec" id="running-notes">
+  <h2>Running notes</h2>
+  <h3>What this draft assumes</h3>
+  <ul>
+    <li>The class spans 110 minutes: 50 minutes for OpenShell, a 10-minute break, and 50 minutes for context and compaction. Adjust these elapsed timings if the actual meeting window differs.</li>
+    <li>The OpenShell reintroduction is deliberate. The stopping point is the instructor's recollection of a few slides after the policy discussion; a slide's presence in Lecture 6 does not establish that it was taught.</li>
+    <li>The live example uses Cyberbird and a prepared image/model connection. It demonstrates the sandbox boundary. Students still design and implement their CLDK-backed agents, MCP server, and per-alert checks.</li>
+    <li>Part II is literature-led. Its independent example illustrates information loss; it is not an HW2 context-compaction implementation requirement.</li>
+    <li>The next lecture owns context-in-state, durability, checkpoint boundaries, new-process resumption, and replay. This draft ends by naming those questions.</li>
+  </ul>
+
+  <h3>Reuse from Lecture 6</h3>
+  <div class="table-scroll"><table class="matrix"><thead><tr><th>Lecture 6 material</th><th>Use in this draft</th></tr></thead><tbody>
+    <tr><td>90–113: architecture and components</td><td>Rebuild the component picture in 1.2, with enough explanation for students seeing it for the first time.</td></tr>
+    <tr><td>114–117: create and exec</td><td>Explain the concepts in 1.3; use the actual operations in 3.1.</td></tr>
+    <tr><td>124–145: policy and Cyberbird grants</td><td>Revisit the directory example in 2.1, including the broad <code>/app</code> grant and narrowed comparison.</td></tr>
+    <tr><td>153–169: network path and providers</td><td>Use the relevant figures in 2.2–2.3; keep local and cloud examples distinct.</td></tr>
+    <tr><td>190–192: logs and effective policy</td><td>Explain in 2.4 and inspect during 3.4.</td></tr>
+  </tbody></table></div>
+  <p class="meta">Slide references name the saved <a href="../../lecture-6--2026-10-16/lecture6.pptx">Lecture 6 deck</a> inspected for this draft. They are reuse cues, rather than a claim about classroom delivery. Preserve the real deck and its comments when producing Lecture 7.</p>
+
+  <h3>Rehearse the live example</h3>
+  <ol>
+    <li>Inspect the existing Cyberbird image recipe and capture. Decide whether to retain its fixture paths or prepare the HW2-style <code>/target</code> layout. Show the chosen tree consistently.</li>
+    <li>Rehearse two sandbox instances if showing both broad and narrowed filesystem policies. Keep both policies visible and distinguish their grants.</li>
+    <li>Verify the prepared model endpoint with the allowed Python binary. Confirm the wrong-binary and wrong-destination log reasons.</li>
+    <li>Run the selected alert to completion under the narrowed policy. Save the trace and accepted patch for the fallback.</li>
+    <li>Test the allowed read, allowed workspace write, forbidden key read, and forbidden write. Use a control that distinguishes ordinary file permissions from sandbox enforcement.</li>
+    <li>Inspect the full effective policy. Check provider additions if a cloud provider is used. Keep real credentials off the projected screen.</li>
+    <li>Record the final image tag, policy paths, sandbox names, commands, and expected output in a rehearsal sheet. Run the complete sequence once in classroom order.</li>
+  </ol>
+  <p class="meta"><b>Evidence status.</b> The course already has recorded OpenShell 0.1.4 runs and a guide describing a narrowed-policy repair. This drafting session inspected that evidence; it has not rerun the environment or verified current readiness. The historical Cyberbird run's timing and call count describe that run only. Full installation and individual platform debugging are outside the live sequence.</p>
+
+  <h3>Prepare the context material</h3>
+  <ul>
+    <li>Use the papers' actual figures or freshly drawn, labelled schematics. Do not turn a qualitative explanation into a fabricated performance plot.</li>
+    <li>Keep the model/task/year scope beside the historical long-context findings. Distinguish peer-reviewed evaluations from engineering guidance.</li>
+    <li>Label the release-policy exercise as invented. Compare proposed compacted texts against the supplied source statements; do not present them as measured model outputs.</li>
+    <li>Explain the cost of the compression step itself. Retain token-counting conventions and any output allowance when comparing methods.</li>
+    <li>Keep citations beside the definition or result they support. In the eventual deck, create build pairs when a claim follows its evidence.</li>
+  </ul>
+
+  <h3>If the class runs long</h3>
+  <ol>
+    <li>Shorten the cloud-provider walkthrough while retaining the credential-storage distinction.</li>
+    <li>Show one network denial live and use the saved result for the second.</li>
+    <li>Move LLMLingua-2's implementation detail to the reading notes while retaining the extractive/abstractive distinction.</li>
+    <li>Shorten the worked compaction exercise to one before/after comparison.</li>
+  </ol>
+  <p class="meta"><b>Protect:</b> the successful sandboxed run, direct forbidden-file probe, per-alert limitation, Part II objectives, information-loss example, and the evaluation criteria. The two main subjects keep their separate openings.</p>
+</section>
+
+<section class="reading" id="reading">
+  <h2>Reading and source notes</h2>
+  <h3>OpenShell and HW2</h3>
+  <ul>
+    <li id="src-brief"><b>Course assignment.</b> <a href="../../../hw2-tool-boundary/briefs/hw2.tex">HW2 brief source</a> · <a href="../../../hw2-tool-boundary/briefs/hw2.pdf">released-format PDF</a>. Focus on access rules, guardrail tests, the sandbox image and launch commands, and rubric B7–B9. The inspected source gives the current November 20 deadline.</li>
+    <li id="src-guide"><b>Course worked example.</b> <a href="../../lecture-6--2026-10-16/openshell/openshell-student-edition.html">OpenShell from First Principles, student edition</a>, especially the agent's file/network paths and the withheld-file example. It records why the broad policy exposes the answer key and how the narrowed policy blocks it.</li>
+    <li id="src-policy-local"><b>Course configuration.</b> <a href="../../../hw2-tool-boundary/examples/policy.local.yaml">Local-model policy</a> · <a href="../../../hw2-tool-boundary/examples/policy.example.yaml">cloud-provider policy</a>. The local hostname is specific to the course's tested Colima setup.</li>
+    <li id="src-feasibility"><b>Instructor evidence.</b> <a href="../../../instructor-materials/hw2/feasibility/results.md">Feasibility results</a>. These are records from the tested environment, including failures, fixes, timing scope, and untested platforms.</li>
+    <li id="src-cyberbird"><b>Instructor capture.</b> <a href="../../../instructor-materials/hw2/feasibility/cyberbird/">Cyberbird capture folder</a>; <a id="src-run" href="../../../instructor-materials/hw2/feasibility/cyberbird/run.txt">agent run</a>; <a id="src-probes" href="../../../instructor-materials/hw2/feasibility/cyberbird/probes.txt">direct probes</a>. The historical broad-policy capture makes the answer key readable.</li>
+  </ul>
+  <h3>Context and compaction</h3>
+  <ul>
+    <li><b>Peer-reviewed study.</b> Liu et al., <a href="https://aclanthology.org/2024.tacl-1.9/">Lost in the Middle: How Language Models Use Long Contexts</a>, TACL 2024. Read the abstract and the position/length experiments. Attach conclusions to the models and tasks evaluated.</li>
+    <li><b>Peer-reviewed benchmark.</b> Hsieh et al., <a href="https://arxiv.org/abs/2404.06654">RULER: What's the Real Context Size of Your Long-Context Language Models?</a>, COLM 2024. Read the task design and the distinction between a stated window and measured performance.</li>
+    <li><b>Peer-reviewed method.</b> Pan et al., <a href="https://aclanthology.org/2024.findings-acl.57/">LLMLingua-2: Data Distillation for Efficient and Faithful Task-Agnostic Prompt Compression</a>, Findings of ACL 2024. Read the extraction mechanism and evaluation criteria; exact ratios are workload-dependent.</li>
+    <li><b>First-party engineering guidance.</b> Anthropic Applied AI team, <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Effective context engineering for AI agents</a>, September 29, 2025. Focus on selecting material, loading evidence through references, and compaction. Its product procedures are engineering examples.</li>
+  </ul>
+</section>
+
+<section class="legend" id="source-labels">
+  <h2>Source labels</h2>
+  <p><b>Peer-reviewed study / benchmark / method:</b> a research result with a stated evaluation and scope.</p>
+  <p><b>First-party engineering guidance:</b> practices reported by the system's developers, with product-specific conditions.</p>
+  <p><b>Course assignment / configuration:</b> the requirements and example files students use.</p>
+  <p><b>Course worked example / instructor evidence:</b> observed behavior in the recorded setup, including its limitations.</p>
+  <p><b>Invented classroom example:</b> source statements created to expose a decision or information-loss problem.</p>
+</section>
+
+</div>
+</body>
+</html>

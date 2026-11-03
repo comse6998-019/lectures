@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lecture 7 — Section 1 plan for review</title>
+<style>
+body{max-width:78ch;margin:3rem auto;padding:0 1.2rem;font:17px/1.55 Charter,Georgia,serif;color:#202936;background:white}h1{line-height:1.2}h2{font-size:1.35rem;margin-top:2rem}li{margin:.5rem 0}a{color:#28285E}table{border-collapse:collapse;width:100%;font-size:.95rem}th,td{text-align:left;vertical-align:top;border-top:1px solid #d9dee4;padding:.65rem}.scope{background:#f0f1f7;padding:1rem 1.2rem;margin:1.5rem 0}.meta{color:#5b6673}.table-scroll{overflow-x:auto}@media(max-width:600px){body{margin:1.5rem auto}table{min-width:33rem}}@media print{body{margin:0;background:white;color:black}.scope,tr{break-inside:avoid}}
+</style>
+</head>
+<body>
+<p class="meta">Lecture 7 · October 30, 2026 · Section 1 · Plan review 1</p>
+<h1>OpenShell components and execution</h1>
+<p><b>Earlier HTML copy.</b> Continue the instructor walkthrough in the <a href="section-01-plan.md">current Markdown plan</a>.</p>
+<div class="scope">
+<p><b>Status:</b> brainstorming with the instructor. The earlier progression below is a provisional outline; the complete section plan will be assembled after we settle the decisions.</p>
+<p>This review settles the purpose, scope, progression, and timing. After plan approval, we will walk through the details and review a separate spec. Slide work follows both approvals.</p>
+</div>
+
+<h2>Purpose</h2>
+<p>Give the whole room a shared model of an agent running inside OpenShell, including students who missed Lecture 6. By the end, a student can follow a file request and a model request through the relevant components and explain the distinction between an image, a running sandbox, and a command started inside it.</p>
+
+<h2>Starting assumptions for your review</h2>
+<ul>
+<li>Students have met the agent loop and tool dispatcher in earlier lectures.</li>
+<li><b>Confirmed:</b> assume minimal background in processes, containers, and operating-system permissions. Introduce the required concepts from first principles.</li>
+<li><b>Confirmed:</b> start with Cyberbird immediately and explain each operating-system concept as the agent needs it. The first action or moment to show remains to be settled.</li>
+</ul>
+
+<h2>Proposed teaching progression</h2>
+<div class="table-scroll"><table>
+<thead><tr><th>Time</th><th>Teaching move</th><th>What it establishes</th></tr></thead>
+<tbody>
+<tr><td>0:00–0:02</td><td>Start with Cyberbird; settle its opening action with the instructor.</td><td>Introduce the operating-system concepts through the agent's actual work.</td></tr>
+<tr><td>0:02–0:05</td><td>Follow those requests through OpenShell's workload, runtime, kernel, supervisor, gateway, and compute driver.</td><td>Distinguish the components involved in starting the workload from those involved in enforcing its operations.</td></tr>
+<tr><td>0:05–0:07</td><td>Explain the image, running sandbox, workspace, and exec operation.</td><td>Locate the agent and its files, and identify where an inside-sandbox command executes.</td></tr>
+<tr><td>0:07–0:08</td><td>Ask students to identify the file and network enforcement paths, then introduce Section 2's policy question.</td><td>The next section can explain the rules applied at those places.</td></tr>
+</tbody>
+</table></div>
+<p><b>Proposed argument:</b> an agent is a running program with file and network operations → OpenShell places those operations under restrictions → each component has a specific role → a policy specifies the permitted operations.</p>
+
+<h2>Boundaries</h2>
+<ul>
+<li>Section 2 owns the YAML, directory grants, endpoint/binary matching, provider credentials, and effective-policy inspection.</li>
+<li>Section 3 owns creation, the live Cyberbird run, and direct permitted/forbidden probes.</li>
+<li>Section 4 owns the full fixed/per-alert distinction and HW2's grading checks.</li>
+</ul>
+
+<h2>Decisions to walk through</h2>
+<p><b>Settled:</b> assume minimal background in processes, containers, and operating-system permissions. Start with Cyberbird immediately and explain each concept as the agent needs it. The <a href="section-01-decisions.json">decision record</a> preserves both answers.</p>
+<p><b>Next decision:</b> the first Cyberbird action or moment students should see. The remaining progression and eight-minute allocation stay provisional.</p>
+<p>After we settle the plan, the separate spec walkthrough will settle exact examples, component labels and boundaries, explanations, figures, builds, checks for understanding, and the transition wording.</p>
+
+<h2>Evidence to carry into the spec</h2>
+<p>The saved <a href="../../../lecture-6--2026-10-16/lecture6.pptx">Lecture 6 deck</a> and <a href="../../../lecture-6--2026-10-16/openshell/openshell-student-edition.html">OpenShell student guide</a> supply the existing component and execution diagrams. We will choose and specify their reuse during the detailed-spec walkthrough.</p>
+<p><a href="../lecture7-overview.html">Overall structure</a> · <a href="index.html">Plan and spec register</a></p>
+</body>
+</html>
