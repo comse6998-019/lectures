@@ -1,6 +1,6 @@
 # Lecture 7: section plans and specs
 
-**Current stage:** the [Part II plan](section-02-plan.md) and [slide prose, revision 6](section-02-slides-draft.md), await instructor review. The draft has 26 topics and sixteen staged TikZ figures in the Lecture 5 and 6 grammar. Section 1's plan also awaits approval. No section has both plan and spec approval.
+**Current stage:** the [Part II plan](section-02-plan.md), [detailed slide specification](section-02-slides-draft.md), and [visual notes](part-02-visuals.md) received approval in native review `pn-39c980`. The [approval record](../reviews/part-02-approval.json) identifies the reviewed versions. Part II deck production is next. Section 1 still awaits approval.
 
 **Part II decisions:** a few sources in depth with the rest supporting; one contrived task (Vending-Bench) carried through mechanisms, compaction, and evaluation; the failure anchored on outstanding orders with delayed deliveries; three sources in depth (Lost in the Middle, LLMLingua-2, Vending-Bench), grounded by the [literature map](part-02-literature.md), with the long-horizon claim resting on a tier-A benchmark (proposed SWE-bench); and narrative structure A (problem-first linear). See the [brainstorming record](part-02-brainstorm.md).
 
@@ -23,7 +23,7 @@ Use separate files for each section: `section-01-plan.md`, then `section-01-spec
 | Section | Plan | Detailed spec | Slides |
 | --- | --- | --- | --- |
 | 1. OpenShell through two access checks (proposed combined section) | [Plan for review](section-01-plan.md) | After plan approval | After plan and spec approval |
-| 2. Context and compaction (Part II, problem-first linear) | [Plan for review](section-02-plan.md) | Included in the [slide prose draft](section-02-slides-draft.md) | [Slide prose, revision 6](section-02-slides-draft.md), with [TikZ figures and click notes](part-02-visuals.md). Seven feedback rounds. Approval remains open. |
+| 2. Context and compaction (Part II, problem-first linear) | [Approved plan](section-02-plan.md) | [Approved specification, revision 6](section-02-slides-draft.md) | [Figures and click notes approved](part-02-visuals.md). Deck production and separate deck review are next. [Approval record](../reviews/part-02-approval.json). |
 
 ## What to preserve
 

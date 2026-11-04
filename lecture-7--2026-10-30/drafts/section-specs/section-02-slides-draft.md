@@ -1,6 +1,8 @@
-# Part II slide prose — context and compaction (for annotation)
+# Part II slide prose — context and compaction
 
-Lecture 7 · November 6, 2026 · **draft for instructor review**
+Lecture 7 · November 6, 2026 · **approved specification, revision 6**
+
+**Approval.** Native review `pn-39c980` approved this specification, the plan, and the visual notes. The [approval record](../reviews/part-02-approval.json) identifies the reviewed commit and file hashes. The produced deck needs a separate review.
 
 This document contains the text, source notes, and figure instructions for each Part II slide. It follows **structure A (problem-first linear)**.
 

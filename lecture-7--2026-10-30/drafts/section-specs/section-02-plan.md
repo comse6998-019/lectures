@@ -2,11 +2,11 @@
 
 Lecture 7 · November 6, 2026
 
-**Status: complete plan for instructor review.** The instructor selected the task, example failure, sources, and structure in the [brainstorming record](part-02-brainstorm.md). The complete plan, detailed spec, and slides each need separate approval.
+**Status: approved in native review `pn-39c980`.** The same review approved the [detailed slide specification](section-02-slides-draft.md) and [visual notes](part-02-visuals.md). The [approval record](../reviews/part-02-approval.json) preserves the reviewed versions. The instructor selected the task, example failure, sources, and structure in the [brainstorming record](part-02-brainstorm.md).
 
-## What this review decides
+## Approval scope
 
-Review the objective, scope, teaching sequence, and proposed timing for the second half. After plan approval, the detailed spec defines slide content, figures, the worked example, quoted results, and citations.
+The approval covers the objective, scope, teaching sequence, and proposed timing for the second half. The detailed specification defines slide content, figures, the worked example, source claims, and citations. The produced deck needs a separate review.
 
 **Proposed section boundary:** Part II uses the full 50 minutes after the break. It follows one linear argument. This problem-first order replaces the overview's seven separate blocks.
 
@@ -54,11 +54,11 @@ The [decision history](part-02-decisions.json) retains the answers verbatim. The
 | 0:43–0:48 | Evaluation across a run | Assess task success, faithfulness, total cost, the effects of repeated compaction, drift, and repeated work. Connect each measure to the delayed-delivery case. |
 | 0:48–0:50 | Bridge to next week | The surviving context has to live somewhere. Next week: context in state, state ownership, run-local and durable state, checkpoint boundaries, resumption, and replay. |
 
-**Open after review 7: timing.** The draft contains 26 slide topics. Segment 5 is one slide now, so Segments 6 and 7 start two minutes earlier. Segment 7 still holds fifteen topics in twelve minutes. Each topic reveals its figure one stage per click, so rehearsal must count those clicks.
+**Rehearsal check: timing.** The draft contains 26 slide topics. Segment 5 is one slide now, so Segments 6 and 7 start two minutes earlier. Segment 7 still holds fifteen topics in twelve minutes. Each topic reveals its figure one stage per click, so rehearsal must count those clicks.
 
 Revision 6 retains 16 TikZ figures with 56 rendered stages in the Lecture 5 and 6 grammar. Review 7 corrects overlapping boxes and adds checks for their rendered bounds. Teaching content, click order, and proposed timing remain unchanged. The [visual notes](part-02-visuals.md) record the grammar, the reveal and fade rules, and the reproduction command. The [slide draft](section-02-slides-draft.md) embeds each figure's final stage with its click list. Tables remain only as the two recaps.
 
-Options: use brief figure builds for the strategy and harness topics. Move the harness details to backup if the half exceeds 50 minutes. Decide the teaching time and backup split during review.
+Options: use brief figure builds for the strategy and harness topics. Move the harness details to backup if the half exceeds 50 minutes. Confirm the teaching time and backup split after rehearsal.
 
 **Main argument:** usable context can be smaller than the advertised window. A long-running agent must choose what to preserve. Evaluate compaction across the complete run.
 
@@ -107,8 +107,8 @@ Cover enough of each source to support the argument. Keep the scope narrow. Next
 - [Brainstorming record](part-02-brainstorm.md) and [decision history](part-02-decisions.json): the settled task, failure, sources, and structure.
 - [Lecture overview](../lecture7-overview.md): approved broad direction and half-lengths. Structure A replaces its order within Part II after plan approval.
 
-## After plan review
+## Next: deck production
 
-Apply the instructor's annotations and record the plan decision. After plan approval, develop a separate Markdown spec together. Start with the context inputs and research evidence. Review the complete spec separately in Plannotator before slide production.
+Produce the Part II deck from the approved specification and visual notes. Preserve the teaching content and click order. Render the slides and rehearse the 50-minute sequence. Review the produced deck separately in Plannotator.
 
 [Plan and spec register](README.md)

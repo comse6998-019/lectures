@@ -1,0 +1,38 @@
+{
+  "session": "pn-39c980",
+  "tool": "plannotator",
+  "decision": "approved",
+  "date": "2026-11-04",
+  "user_message": "The user approved.",
+  "part": 2,
+  "approved_revision": 6,
+  "approved_commit": "f0f4782d99969f73135bc0cbbb942c67af1ddfaf",
+  "artifacts": [
+    {
+      "path": "drafts/section-specs/section-02-slides-draft.md",
+      "scope": "detailed slide specification",
+      "sha256": "214e6348c10ff0e9d04264b9e1242cf2e48987de22a0339b0201e4f595614a7e"
+    },
+    {
+      "path": "drafts/section-specs/part-02-visuals.md",
+      "scope": "figures and click sequence",
+      "sha256": "4cd5ef2c84e8d8347302b06cd88e454f2d485f5e00bfacfe4838f34b4b0a62a6"
+    },
+    {
+      "path": "drafts/section-specs/section-02-plan.md",
+      "scope": "section plan",
+      "sha256": "f63cfae2010759a62521d3d0e864745cc65a04594ca80123d7bd46f55e4a86a1"
+    }
+  ],
+  "plan_approved": true,
+  "spec_approved": true,
+  "visuals_approved": true,
+  "deck_approved": false,
+  "limits": [
+    "The same explicit review approves the Part II plan, detailed specification, and visual notes. Track plan and spec approval in separate fields.",
+    "The produced deck needs a separate review.",
+    "Part I approval remains separate.",
+    "The plan retains its timing and backup options. Rehearsal must check the 50-minute sequence. This approval selects no backup option."
+  ],
+  "followup_changes": "Update approval status and next-step metadata. Preserve the approved teaching content and figure assets."
+}

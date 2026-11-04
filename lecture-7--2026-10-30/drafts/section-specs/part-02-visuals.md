@@ -6,7 +6,7 @@ Review 3 asked for the TikZ diagrams and transitions from Lectures 4 to 6. Revie
 
 Review 6 added seven layout rules from image annotations. Review 7 identified two overlaps in `abstractive`, with the same spacing defect in four related figures. This note records the grammar, the figure set, and the checks.
 
-The draft contains 26 slide topics. Each topic reveals its figure one stage per click, so one topic produces several consecutive slides in the final deck. The final deck still needs plan and spec approval.
+The draft contains 26 slide topics. Each topic reveals its figure one stage per click, so one topic produces several consecutive slides in the final deck. Native review `pn-39c980` approved the Part II plan, specification, and visual notes. The [approval record](../reviews/part-02-approval.json) identifies the reviewed versions. The produced deck needs a separate review.
 
 ## Reference material
 
@@ -105,4 +105,4 @@ The geometry check reports 121 checks and zero failures. The earlier revision, `
 
 ## Review limits
 
-The timing still needs a decision. The two samples received approval with changes. The other fourteen figures follow the same grammar and wait for review. This note does not approve the plan or spec.
+The approval covers all sixteen figures and their click notes. Rehearsal must check the 50-minute sequence and backup options. The produced deck needs a separate review. Part I approval remains separate.

@@ -4,15 +4,15 @@ Updated November 4, 2026. The lecture is now scheduled for **November 6, 2026**.
 
 ## Resume here
 
-The [Part II slide prose](drafts/section-specs/section-02-slides-draft.md) is at **revision 6** after seven feedback rounds. Review 4 merged Slides 5.1 to 5.3 into one slide. Review 5 rejected the first figures and approved two redone samples with two changes. Connectors use right angles with labels in clear space. Each click has a reveal or fade note.
+The [Part II slide specification](drafts/section-specs/section-02-slides-draft.md) is at **revision 6** after seven feedback rounds. Native review `pn-39c980` approved the plan, detailed slide specification, and visual notes. The [approval record](drafts/reviews/part-02-approval.json) identifies the reviewed commit and file hashes.
 
 The draft now holds 26 topics and sixteen figures with 56 stages in the Lecture 5 and 6 grammar. The [visual notes](drafts/section-specs/part-02-visuals.md) record the grammar, the reference sources, and the reproduction command.
 
-The two comparison tables remain as recaps. Timing still needs review. Both plan and spec approval remain open.
+The two comparison tables remain as recaps. Part II plan and spec approval flags are true. Rehearsal must check the 50-minute sequence and backup options. The produced deck needs a separate review.
 
-**Native review workflow:** use the `plannotator` tool with `action: annotate` and `gate: true`. Review the slide prose, [section plan](drafts/section-specs/section-02-plan.md), and visual notes. End the turn after the tool opens the review. Submitted feedback returns as a new conversation message. Do not poll or use a background CLI review. The instructor does not want Inbox.
+**Native review workflow:** use the `plannotator` tool with `action: annotate` and `gate: true`. Use this workflow for the produced deck and future content changes. End the turn after the tool opens the review. Submitted feedback returns as a new conversation message. Do not poll or use a background CLI review. The instructor does not want Inbox.
 
-The latest feedback came from native review `pn-768a3b`. The [seventh feedback record](drafts/reviews/part-02-slides-feedback-7.json) preserves both overlap annotations on `abstractive-3.png`. Revision 6 corrects those boxes and the same spacing defect in four related figures. The [layout check](slides/figures/context/check_layout.py) measures stacked boxes and panel bounds with real TikZ font metrics. It reports 121 checks and zero failures. The annotations do not approve the plan or spec.
+The [seventh feedback record](drafts/reviews/part-02-slides-feedback-7.json) preserves both overlap annotations and their fixes. Native review `pn-39c980` then approved all three Part II review targets. The approval covers the complete set of sixteen figures and their click notes.
 
 **Part II decisions:** use **Vending-Bench** as the teaching task. The example failure concerns an **outstanding stock order with delayed delivery**. Study **Lost in the Middle**, **LLMLingua-2**, and **Vending-Bench** in depth. Use **SWE-bench** as the proposed tier-A source, with AgentBench as the alternative. Follow **structure A (problem-first linear)**.
 
@@ -20,7 +20,7 @@ The [brainstorming record](drafts/section-specs/part-02-brainstorm.md), [decisio
 
 The revised [Section 1 plan](drafts/section-specs/section-01-plan.md) still awaits full plan approval. Its six prior annotations are applied and preserved in the [feedback record](drafts/reviews/section-01-plan-feedback-1.json).
 
-After each plan approval, work with Rahul on the separate detailed spec, decision by decision, then review it in Plannotator. Produce slides only after approval. Resume prompt: "Read SESSION.md, then pick up the Part II Plannotator feedback."
+Next, produce the Part II deck from the approved specification and visual notes. Preserve the teaching content and click order. Review the produced deck separately in Plannotator. Part I still needs separate plan and spec approval. Resume prompt: "Read SESSION.md, then produce the approved Part II deck."
 
 ## Review 7 tasks
 
@@ -29,7 +29,7 @@ After each plan approval, work with Rahul on the separate detailed spec, decisio
 - [x] Correct the stacks and fit the request panel to its contents.
 - [x] Render all stages and inspect the affected figures.
 - [x] Record the feedback and verify the files.
-- [ ] Review the revised files in native Plannotator.
+- [x] Review the revised files in native Plannotator. Approved in `pn-39c980`.
 
 ## Review workflow and preferences
 

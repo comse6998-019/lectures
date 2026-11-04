@@ -2,9 +2,10 @@
   "part": 2,
   "title": "Context, compaction, and extended planning",
   "lecture_date": "2026-11-06",
-  "stage": "slide prose with staged figures in the house grammar, for instructor review",
-  "plan_approved": false,
-  "spec_approved": false,
+  "stage": "Part II plan, detailed slide specification, and visual notes approved. Deck production is next.",
+  "plan_approved": true,
+  "spec_approved": true,
+  "approval_record": "drafts/reviews/part-02-approval.json",
   "decisions": [
     {
       "id": "source_depth",
@@ -75,7 +76,13 @@
       "id": "slides_review_7",
       "answer": "Two image annotations on abstractive-3.png: Overlap, and Weird overlap? The marked regions cover the history stack and the next-request panel.",
       "consequence": "Revision 6 separates the history and request slots, then fits the request panel around its contents. Four related figures receive the same spacing fixes. A geometry check measures actual TikZ bounds across their stages. It reproduces both defects in revision 7c65831 and reports 121 checks with zero failures after the fixes. Topic count, stage count, and proposed timing remain unchanged. See reviews/part-02-slides-feedback-7.json."
+    },
+    {
+      "id": "plan_and_spec_approval",
+      "session": "pn-39c980",
+      "answer": "The user approved.",
+      "consequence": "Approve the Part II plan, detailed slide specification at revision 6, and visual notes. Preserve separate plan and spec flags. See reviews/part-02-approval.json for the reviewed commit and file hashes. The produced deck needs a separate review."
     }
   ],
-  "next_decision": "Review revision 6 after the overlap fixes. Decide the 50-minute pacing and the backup split. Record plan and spec approval separately."
+  "next_decision": "Produce the Part II deck from the approved specification, then review the result. Check the 50-minute pacing and backup options during rehearsal. Part I still needs separate approval."
 }
