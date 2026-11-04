@@ -4,13 +4,15 @@ Updated November 4, 2026. The lecture is now scheduled for **November 6, 2026**.
 
 ## Resume here
 
-The [Part II slide prose](drafts/section-specs/section-02-slides-draft.md) is at **revision 4** after three feedback rounds. The instructor requests staged TikZ figures and transitions from Lectures 4–6. The draft now includes 22 figure groups, 75 rendered stages, and click instructions. The [visual notes](drafts/section-specs/part-02-visuals.md) identify the reference sources and reproduction command.
+The [Part II slide prose](drafts/section-specs/section-02-slides-draft.md) is at **revision 5** after five feedback rounds. Review 4 merged Slides 5.1 to 5.3 into one slide. Review 5 rejected the first figures and approved two redone samples with two changes. Connectors use right angles with labels in clear space. Each click has a reveal or fade note.
 
-The draft retains 28 logical topics. Its four remaining teaching tables now use diagrams. Two comparison tables remain as recaps. Timing still needs review. Both plan and spec approval remain open.
+The draft now holds 26 topics and sixteen figures with 56 stages in the Lecture 5 and 6 grammar. The [visual notes](drafts/section-specs/part-02-visuals.md) record the grammar, the reference sources, and the reproduction command.
+
+The two comparison tables remain as recaps. Timing still needs review. Both plan and spec approval remain open.
 
 **Native review workflow:** use the `plannotator` tool with `action: annotate` and `gate: true`. Review the slide prose, [section plan](drafts/section-specs/section-02-plan.md), and visual notes. End the turn after the tool opens the review. Submitted feedback returns as a new conversation message. Do not poll or use a background CLI review. The instructor does not want Inbox.
 
-The latest feedback came from native review `pn-9ac153`. Its [feedback record](drafts/reviews/part-02-slides-feedback-3.json) preserves the annotation. That annotation requests changes and does not approve the plan or spec.
+The latest feedback came from native reviews `pn-db02a7` and `pn-2932df`. The [fourth](drafts/reviews/part-02-slides-feedback-4.json) and [fifth](drafts/reviews/part-02-slides-feedback-5.json) feedback records preserve the annotations. They request changes and do not approve the plan or spec.
 
 **Part II decisions:** use **Vending-Bench** as the teaching task. The example failure concerns an **outstanding stock order with delayed delivery**. Study **Lost in the Middle**, **LLMLingua-2**, and **Vending-Bench** in depth. Use **SWE-bench** as the proposed tier-A source, with AgentBench as the alternative. Follow **structure A (problem-first linear)**.
 
