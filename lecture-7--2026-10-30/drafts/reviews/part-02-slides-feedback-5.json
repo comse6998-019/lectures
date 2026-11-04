@@ -1,0 +1,24 @@
+{
+  "sessions": ["chat", "pn-2932df"],
+  "artifact": "drafts/section-specs/part-02-figure-samples.md",
+  "tool": "chat, then plannotator",
+  "decision": "annotated",
+  "date": "2026-11-04",
+  "annotations": [
+    {
+      "id": 1,
+      "scope": "all figures (chat)",
+      "note": "The figures are awful and not really like the ones from the previous weeks!",
+      "resolution": "Discard the 22 pale schematic figures. Redo two samples in the Lecture 5 and 6 grammar (bands, record boxes with real lines, numbered events, rose failures, navy verdicts, grey scope notes) and ask before redoing the rest."
+    },
+    {
+      "id": 2,
+      "scope": "question: redo the remaining figures in this grammar?",
+      "answer": "Yes, with the changes in my note",
+      "note": "Use right angled connectors with the text not overlapping anything. Add notes in the plan to fade/reveal components as the slides progress.",
+      "resolution": "Every connector uses right angles, with labels placed in clear space. Every Build block lists what each click reveals and what it fades. Sixteen figures with 56 stages replace the earlier set."
+    }
+  ],
+  "plan_approved": false,
+  "spec_approved": false
+}

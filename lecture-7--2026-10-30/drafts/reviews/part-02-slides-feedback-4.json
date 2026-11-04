@@ -1,0 +1,21 @@
+{
+  "session": "pn-db02a7",
+  "artifact": "drafts/section-specs/section-02-slides-draft.md",
+  "companions": [
+    "drafts/section-specs/part-02-visuals.md",
+    "drafts/section-specs/section-02-plan.md"
+  ],
+  "tool": "plannotator",
+  "decision": "annotated",
+  "date": "2026-11-04",
+  "annotations": [
+    {
+      "id": 1,
+      "scope": "document",
+      "note": "\u00a75.1--\u00a75.3 can be compressed entirely as one slide.",
+      "resolution": "Merge Slides 5.1 to 5.3 into one slide, 'Context supplies each call within a budget', with one figure (one-call) in three clicks: the assembled context, the decision and its needs, the run cost. Segment 5 drops to three minutes. Segments 6 and 7 start two minutes earlier."
+    }
+  ],
+  "plan_approved": false,
+  "spec_approved": false
+}

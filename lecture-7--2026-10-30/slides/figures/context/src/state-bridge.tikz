@@ -1,13 +1,32 @@
+% state-bridge: the surviving context becomes part of the execution state (Slide 11.1, the bridge to next week).
+% Canvas 16.5 x 5.0 cm. Two stages.
+% Stage 1: reveal the surviving context: facts, decisions and open commitments, with the ghost of where it will live.
+% Stage 2: reveal the execution state: a run with checkpoints, a resume and a replay, and the context inside it.
+% Next week's subject: state ownership, run-local and durable state, checkpoint boundaries, resumption and replay.
 \begin{tikzpicture}
-\canvas{16.5}{5.4}
-
-\node[main, text width=5.5cm, minimum height=21mm] (ctx) at (4.0,3.0) {\textbf{Surviving context}\\Facts, decisions, open commitments};
-\atstage{2}{
-  \draw[boundary] (9.0,1.25) rectangle (16.0,4.65);
-  \node[title] at (12.5,4.2) {Execution state};
-  \node[record, text width=5.2cm, minimum height=17mm] (state) at (12.5,2.85) {Context to preserve\\Checkpoint and resume};
-  \draw[edge] (ctx.east) -- (state.west);
-}
-\node[caption] at (8.25,0.6) {Next week: state ownership, checkpoints, resumption, and replay.};
-
+  \canvas{16.5}{5.0}
+  \node[capt, anchor=south west] at (0.2,4.45) {the surviving context};
+  \node[okchip, anchor=north west, text width=46mm] (f) at (0.2,4.35) {\textbf{facts} shelf empty on Days 2 and 3};
+  \node[okchip, anchor=north west, text width=46mm] (d) at (0.2,3.5) {\textbf{decisions} wait for the delivery};
+  \node[okchip, anchor=north west, text width=46mm] (o) at (0.2,2.65) {\textbf{open commitments} 10 SKU-A paid, due Day 4};
+  \onlystage{1}{
+    \draw[ghostband] (7.0,0.6) rectangle (16.3,4.6);
+    \node[anchor=north west, font=\sffamily\small\bfseries, text=ibmfg!50] at (7.2,4.5) {execution state};
+  }
+  \atstage{2}{
+    \draw[zone] (7.0,0.6) rectangle (16.3,4.6);
+    \node[zonelab, anchor=west] at (7.2,4.6) {execution state, next week};
+    \draw[ibmfg!60, thick] (7.6,3.6) -- (15.9,3.6);
+    \foreach \x/\lab in {8.4/step,10.0/checkpoint,11.6/step,13.2/checkpoint,14.8/resume}{
+      \fill[deckNavy] (\x,3.6) circle (0.09);
+      \node[kick, anchor=south, font=\sffamily\scriptsize] at (\x,3.75) {\lab};
+    }
+    \draw[back] (13.2,3.6) -- ++(0,-0.6) -| (10.0,3.6);
+    \node[lab, fill=none, anchor=north] at (11.6,2.95) {replay from a checkpoint};
+    \node[okchip, anchor=north west, text width=70mm] (ctx) at (7.6,2.5) {the context at each checkpoint: facts, decisions, open commitments};
+    \draw[flow] (o.east) -- ++(0.6,0) |- (ctx.west);
+    \node[evnum] at (6.0,2.0) {1};
+    \node[lab, fill=none, anchor=north] at (6.0,1.7) {stored};
+    \node[verd, anchor=north west, text width=84mm] at (7.6,1.45) {the context we build becomes part of the execution we must preserve};
+  }
 \end{tikzpicture}

@@ -1,0 +1,74 @@
+% dropped-order: a paid stock order whose delivery lands days later falls out of the context at compaction, and the agent
+% orders again (Segments 8 and 9: Vending-Bench, the teaching case). Canvas 16.5 x 6.4 cm. Four stages, in the manner of
+% lecture 5's context-poisoning figure: a timeline from left to right, one band per period.
+% Stage 1: reveal Day 1. The agent orders 10 units of SKU-A and pays. The ledger records it: due Day 4.
+% Stage 2: reveal Days 2 and 3. The shelf stays empty and the log says so. The window fills, so the history is compacted:
+%          a summary replaces it. The question the summary must still answer: is more SKU-A already on the way?
+% Stage 3: reveal Day 4 with summary A: "SKU-A is out of stock." The paid order is gone, so the agent orders 10 more and pays twice.
+% Stage 4: reveal summary B under it: the paid order, its due date and its source survive. The agent waits and checks the delivery.
+% Illustrative, not from a source: the records, the prices and the days. Vending-Bench (Andon Labs, 2025) supplies the
+% task and reports losses of long-term coherence over long runs; this case is the course's instance of that failure class.
+\begin{tikzpicture}
+  \canvas{16.5}{6.4}
+  \def\sx{7.85}      % centre of the middle period
+  % ---- the time axis and the three periods
+  \draw[-{Stealth[length=2mm]}, thick, ibmfg!30] (0.05,0.5) -- (16.45,0.5);
+  \draw[line width=2.4pt, deckNavy] (0.15,0.5) -- (4.65,0.5);
+  \node[axlab] at (2.4,0.42) {Day 1};
+  \begin{scope}[on background layer]
+    \fill[band] (0,0.75) rectangle (4.8,6.4);
+    \atstage{3}{\fill[band] (10.9,0.75) rectangle (16.5,6.4);}
+    \ifnum\stage<3 \draw[ghostband] (10.9,0.75) rectangle (16.5,6.4);\fi
+  \end{scope}
+  \ifnum\stage<2 \node[axlab, text=deckGrey!70] at (\sx,0.42) {Days 2 and 3};\fi
+  \atstage{2}{
+    \draw[densely dotted, thick, deckNavy!60] (4.8,0.5) -- (10.9,0.5);
+    \node[axlab] at (\sx,0.42) {Days 2 and 3};}
+  \ifnum\stage<3 \node[axlab, text=deckGrey!70] at (13.7,0.42) {Day 4};\fi
+  \atstage{3}{
+    \draw[line width=2.4pt, deckNavy] (11.1,0.5) -- (16.15,0.5);
+    \node[axlab] at (13.7,0.42) {Day 4};}
+  \node[note, anchor=north east, inner sep=0pt] at (4.7,6.33) {illustrative records};
+
+  % ---- stage 1: the order and the ledger
+  \node[mnode, minimum width=18mm, minimum height=8mm] (agent) at (1.35,5.5) {agent};
+  \node[rnode, anchor=north west, text width=40mm, align=left, font=\sffamily\footnotesize] (ledger) at (0.2,4.55)
+    {\texttt{inventory-ledger}\\ Day 1: ordered 10 SKU-A\\ paid 30.00, due Day 4};
+  \draw[flow] (agent.south) -- (agent.south |- ledger.north);
+  \node[evnum] at ($(agent.south)!0.5!(agent.south |- ledger.north)$) {1};
+  \node[lab, fill=none, anchor=west] at ($(agent.south)!0.5!(agent.south |- ledger.north)+(0.3,0)$) {orders and pays};
+  \node[capt, align=center] at (2.4,2.6) {a commitment whose effect\\ lands three days later};
+
+  % ---- stage 2: the shelf stays empty, the window fills, the history is compacted
+  \onlystage{1}{
+    \node[ghostbox, minimum width=34mm, minimum height=14mm, text=ibmfg!50, font=\sffamily\small] at (\sx,3.1) {compaction};
+  }
+  \atstage{2}{
+    \node[rnode, anchor=north, text width=40mm, align=left, font=\sffamily\footnotesize] (log) at (\sx,5.95)
+      {\texttt{ops-log}\\ Day 2: shelf empty, no sales\\ Day 3: shelf empty, no sales};
+    \node[evnum] at (log.north west) {2};
+    \node[mnode, minimum width=34mm, align=center] (comp) at (\sx,3.1) {\textbf{compaction}\\ summarize the history,\\ drop the rest};
+    \draw[flow] (log.south) -- (comp.north);
+    \node[evnum] at ($(log.south)!0.5!(comp.north)$) {3};
+    \node[lab, fill=none, anchor=west] at ($(log.south)!0.5!(comp.north)+(0.3,0)$) {the window fills};
+    \draw[flow] (ledger.east) -- ++(0.9,0) |- (comp.west);
+    \node[verd, align=center, text width=56mm] at (\sx,1.5) {what must survive to answer\\ ``is more SKU-A already on the way?''};
+  }
+
+  % ---- stage 3: Day 4 with summary A, the paid order gone
+  \atstage{3}{
+    \node[rnode, anchor=north, text width=50mm, align=left, font=\sffamily\footnotesize] (day4) at (13.7,6.25)
+      {\texttt{ops-log} Day 4: shelf empty,\\ nothing delivered yet};
+    \node[chip, anchor=west, text width=48mm] (sumA) at (11.2,4.825) {\textbf{summary A}\\ ``SKU-A is out of stock.''};
+    \draw[badflow] (comp.east) -- ++(0.4,0) |- (sumA.west);
+    \node[badnum] at (10.45,4.825) {4};
+    \node[badverd, align=center, text width=52mm] at (13.7,3.95) {no order in the context,\\ so it orders 10 more and pays twice};
+  }
+  % ---- stage 4: Day 4 with summary B, the commitment kept
+  \atstage{4}{
+    \node[okchip, anchor=west, text width=48mm] (sumB) at (11.2,2.775) {\textbf{summary B}\\ 10 SKU-A paid Day 1, due Day 4\\ source \texttt{inventory-ledger}, confirm on Day 4};
+    \draw[flow] (comp.east) -- ++(0.4,0) |- (sumB.west);
+    \node[evnum] at (10.45,2.775) {5};
+    \node[verd, align=center, text width=52mm] at (13.7,1.6) {the paid order is still there,\\ so it waits and checks the delivery};
+  }
+\end{tikzpicture}

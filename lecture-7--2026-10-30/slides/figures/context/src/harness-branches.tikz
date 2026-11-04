@@ -1,20 +1,58 @@
+% harness-branches: a long run as a graph of context paths: a summary branch at compaction, a sub-agent with its own
+% context, a failed path and its retry (Slide 7.5, after QwenGyre's account of harnesses, Wang et al. 2026).
+% Canvas 16.5 x 6.0 cm. Three stages.
+% Stage 1: reveal the main trajectory, the compaction point and the summary branch that continues from a summary.
+%          The pre-compaction history is faded: later steps never see it.
+% Stage 2: reveal a sub-agent branch with its own context, started from step 8 and returning one result to step 9.
+% Stage 3: reveal a failed path (rose) from step 10 and the retry that leads to step 11. The note states the paper's scale.
+% From the paper (arXiv:2609.33848): compaction produces a summary branch that replaces the pre-compaction history;
+% sub-agents hold separate contexts; failed branches are retried. Its XLong profile: hours per run, hundreds of
+% model-environment interactions, nearly 1M tokens per rollout. The step counts here are illustrative.
 \begin{tikzpicture}
-\canvas{16.5}{5.4}
-
-\node[record, text width=2.3cm] (hist) at (1.8,3.25) {Earlier history};
-\node[main, text width=2.8cm] (sum) at (6.8,3.25) {Summary branch};
-\node[main, text width=2.8cm] (next) at (13.7,3.25) {Main run continues};
-\draw[edge] (hist.east) -- (sum.west); \draw[edge] (sum.east) -- (next.west);
-\atstage{2}{
-  \draw[boundary] (8.8,0.6) rectangle (16.0,2.0);
-  \node[card, text width=4.7cm] (sub) at (12.4,1.3) {Isolated sub-agent reads};
-  \draw[edge] (sum.south) -- (sub.west); \draw[edge,dashed] (sub.north) -- (next.south);
-}
-\atstage{3}{
-  \node[lost, text width=2.8cm] (fail) at (10.2,4.65) {Failed path};
-  \draw[risk] (sum.north) -- (fail.west);
-  \draw[edge,dashed] (fail.east) to[out=0,in=80] node[lab,right] {retry} (next.north);
-}
-\node[caption] at (4.0,0.6) {Schematic of the practice in QwenGyre.};
-
+  \canvas{16.5}{6.0}
+  \tikzset{
+    stp/.style={mnode, minimum width=9mm, minimum height=7mm, inner sep=1pt, font=\sffamily\footnotesize},
+    sub/.style={stp, fill=black!6},
+  }
+  \def\ym{4.6}
+  % the main trajectory before compaction, faded from the start of the summary branch
+  \foreach \i in {1,...,5}{
+    \pgfmathsetmacro{\x}{0.7+(\i-1)*1.15}
+    \node[stp, faded] (m\i) at (\x,\ym) {\i};
+  }
+  \foreach \i in {1,...,4}{ \pgfmathtruncatemacro{\j}{\i+1} \draw[fadedflow] (m\i) -- (m\j); }
+  \node[kick, anchor=south west] at (0.25,5.15) {the history before compaction: dropped from the context};
+  % the compaction point and the summary branch
+  \fill[deckNavy] (6.3,\ym) circle (0.1);
+  \draw[fadedflow] (m5) -- (6.2,\ym);
+  \node[okchip, anchor=west, text width=22mm] (sum) at (6.7,\ym) {summary of steps 1 to 5};
+  \draw[flow] (6.3,\ym) -- (sum.west);
+  \foreach \i in {6,...,11}{
+    \pgfmathsetmacro{\x}{10.1+(\i-6)*1.1}
+    \node[stp] (m\i) at (\x,\ym) {\i};
+  }
+  \draw[flow] (sum.east) -- (m6);
+  \foreach \i in {6,...,10}{ \pgfmathtruncatemacro{\j}{\i+1} \draw[flow] (m\i) -- (m\j); }
+  \node[evnum] at (6.5,3.6) {1};
+  \node[lab, fill=none, anchor=west] at (6.8,3.6) {compaction: the run continues};
+  % stage 2: a sub-agent branch
+  \atstage{2}{
+    \draw[zone] (8.4,1.3) rectangle (13.1,3.05);
+    \node[zonelab, anchor=west] at (8.6,3.05) {sub-agent: its own context};
+    \foreach \k/\x in {a/9.3,b/10.6,c/11.9}{ \node[sub] (s\k) at (\x,2.1) {\k}; }
+    \draw[flow] (sa) -- (sb); \draw[flow] (sb) -- (sc);
+    \draw[flow] (m8.south) -- (12.3,2.75) -| (sa.north);
+    \draw[back] (sc.east) -| (m9.south);
+    \node[evnum] at (12.75,2.1) {2};
+    \node[lab, fill=none, anchor=north] at (12.9,1.1) {one result returns to step 9};
+  }
+  % stage 3: a failed path and its retry
+  \atstage{3}{
+    \node[evil, anchor=west, text width=16mm, font=\sffamily\footnotesize, align=center] (fail) at (13.95,2.1) {failed path};
+    \draw[badflow] (m10.south) -- (m10.south |- fail.north);
+    \draw[back] (fail.north east) -- ++(0,0.45) -| (m11.south);
+    \node[badnum] at (14.5,3.45) {3};
+    \node[badlab, fill=none, anchor=west] at (15.75,3.2) {retry};
+  }
+  \node[note, anchor=south west, inner sep=0pt, text width=160mm] at (0.25,0.08) {QwenGyre's XLong profile: hours per run, hundreds of model-environment interactions, nearly 1M tokens per rollout. Its contribution is RL training infrastructure. The step counts here are illustrative.};
 \end{tikzpicture}

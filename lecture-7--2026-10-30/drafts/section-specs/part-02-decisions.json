@@ -2,7 +2,7 @@
   "part": 2,
   "title": "Context, compaction, and extended planning",
   "lecture_date": "2026-11-06",
-  "stage": "slide prose and staged figures for instructor review",
+  "stage": "slide prose with staged figures in the house grammar, for instructor review",
   "plan_approved": false,
   "spec_approved": false,
   "decisions": [
@@ -55,7 +55,17 @@
       "id": "slides_review_3",
       "answer": "Use the tikz diagrams and transitions from ../lecture-{4,5,6}-* and then add them here.",
       "consequence": "Revision 4 adds 22 TikZ figure groups and 75 rendered stages. The figures adapt the earlier fixed canvases, node styles, request and return arrows, context boundaries, and consecutive slide builds. The draft includes previews, source links, and click instructions for 26 visual topics. Slides 7.4g and 7.5d remain row-by-row recap tables. The four other teaching tables now use visual builds. The draft retains 28 logical topics. Teaching time still needs review. The annotation does not approve the plan or spec. See reviews/part-02-slides-feedback-3.json and part-02-visuals.md."
+    },
+    {
+      "id": "slides_review_4",
+      "answer": "§5.1--§5.3 can be compressed entirely as one slide.",
+      "consequence": "Slides 5.1 to 5.3 merge into one slide with one three-click figure (one-call). Segment 5 runs 0:00 to 0:03. Segments 6 and 7 start two minutes earlier. The draft holds 26 topics. See reviews/part-02-slides-feedback-4.json."
+    },
+    {
+      "id": "slides_review_5",
+      "answer": "The figures are awful and not really like the ones from the previous weeks. Then, on two redone samples: yes, with the changes in my note: right-angled connectors with text overlapping nothing, and notes in the plan to fade and reveal components as the slides progress.",
+      "consequence": "Revision 5. The figures follow the Lecture 5 and 6 grammar: lilac bands or dashed zones, record boxes with real lines from the teaching case, numbered navy events, rose for the failure, navy verdicts, grey scope notes, right-angled connectors with labels in clear space. Sixteen figures with 56 stages. Every Build block names what each click reveals and fades. See reviews/part-02-slides-feedback-5.json and part-02-visuals.md."
     }
   ],
-  "next_decision": "Review revision 4 prose and staged TikZ figures in Plannotator. Decide the 50-minute pacing and backup split. Record plan and spec approval separately."
+  "next_decision": "Review revision 5: the merged Segment 5 slide, the sixteen figures, and the per-click reveal and fade notes. Decide the 50-minute pacing and the backup split. Record plan and spec approval separately."
 }

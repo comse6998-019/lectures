@@ -1,12 +1,49 @@
+% retrieval: keep a reference in the context and fetch the line from a store outside when needed (Slide 7.4f).
+% Canvas 16.5 x 6.0 cm. Three stages.
+% Stage 1: reveal the context with a reference instead of the line, and the store outside the window.
+% Stage 2: reveal the fetch: the reference points at line 17, the line comes back into the context.
+% Stage 3: reveal the failure: after a cleanup the store renumbered its lines, so the reference is stale (rose).
+%          Retrieval scales past any window while the reference stays valid (navy).
+% Illustrative, not from a source: the store, the line numbers and the cleanup. Retrieval in general is the RAG line
+% (Lewis et al., NeurIPS 2020); Claude Code's re-read of recent files is a bounded form (Slide 7.5b).
 \begin{tikzpicture}
-\canvas{16.5}{5.4}
-
-\draw[boundary] (0.5,1.6) rectangle (6.9,4.8);
-\node[title] at (3.7,4.4) {Current context};
-\node[main, text width=4.5cm] (ref) at (3.7,3.25) {\textbf{Reference}\\\texttt{inventory-ledger}, Day 1};
-\node[record, text width=5.6cm, minimum height=22mm] (store) at (12.5,3.25) {\textbf{External records}\\Day 1: 10 units, paid\\Expected Day 4};
-\atstage{2}{\draw[edge] (ref.east) -- node[lab,above] {fetch by reference} (store.west);}
-\atstage{3}{\draw[edge,dashed] (store.south) -- (12.5,1.2) -- node[lab,below] {return the source record} (3.7,1.2) -- (ref.south);}
-\node[caption] at (8.25,0.4) {Check that the reference still reaches the needed evidence.};
-
+  \canvas{16.5}{6.0}
+  \tikzset{row/.style={slot, text width=64mm, anchor=north west, font=\ttfamily\scriptsize}}
+  % the context
+  \node[mnode, anchor=south west, minimum width=52mm, minimum height=42mm] (ctx) at (0.2,1.2) {};
+  \node[anchor=west, fill=ibmblue!15, inner sep=2pt, font=\sffamily\small\bfseries] at ($(ctx.north west)+(0.15,0)$) {the call's context};
+  \node[slot, anchor=north west, text width=46mm] at (0.35,5.05) {history: 30k tokens so far};
+  \node[okchip, anchor=north west, text width=46mm] (ref) at (0.35,4.5) {ref: the SKU-A order, \texttt{ledger\#17}};
+  \node[kick, anchor=north west, text width=46mm] at (0.35,3.75) {15 tokens stand in for the line};
+  % the store
+  \node[rnode, anchor=south west, minimum width=72mm, minimum height=42mm] (store) at (8.8,1.2) {};
+  \node[anchor=west, fill=black!6, inner sep=2pt, font=\sffamily\small\bfseries] at ($(store.north west)+(0.15,0)$) {the store, outside the window};
+  \node[row] (l16) at (8.95,5.05) {\#16 Day 1 price list posted};
+  \beforestage{3}{\node[row, draw=deckNavy, line width=0.8pt] (l17) at (8.95,4.5) {\#17 Day 1 10 SKU-A paid, due Day 4};}
+  \atstage{3}{\node[row, chip, font=\ttfamily\scriptsize] (l17) at (8.95,4.5) {\#17 Day 2 shelf empty, no sales};}
+  \node[row] (l18) at (8.95,3.95) {\#18 Day 2 shelf empty, no sales};
+  \node[row] (l19) at (8.95,3.4) {\#19 Day 3 shelf empty, no sales};
+  \node[kick, anchor=north west] at (8.95,2.75) {400 lines, 60k tokens};
+  % stage 2: fetch and return
+  \atstage{2}{
+    \draw[flow] (ref.east) -- ++(0.6,0) |- ([yshift=1.2mm]l17.west);
+    \node[evnum] at (6.2,4.37) {1};
+    \node[lab, fill=none, anchor=south] at (7.3,4.5) {fetch \#17};
+    \beforestage{3}{
+      \node[okchip, anchor=north west, text width=46mm] (got) at (0.35,3.1) {fetched: ordered 10 SKU-A, paid, due Day 4};
+      \draw[back] ([yshift=-1.2mm]l17.west) -- ++(-0.6,0) |- (got.east);
+      \node[evnum] at (6.2,2.7) {2};
+      \node[lab, fill=none, anchor=north] at (7.3,2.45) {the line comes back};
+    }
+  }
+  % stage 3: the stale reference
+  \atstage{3}{
+    \node[chip, anchor=north west, text width=46mm] (got) at (0.35,3.1) {fetched: Day 2 shelf empty, no sales};
+    \draw[badflow, dashed] ([yshift=-1.2mm]l17.west) -- ++(-0.6,0) |- (got.east);
+    \node[badnum] at (6.2,2.7) {2};
+    \node[badlab, fill=none, anchor=north] at (7.3,2.45) {the wrong line};
+    \node[badverd, anchor=west] at (8.95,2.2) {a cleanup renumbered the store: \texttt{\#17} is stale};
+    \node[verd, anchor=west] at (0.35,0.75) {it scales past any window while the reference stays valid};
+  }
+  \node[note, anchor=north east, inner sep=0pt] at (16.4,5.95) {illustrative store};
 \end{tikzpicture}

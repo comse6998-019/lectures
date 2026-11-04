@@ -16,75 +16,40 @@ Plan: [`section-02-plan.md`](section-02-plan.md). Sources: [`part-02-literature.
 
 **Revision 4** applies the [third review](../reviews/part-02-slides-feedback-3.json). The figures reuse the TikZ style and consecutive slide builds from Lectures 4–6. The [visual notes](part-02-visuals.md) identify those sources. Each visual topic now includes its rendered click states and TikZ source.
 
-**Figure-led slides:** the preview contains the diagram labels. The prose rows state the teaching points. Keep the diagram, source citation, and takeaway visible. Place duplicate explanations in speaker notes.
+**Revision 5** applies the [fourth review](../reviews/part-02-slides-feedback-4.json) and the [figure review](../reviews/part-02-slides-feedback-5.json). Slides 5.1 to 5.3 become one slide with three clicks. The figures now follow the Lecture 5 and 6 grammar: bands, record boxes, numbered events, rose failures, navy verdicts, right-angled connectors. Every Build block states what each click reveals and what it fades.
 
-**Click rule:** advance through the numbered figure states. On the final click, keep the last figure state and reveal the navy takeaway panel. Keep the title and figure coordinates fixed. The two recap tables reveal one row per click, then the takeaway.
+**Figure-led slides:** the figure carries the example. The prose rows state the teaching points. Keep the figure, the source citation, and the takeaway visible. Place duplicate explanations in speaker notes.
 
----
-
-## Segment 5 — What context must accomplish (0:00–0:05)
-
-### Slide 5.1 — Context supplies one model invocation
-- **Instructions and tool definitions** describe the task and the available operations.
-- **Messages, examples and observations** supply the interaction so far.
-- **Selected external material** supplies documents, source text, search results or other evidence.
-- **The system assembles this input** before each invocation. Some available information stays outside it.
-
-**Takeaway.** Context management chooses which information reaches each invocation.
-
-**Notes.** Anthropic's Applied AI team describes context engineering as the selection of tokens for inference. Source: *Effective context engineering for AI agents*, 2025. Our list groups its examples for the course. The article supplies engineering guidance. Its broad explanations of attention do not establish results for all models.
-
-**Build.** Use `context-input`.
-1. Add instructions and tool definitions.
-2. Add messages and observations.
-3. Add selected source material.
-4. Show the records that stay outside the assembled request.
-
-![Context input click states](../../slides/figures/context/context-input-steps.png)
-
-[TikZ source](../../slides/figures/context/src/context-input.tikz) · [Final figure](../../slides/figures/context/context-input-4.png)
-
-### Slide 5.2 — Useful context serves the next task
-- **Task quality:** preserve the evidence, constraints and distinctions a sound answer or action needs.
-- **Efficiency:** control input length, total token use and elapsed time, including the work of selecting or compressing input.
-- **Faithfulness:** keep claims supported and preserve the conditions that change their meaning.
-- **Source access:** keep a usable route to source material for later checks.
-
-**Takeaway.** Choose a context policy against explicit task and resource objectives.
-
-**Notes.** The course combines these four objectives. Pan et al., *LLMLingua-2*, Findings of ACL 2024, §3.1, discusses token reduction, information content, and faithfulness. We add source access as a system-design objective. The evaluation segment returns to these objectives.
-
-**Build.** Use `objectives`.
-1. Connect task quality to the next decision.
-2. Add the resource budget.
-3. Add the check for preserved meaning.
-4. Add access to the source record.
-
-![Context objective click states](../../slides/figures/context/objectives-steps.png)
-
-[TikZ source](../../slides/figures/context/src/objectives.tikz) · [Final figure](../../slides/figures/context/objectives-4.png)
-
-### Slide 5.3 — Capacity and cumulative cost differ
-- **Context capacity:** one model call must fit its input and leave room for output.
-- **Cumulative token use:** repeated history adds tokens across calls. Compression and retrieval also use resources.
-- **Time and charges:** measure the complete run, including caching and extra calls.
-
-**Takeaway.** A request can fit while the full run exceeds its budget.
-
-**Notes.** These distinctions do not assume vendor prices. Token counts alone do not determine charges. Vendors can charge different rates for caching and other operations. Define a course budget before you compare alternatives. The long-horizon segment uses this distinction between request capacity and run cost.
-
-**Build.** Use `capacity-cost` in place of the teaching table.
-1. Show the input and output space inside one request limit.
-2. Add three calls that process history again.
-3. Add summary calls, source reads, elapsed time, and charges.
-
-![Capacity and run cost click states](../../slides/figures/context/capacity-cost-steps.png)
-
-[TikZ source](../../slides/figures/context/src/capacity-cost.tikz) · [Final figure](../../slides/figures/context/capacity-cost-3.png)
+**Click rule:** each click reveals one figure stage. A fade turns an element grey when the run no longer sees it. On the final click, keep the last stage and reveal the navy takeaway panel. Keep the title and the figure position fixed. The two recap tables reveal one row per click, then the takeaway.
 
 ---
 
-## Segment 6 — What long-context experiments show (0:05–0:13)
+## Segment 5 — What context must accomplish (0:00–0:03)
+
+### Slide 5.1 — Context supplies each call within a budget
+- **Input:** instructions, tools, messages, observations, and selected source material enter one model call. Other records stay outside.
+- **Objective:** the next decision needs correct facts, preserved meaning, and a route to the source.
+- **Cost:** each call has a capacity limit. Repeated history, summaries, and retrievals add tokens, time, and charges across the run.
+
+**Takeaway.** Context management chooses what each call receives for the next decision within the run budget.
+
+**Notes.** Anthropic's Applied AI team describes context engineering as the selection of tokens for inference. Source: *Effective context engineering for AI agents*, 2025. That article supplies engineering guidance. Pan et al., *LLMLingua-2*, Findings of ACL 2024, §3.1, discusses token reduction, information content, and faithfulness. We add source access as a system-design objective.
+
+Token counts alone do not determine charges. Vendors can charge different rates for caching and other operations. Define a course budget before you compare alternatives. The evaluation segment returns to these objectives. The long-horizon segment uses the distinction between request capacity and run cost.
+
+**Build.** Figure `one-call`, 3 clicks.
+1. Reveal the records that exist and the call's context: instructions, history, the selected ledger line, and the window meter.
+2. Reveal the call, the next action, and the three things that decision needs.
+3. Reveal the run meter: the context goes out again on every call.
+4. Keep stage 3 and reveal the takeaway panel.
+
+![One call within a budget, stage 3](../../slides/figures/context/one-call-3.png)
+
+Click states: [1](../../slides/figures/context/one-call-1.png), [2](../../slides/figures/context/one-call-2.png), [3](../../slides/figures/context/one-call-3.png). Source: [`one-call.tikz`](../../slides/figures/context/src/one-call.tikz).
+
+---
+
+## Segment 6 — What long-context experiments show (0:03–0:11)
 
 ### Slide 6.1 — Evidence position changes performance
 - **Liu et al., TACL 2024:** vary the position of relevant information in multi-document question answering and key-value retrieval.
@@ -95,16 +60,15 @@ Plan: [`section-02-plan.md`](section-02-plan.md). Sources: [`part-02-literature.
 
 **Notes.** Nelson F. Liu et al., *Lost in the Middle: How Language Models Use Long Contexts*, TACL 12, 157–173, 2024 (doi:10.1162/tacl_a_00638). One of the three in-depth sources. The open-domain QA case study also separates retriever recall from reader accuracy: added retrieved material need not yield proportional answer gains. Do not generalize its numbers to current models.
 
-**Build.** Use `evidence-position`.
-1. Place the relevant passage near the start.
-2. Move the same passage to the middle.
-3. Move it near the end and state the study limits.
+**Build.** Figure `evidence-position`, 3 clicks.
+1. Reveal the question and the first row: the answer document first, accuracy high.
+2. Reveal the middle row: the answer document in the middle, accuracy lowest, in rose.
+3. Reveal the last row and the caption: the shape of the finding, with no values.
+4. Keep stage 3 and reveal the takeaway panel.
 
-The positions illustrate the experiment. Keep the reported pattern in the prose. Do not invent scores or a performance curve.
+![Evidence position, stage 3](../../slides/figures/context/evidence-position-3.png)
 
-![Evidence position click states](../../slides/figures/context/evidence-position-steps.png)
-
-[TikZ source](../../slides/figures/context/src/evidence-position.tikz) · [Final figure](../../slides/figures/context/evidence-position-3.png)
+Click states: [1](../../slides/figures/context/evidence-position-1.png), [2](../../slides/figures/context/evidence-position-2.png), [3](../../slides/figures/context/evidence-position-3.png). Source: [`evidence-position.tikz`](../../slides/figures/context/src/evidence-position.tikz).
 
 ### Slide 6.2 — Effective context depends on the task
 - **Hsieh et al., COLM 2024:** RULER extends simple needle retrieval with multiple needles, variable tracing and aggregation.
@@ -118,20 +82,19 @@ The positions illustrate the experiment. Keep the reported pattern in the prose.
 
 RULER accompanies Lost in the Middle. It reports performance drops as context length grows across its models and tasks. Distinguish the supported input length from measured task performance. RULER measures model context use. It does not evaluate an agent compaction policy.
 
-**Build.** Use `context-tasks`.
-1. Retrieve a specified fact from a record.
-2. Trace a value through assignments.
-3. Combine several values into one answer.
+**Build.** Figure `context-tasks`, 3 clicks.
+1. Reveal the retrieval row: one fact in one line.
+2. Reveal the tracing row: a chain of three lines.
+3. Reveal the aggregation row: every line counts.
+4. Keep stage 3 and reveal the takeaway panel.
 
-Label these as teaching examples. Keep numeric benchmark results in the source paper.
+![Three demands on one log, stage 3](../../slides/figures/context/context-tasks-3.png)
 
-![Context task click states](../../slides/figures/context/context-tasks-steps.png)
-
-[TikZ source](../../slides/figures/context/src/context-tasks.tikz) · [Final figure](../../slides/figures/context/context-tasks-3.png)
+Click states: [1](../../slides/figures/context/context-tasks-1.png), [2](../../slides/figures/context/context-tasks-2.png), [3](../../slides/figures/context/context-tasks-3.png). Source: [`context-tasks.tikz`](../../slides/figures/context/src/context-tasks.tikz).
 
 ---
 
-## Segment 7 — Context management: strategies and harness formats (0:13–0:26, expanded)
+## Segment 7 — Context management: strategies and harness formats (0:11–0:23, tight)
 
 > Review note: this segment grew after review 2. Each compaction strategy now has a visual slide. Tables serve as recaps. Three harness-format slides follow the strategies. The plan records the open timing decision and the option to move slides to backup.
 
@@ -145,15 +108,16 @@ Label these as teaching examples. Keep numeric benchmark results in the source p
 
 **Notes.** This four-way split is the course's organizing scheme. Retrieve draws on a large literature, such as RAG (Lewis et al., NeurIPS 2020), kept as supporting reading. The next slides open each way, then compare the compaction strategies one by one.
 
-**Build.** Use `context-choices`.
-1. Retain original messages.
-2. Fetch a record through a reference.
-3. Select tokens from the source.
-4. Generate a summary in new words.
+**Build.** Figure `four-ways`, 4 clicks.
+1. Reveal retain: the line as written.
+2. Reveal retrieve: a reference in the context and the line in a store. Earlier rows stay.
+3. Reveal extract: the informative tokens, with the dropped punctuation in grey.
+4. Reveal rewrite: a new sentence, and the note.
+5. Keep stage 4 and reveal the takeaway panel.
 
-![Context strategy click states](../../slides/figures/context/context-choices-steps.png)
+![Four ways to carry one line, stage 4](../../slides/figures/context/four-ways-4.png)
 
-[TikZ source](../../slides/figures/context/src/context-choices.tikz) · [Final figure](../../slides/figures/context/context-choices-4.png)
+Click states: [1](../../slides/figures/context/four-ways-1.png), [2](../../slides/figures/context/four-ways-2.png), [3](../../slides/figures/context/four-ways-3.png), [4](../../slides/figures/context/four-ways-4.png). Source: [`four-ways.tikz`](../../slides/figures/context/src/four-ways.tikz).
 
 ### Slide 7.2 — Extractive compression selects tokens
 - **Pan et al., Findings of ACL 2024:** LLMLingua-2 trains a classifier to keep or drop source tokens.
@@ -167,17 +131,15 @@ Label these as teaching examples. Keep numeric benchmark results in the source p
 
 Study this mechanism in depth. Cite **LLMLingua** (Jiang et al., EMNLP 2023) as its origin and LongLLMLingua as its long-context extension. Evaluations include MeetingBank and out-of-domain datasets. The reported gains apply to those test conditions. Do not promise a fixed compression ratio or speed increase.
 
-**Build.** Use `extractive` for the LLMLingua-2 mechanism.
-1. Show the source passage.
-2. Add the token classifier.
-3. Assemble selected source words.
-4. Check whether deletion loses the paid order or due date.
+**Build.** Figure `extractive`, 3 clicks.
+1. Reveal the source line as eleven tokens.
+2. Reveal the classifier and its label under each token: keep or drop.
+3. Reveal the compressed input. The dropped tokens fade in the source row.
+4. Keep stage 3 and reveal the takeaway panel.
 
-The selection illustrates extraction. It does not reproduce a measured LLMLingua-2 output.
+![The token classifier, stage 3](../../slides/figures/context/extractive-3.png)
 
-![Extractive compression click states](../../slides/figures/context/extractive-steps.png)
-
-[TikZ source](../../slides/figures/context/src/extractive.tikz) · [Final figure](../../slides/figures/context/extractive-4.png)
+Click states: [1](../../slides/figures/context/extractive-1.png), [2](../../slides/figures/context/extractive-2.png), [3](../../slides/figures/context/extractive-3.png), [4](../../slides/figures/context/extractive-4.png). Source: [`extractive.tikz`](../../slides/figures/context/src/extractive.tikz).
 
 ### Slide 7.3 — Abstractive compaction rewrites history
 - **Input:** selected conversation history or observations.
@@ -189,15 +151,15 @@ The selection illustrates extraction. It does not reproduce a measured LLMLingua
 
 **Notes.** Anthropic's 2025 article describes a summary that replaces history in a fresh context. Its compaction section warns about excessive loss and recommends tests on complex traces. This is engineering guidance rather than a controlled comparison. The course groups the methods as retain, retrieve, extract, and rewrite. The long-horizon example uses abstractive compaction.
 
-**Build.** Use `abstractive`.
-1. Show the earlier messages and records.
-2. Generate a shorter account in new words.
-3. Assemble the next request from the summary and recent messages.
-4. Check for omissions and unsupported claims.
+**Build.** Figure `abstractive`, 3 clicks.
+1. Reveal the history: five messages, 60k tokens.
+2. Reveal the summarizer and its 40-token summary. The history fades.
+3. Reveal the next request: system prompt, summary, recent messages.
+4. Keep stage 3 and reveal the takeaway panel.
 
-![Abstractive compaction click states](../../slides/figures/context/abstractive-steps.png)
+![A summary replaces the history, stage 3](../../slides/figures/context/abstractive-3.png)
 
-[TikZ source](../../slides/figures/context/src/abstractive.tikz) · [Final figure](../../slides/figures/context/abstractive-4.png)
+Click states: [1](../../slides/figures/context/abstractive-1.png), [2](../../slides/figures/context/abstractive-2.png), [3](../../slides/figures/context/abstractive-3.png), [4](../../slides/figures/context/abstractive-4.png). Source: [`abstractive.tikz`](../../slides/figures/context/src/abstractive.tikz).
 
 ### Slide 7.4a — Recency keeps the last turns
 - **How:** keep the most recent turns and drop older ones.
@@ -208,33 +170,32 @@ The selection illustrates extraction. It does not reproduce a measured LLMLingua
 
 **Notes.** Every harness falls back on this. Pi keeps a recent window around its summary (Slide 7.5a).
 
-**Build.** Use `recency`, adapted from Lecture 5's context strip.
-1. Show the paid order among the older turns.
-2. Retain recent turns and dim the older turns.
-3. Remove the older turns and show the lost commitment.
+**Build.** Figure `recency`, 3 clicks.
+1. Reveal eight turns and the window over the first five.
+2. The window moves on: turns 6 and 7 enter, turns 1 and 2 fade.
+3. The window moves again: turn 8 enters, turn 3 fades. The rose line names the lost order, the navy line the cost.
+4. Keep stage 3 and reveal the takeaway panel.
 
-![Recency strategy click states](../../slides/figures/context/recency-steps.png)
+![The window moves on, stage 3](../../slides/figures/context/recency-3.png)
 
-[TikZ source](../../slides/figures/context/src/recency.tikz) · [Final figure](../../slides/figures/context/recency-3.png)
+Click states: [1](../../slides/figures/context/recency-1.png), [2](../../slides/figures/context/recency-2.png), [3](../../slides/figures/context/recency-3.png). Source: [`recency.tikz`](../../slides/figures/context/src/recency.tikz).
 
 ### Slide 7.4b — Extractive selection keeps key tokens
 - **How:** a classifier keeps informative tokens and drops filler.
 - **Strength:** cheap and model-agnostic.
-- **Failure:** lexical choice can drop meaning.
+- **Failure:** one dropped function word can flip the meaning.
 
 **Takeaway.** Extraction shortens the text and keeps the original words.
 
 **Notes.** LLMLingua-2 (Slide 7.2) is the worked method. The kept tokens read as a terse excerpt of the source.
 
-**Build.** Reuse `extractive` from Slide 7.2.
-1. Recall the original passage.
-2. Recall the keep-or-drop classifier.
-3. Show the retained words.
-4. Check the order and due date after deletion.
+**Build.** Figure `extractive`, 1 click.
+1. Open on stage 3. Reveal stage 4: the rose cross on the dropped word and the navy test line.
+2. Keep stage 4 and reveal the takeaway panel.
 
-![Extractive strategy click states](../../slides/figures/context/extractive-steps.png)
+![The dropped word, stage 4](../../slides/figures/context/extractive-4.png)
 
-[TikZ source](../../slides/figures/context/src/extractive.tikz) · [Final figure](../../slides/figures/context/extractive-4.png)
+Click states: [1](../../slides/figures/context/extractive-1.png), [2](../../slides/figures/context/extractive-2.png), [3](../../slides/figures/context/extractive-3.png), [4](../../slides/figures/context/extractive-4.png). Source: [`extractive.tikz`](../../slides/figures/context/src/extractive.tikz).
 
 ### Slide 7.4c — Abstractive summary rewrites a span
 - **How:** an LLM writes a shorter account of a span.
@@ -245,15 +206,13 @@ The selection illustrates extraction. It does not reproduce a measured LLMLingua
 
 **Notes.** This is the core of every harness format in Slide 7.5. The summary becomes a new representation to verify.
 
-**Build.** Reuse `abstractive` from Slide 7.3.
-1. Recall the earlier history.
-2. Generate the summary.
-3. Add it to the next request.
-4. Check the replacement against its source.
+**Build.** Figure `abstractive`, 1 click.
+1. Open on stage 3. Reveal stage 4: the omission in rose and the navy check line.
+2. Keep stage 4 and reveal the takeaway panel.
 
-![Summary strategy click states](../../slides/figures/context/abstractive-steps.png)
+![The omitted order, stage 4](../../slides/figures/context/abstractive-4.png)
 
-[TikZ source](../../slides/figures/context/src/abstractive.tikz) · [Final figure](../../slides/figures/context/abstractive-4.png)
+Click states: [1](../../slides/figures/context/abstractive-1.png), [2](../../slides/figures/context/abstractive-2.png), [3](../../slides/figures/context/abstractive-3.png), [4](../../slides/figures/context/abstractive-4.png). Source: [`abstractive.tikz`](../../slides/figures/context/src/abstractive.tikz).
 
 ### Slide 7.4d — Structured notes hold a running state
 - **How:** keep a schema of goals, open items, and decisions, updated each step.
@@ -264,14 +223,15 @@ The selection illustrates extraction. It does not reproduce a measured LLMLingua
 
 **Notes.** Pi uses fixed summary sections and file lists as structured notes (Slide 7.5a). Codex also maintains structured notes across sessions (Slide 7.5c).
 
-**Build.** Use `structured-notes`.
-1. Add the task goal.
-2. Add the paid order as an open commitment.
-3. Record the next delivery check.
+**Build.** Figure `structured-notes`, 3 clicks.
+1. Reveal the card and Day 1: the step writes the open order into the card.
+2. Reveal Days 2 and 3: the steps update the observations and the next check. The order line stays.
+3. Reveal the compaction boundary and Day 4. The earlier steps fade. The card stays.
+4. Keep stage 3 and reveal the takeaway panel.
 
-![Structured notes click states](../../slides/figures/context/structured-notes-steps.png)
+![The state card, stage 3](../../slides/figures/context/structured-notes-3.png)
 
-[TikZ source](../../slides/figures/context/src/structured-notes.tikz) · [Final figure](../../slides/figures/context/structured-notes-3.png)
+Click states: [1](../../slides/figures/context/structured-notes-1.png), [2](../../slides/figures/context/structured-notes-2.png), [3](../../slides/figures/context/structured-notes-3.png). Source: [`structured-notes.tikz`](../../slides/figures/context/src/structured-notes.tikz).
 
 ### Slide 7.4e — Sub-agent delegation isolates a context
 - **How:** run a subtask in its own context and return a summary.
@@ -282,14 +242,15 @@ The selection illustrates extraction. It does not reproduce a measured LLMLingua
 
 **Notes.** Claude Code uses subagents this way (Slide 7.5b). The main agent sees the result rather than the subtask's reads.
 
-**Build.** Use `delegation`, with Lecture 6's separate-context boundaries.
-1. Send a subtask from the main context.
-2. Keep the ledger and delivery notices inside the sub-agent context.
-3. Return a short result to the main agent.
+**Build.** Figure `delegation`, 3 clicks.
+1. Reveal the main context and the subtask it hands over.
+2. Reveal the sub-agent's reads inside its own window.
+3. Reveal the one-line result and the two verdict lines.
+4. Keep stage 3 and reveal the takeaway panel.
 
-![Delegation click states](../../slides/figures/context/delegation-steps.png)
+![A sub-agent with its own context, stage 3](../../slides/figures/context/delegation-3.png)
 
-[TikZ source](../../slides/figures/context/src/delegation.tikz) · [Final figure](../../slides/figures/context/delegation-3.png)
+Click states: [1](../../slides/figures/context/delegation-1.png), [2](../../slides/figures/context/delegation-2.png), [3](../../slides/figures/context/delegation-3.png). Source: [`delegation.tikz`](../../slides/figures/context/src/delegation.tikz).
 
 ### Slide 7.4f — Retrieval uses history outside the context
 - **How:** store history outside and fetch it by reference.
@@ -300,14 +261,15 @@ The selection illustrates extraction. It does not reproduce a measured LLMLingua
 
 **Notes.** Claude Code's re-read of recent files is a bounded form (Slide 7.5b). The RAG line is the general case.
 
-**Build.** Use `retrieval`, with Lecture 4's request and return arrows.
-1. Keep a compact reference inside the current context.
-2. Fetch its external record.
-3. Return the source evidence to the request.
+**Build.** Figure `retrieval`, 3 clicks.
+1. Reveal the context with a reference and the store outside the window.
+2. Reveal the fetch and the line that comes back.
+3. Reveal the stale reference: line 17 changed after a cleanup, in rose.
+4. Keep stage 3 and reveal the takeaway panel.
 
-![Retrieval click states](../../slides/figures/context/retrieval-steps.png)
+![A reference and a store, stage 3](../../slides/figures/context/retrieval-3.png)
 
-[TikZ source](../../slides/figures/context/src/retrieval.tikz) · [Final figure](../../slides/figures/context/retrieval-3.png)
+Click states: [1](../../slides/figures/context/retrieval-1.png), [2](../../slides/figures/context/retrieval-2.png), [3](../../slides/figures/context/retrieval-3.png). Source: [`retrieval.tikz`](../../slides/figures/context/src/retrieval.tikz).
 
 ### Slide 7.4g — Compaction strategies, compared (recap)
 | Strategy | How it works | Strength | Main failure |
@@ -335,15 +297,15 @@ The selection illustrates extraction. It does not reproduce a measured LLMLingua
 
 **Notes.** Wang et al., *QwenGyre: An Elastic Reinforcement Learning Framework for Training XLong-Horizon Agents*, arXiv:2609.33848, 2026 (Alibaba). Its contribution is RL training infrastructure, and we cite its account of real harnesses. Compaction produces a summary branch that replaces the pre-compaction history, and sub-agents hold separate contexts. Treat the scale as the paper's XLong profile, a very recent report (cites≈0). It bounds these runs, and later systems may differ.
 
-**Build.** Use `harness-branches`, adapted from the earlier state graphs.
-1. Continue the main run through a summary branch.
-2. Add an isolated sub-agent context.
-3. Add the failed path and retry.
-4. State QwenGyre's reported scale while the final figure stays visible.
+**Build.** Figure `harness-branches`, 3 clicks.
+1. Reveal the main trajectory, the compaction point, and the summary branch. The earlier steps show faded.
+2. Reveal the sub-agent branch and its one returned result.
+3. Reveal the failed path in rose and the retry to step 11.
+4. Keep stage 3 and reveal the takeaway panel.
 
-![Harness branch click states](../../slides/figures/context/harness-branches-steps.png)
+![A run as a graph of context paths, stage 3](../../slides/figures/context/harness-branches-3.png)
 
-[TikZ source](../../slides/figures/context/src/harness-branches.tikz) · [Final figure](../../slides/figures/context/harness-branches-3.png)
+Click states: [1](../../slides/figures/context/harness-branches-1.png), [2](../../slides/figures/context/harness-branches-2.png), [3](../../slides/figures/context/harness-branches-3.png). Source: [`harness-branches.tikz`](../../slides/figures/context/src/harness-branches.tikz).
 
 ### Slide 7.5a — Pi compacts into a structured summary
 - **Core:** one LLM summary of the old span, with a recent window kept around it.
@@ -354,14 +316,13 @@ The selection illustrates extraction. It does not reproduce a measured LLMLingua
 
 **Notes.** Source: Pi `docs/compaction.md`. Automatic compaction starts when token use exceeds the context window minus a reserve of 16384 tokens. The user can also enter `/compact`. This combines Slides 7.4c, 7.4a, and 7.4d. See `part-02-harness-compaction.md`.
 
-**Build.** Use `pi-format`.
-1. Show the six summary sections.
-2. Add the retained recent messages.
-3. Add the cumulative file lists.
+**Build.** Figure `harness-formats`, 1 click.
+1. Reveal the Pi column: the fixed sections, the recent messages, the file lists.
+2. Keep stage 1 and reveal the takeaway panel.
 
-![Pi compaction click states](../../slides/figures/context/pi-format-steps.png)
+![Pi at compaction, stage 1](../../slides/figures/context/harness-formats-1.png)
 
-[TikZ source](../../slides/figures/context/src/pi-format.tikz) · [Final figure](../../slides/figures/context/pi-format-3.png)
+Click states: [1](../../slides/figures/context/harness-formats-1.png), [2](../../slides/figures/context/harness-formats-2.png), [3](../../slides/figures/context/harness-formats-3.png), [4](../../slides/figures/context/harness-formats-4.png). Source: [`harness-formats.tikz`](../../slides/figures/context/src/harness-formats.tikz).
 
 ### Slide 7.5b — Claude Code summarizes and re-reads files
 - **Core:** the conversation becomes a structured summary.
@@ -372,14 +333,13 @@ The selection illustrates extraction. It does not reproduce a measured LLMLingua
 
 **Notes.** Source: Claude Code docs (context-window). A file over 5000 tokens returns as a path reference. This maps to Slides 7.4c, 7.4f, and 7.4e.
 
-**Build.** Use `claude-format`.
-1. Replace conversation history with the structured summary.
-2. Read up to five recent files again.
-3. Add hook output and skill text again. Recall the separate sub-agent context from Slide 7.4e.
+**Build.** Figure `harness-formats`, 1 click.
+1. Open on stage 1. Reveal the Claude Code column: the structured summary, the five recent files, the hooks and skills.
+2. Keep stage 2 and reveal the takeaway panel.
 
-![Claude Code compaction click states](../../slides/figures/context/claude-format-steps.png)
+![Claude Code at compaction, stage 2](../../slides/figures/context/harness-formats-2.png)
 
-[TikZ source](../../slides/figures/context/src/claude-format.tikz) · [Final figure](../../slides/figures/context/claude-format-3.png)
+Click states: [1](../../slides/figures/context/harness-formats-1.png), [2](../../slides/figures/context/harness-formats-2.png), [3](../../slides/figures/context/harness-formats-3.png), [4](../../slides/figures/context/harness-formats-4.png). Source: [`harness-formats.tikz`](../../slides/figures/context/src/harness-formats.tikz).
 
 ### Slide 7.5c — Codex writes a resumable handoff summary
 - **Core:** a context-checkpoint handoff summary for the next model.
@@ -390,14 +350,13 @@ The selection illustrates extraction. It does not reproduce a measured LLMLingua
 
 **Notes.** Source: openai/codex compact prompt templates. The summary lists progress, decisions, context, next steps, and key references. This maps to Slide 7.4c, selective retain, and Slide 7.4d.
 
-**Build.** Use `codex-format`.
-1. Write the context-checkpoint handoff summary.
-2. Add retained tool state and resume metadata.
-3. Identify the separate cross-session memories pipeline.
+**Build.** Figure `harness-formats`, 1 click.
+1. Open on stage 2. Reveal the Codex column: the handoff summary and the retained tool state.
+2. Keep stage 3 and reveal the takeaway panel.
 
-![Codex compaction click states](../../slides/figures/context/codex-format-steps.png)
+![Codex at compaction, stage 3](../../slides/figures/context/harness-formats-3.png)
 
-[TikZ source](../../slides/figures/context/src/codex-format.tikz) · [Final figure](../../slides/figures/context/codex-format-3.png)
+Click states: [1](../../slides/figures/context/harness-formats-1.png), [2](../../slides/figures/context/harness-formats-2.png), [3](../../slides/figures/context/harness-formats-3.png), [4](../../slides/figures/context/harness-formats-4.png). Source: [`harness-formats.tikz`](../../slides/figures/context/src/harness-formats.tikz).
 
 ### Slide 7.5d — Three harness formats share one core (recap)
 | Harness | Core | Second strategy | Also |
@@ -410,7 +369,9 @@ The selection illustrates extraction. It does not reproduce a measured LLMLingua
 
 **Notes.** Source: part-02-harness-compaction.md. Pi adds a recent window. Claude Code re-reads files. Codex retains tool state. Show this table as the recap after the three harness slides.
 
-**Build.** Keep this table as a recap after the three harness slides. Start with the header. Reveal Pi, Claude Code, and Codex one row per click. Reveal the takeaway after the third row.
+**Build.** Keep this table as a recap after the three harness slides. Start with the header. Reveal Pi, Claude Code, and Codex one row per click. Reveal the takeaway after the third row. Stage 4 of `harness-formats` shows the same recap as a figure, with the three summaries framed in navy.
+
+![Three formats, stage 4](../../slides/figures/context/harness-formats-4.png)
 
 ---
 
@@ -426,15 +387,13 @@ The selection illustrates extraction. It does not reproduce a measured LLMLingua
 
 **Notes.** The course combines ideas from two sources. LLM-Planner (Song et al., ICCV 2023) addresses grounded replanning. Anthropic's *Effective harnesses for long-running agents* discusses progress records and verification. QwenGyre supplies the earlier example of extreme-long-horizon scale. The next segments test whether pending commitments survive.
 
-**Build.** Use `delayed-order` to show what the run must preserve.
-1. Place and pay for the Day 1 order.
-2. Observe the empty shelf on Days 2 and 3.
-3. Move the context boundary past the original order.
-4. Carry the open commitment to the Day 4 check.
+**Build.** Figure `dropped-order`, 1 click.
+1. Reveal Day 1: the agent orders and pays, the ledger records the due date, the caption names the commitment.
+2. Keep stage 1 and reveal the takeaway panel.
 
-![Long-run commitment click states](../../slides/figures/context/delayed-order-steps.png)
+![A commitment with a later effect, stage 1](../../slides/figures/context/dropped-order-1.png)
 
-[TikZ source](../../slides/figures/context/src/delayed-order.tikz) · [Final figure](../../slides/figures/context/delayed-order-4.png)
+Click states: [1](../../slides/figures/context/dropped-order-1.png), [2](../../slides/figures/context/dropped-order-2.png), [3](../../slides/figures/context/dropped-order-3.png), [4](../../slides/figures/context/dropped-order-4.png). Source: [`dropped-order.tikz`](../../slides/figures/context/src/dropped-order.tikz).
 
 ### Slide 8.2 — Vending-Bench stresses long-term coherence
 - **The task:** an agent runs a vending-machine business over simulated calendar time — check inventory, order stock, set prices, pay a daily fee.
@@ -448,17 +407,13 @@ The selection illustrates extraction. It does not reproduce a measured LLMLingua
 
 Jimenez et al., *SWE-bench*, ICLR 2024 (arXiv:2310.06770), supplies further evidence about difficult agent tasks. It reports low resolve rates on real multi-step tasks. Keep **simulated calendar duration distinct from agent wall-clock runtime and plan depth**. Exact Vending-Bench figures stay in the source paper. Our delayed-delivery case illustrates the paper's type of coherence failure.
 
-**Build.** Reuse `delayed-order` within the Vending-Bench task.
-1. Explain the Day 1 stock order and payment.
-2. Explain the empty shelf and recurring business costs.
-3. Show why the order must survive the context boundary.
-4. Identify the expected delivery and next check.
+**Build.** Figure `dropped-order`, 1 click.
+1. Open on Day 1. Reveal Days 2 and 3: the empty shelf, the full window, compaction, and the question.
+2. Keep stage 2 and reveal the takeaway panel.
 
-Keep simulated days distinct from wall-clock runtime and plan depth.
+![The vending run, stage 2](../../slides/figures/context/dropped-order-2.png)
 
-![Vending task click states](../../slides/figures/context/delayed-order-steps.png)
-
-[TikZ source](../../slides/figures/context/src/delayed-order.tikz) · [Final figure](../../slides/figures/context/delayed-order-4.png)
+Click states: [1](../../slides/figures/context/dropped-order-1.png), [2](../../slides/figures/context/dropped-order-2.png), [3](../../slides/figures/context/dropped-order-3.png), [4](../../slides/figures/context/dropped-order-4.png). Source: [`dropped-order.tikz`](../../slides/figures/context/src/dropped-order.tikz).
 
 ---
 
@@ -474,15 +429,16 @@ Keep simulated days distinct from wall-clock runtime and plan depth.
 
 **Notes.** The course proposes this procedure from the earlier objectives and mechanisms. Evaluate each policy choice. A token threshold can trigger a check. Task boundaries or new information can also trigger one. Next week covers durable storage and recovery.
 
-**Build.** Use `compaction-policy`.
-1. Specify the objective and trigger.
-2. Select what to keep, summarize, or reference.
-3. Generate the replacement context.
-4. Check the order, payment, and date. Return to selection or generation if a check fails.
+**Build.** Figure `compaction-policy`, 4 clicks.
+1. Reveal specify: the objective and the trigger.
+2. Reveal select: keep, summarize, reference.
+3. Reveal generate: the replacement with its facts, open items, and sources.
+4. Reveal check and the return path for a failed check.
+5. Keep stage 4 and reveal the takeaway panel.
 
-![Compaction policy click states](../../slides/figures/context/compaction-policy-steps.png)
+![Four choices, stage 4](../../slides/figures/context/compaction-policy-4.png)
 
-[TikZ source](../../slides/figures/context/src/compaction-policy.tikz) · [Final figure](../../slides/figures/context/compaction-policy-4.png)
+Click states: [1](../../slides/figures/context/compaction-policy-1.png), [2](../../slides/figures/context/compaction-policy-2.png), [3](../../slides/figures/context/compaction-policy-3.png), [4](../../slides/figures/context/compaction-policy-4.png). Source: [`compaction-policy.tikz`](../../slides/figures/context/src/compaction-policy.tikz).
 
 ### Slide 9.2 — Compaction must preserve the pending order
 **Running example — the Vending-Bench run.** Two records describe SKU-A on Day 3.
@@ -496,15 +452,13 @@ Keep simulated days distinct from wall-clock runtime and plan depth.
 
 This example illustrates the type of coherence failure in Vending-Bench. The course supplies these records as a teaching case. Keep them beside any summary.
 
-**Build.** Reuse `delayed-order` with the two source records beside the timeline.
-1. Show the paid Day 1 order from `inventory-ledger`.
-2. Add the shelf observations from `ops-log`.
-3. Show the compaction boundary.
-4. Ask whether more SKU-A is already on the way. Reveal the open order and Day 4 check.
+**Build.** Figure `dropped-order`, 1 click.
+1. Open on stage 2 and ask the question in the navy line. One click reveals the takeaway.
+2. Keep stage 2 and reveal the takeaway panel.
 
-![Pending order click states](../../slides/figures/context/delayed-order-steps.png)
+![The question compaction must answer, stage 2](../../slides/figures/context/dropped-order-2.png)
 
-[TikZ source](../../slides/figures/context/src/delayed-order.tikz) · [Final figure](../../slides/figures/context/delayed-order-4.png)
+Click states: [1](../../slides/figures/context/dropped-order-1.png), [2](../../slides/figures/context/dropped-order-2.png), [3](../../slides/figures/context/dropped-order-3.png), [4](../../slides/figures/context/dropped-order-4.png). Source: [`dropped-order.tikz`](../../slides/figures/context/src/dropped-order.tikz).
 
 ### Slide 9.3 — Compare two compacted representations
 - **Candidate A:** "SKU-A is out of stock."
@@ -516,16 +470,14 @@ This example illustrates the type of coherence failure in Vending-Bench. The cou
 
 **Notes.** Both candidates illustrate the teaching case. B is longer because the decision needs the open order. Its references help only while the ledger stays available. A causes the example failure from Segment 8, and B avoids it. Use a build pair in the final deck to show the failure before the fix.
 
-**Build.** Use `replacement-check` with fixed side-by-side positions.
-1. Show candidate A beside the original order record.
-2. Reveal its duplicate-order failure.
-3. Add candidate B and the Day 4 delivery check.
+**Build.** Figure `dropped-order`, 2 clicks.
+1. Open on stage 2. Reveal summary A and the rose verdict: it orders again and pays twice.
+2. Reveal summary B and the navy verdict: it waits and checks the delivery.
+3. Keep stage 4 and reveal the takeaway panel.
 
-Keep the failure visible while the fix appears. The final click adds only the takeaway.
+![Two summaries on Day 4, stage 4](../../slides/figures/context/dropped-order-4.png)
 
-![Replacement comparison click states](../../slides/figures/context/replacement-check-steps.png)
-
-[TikZ source](../../slides/figures/context/src/replacement-check.tikz) · [Final figure](../../slides/figures/context/replacement-check-3.png)
+Click states: [1](../../slides/figures/context/dropped-order-1.png), [2](../../slides/figures/context/dropped-order-2.png), [3](../../slides/figures/context/dropped-order-3.png), [4](../../slides/figures/context/dropped-order-4.png). Source: [`dropped-order.tikz`](../../slides/figures/context/src/dropped-order.tikz).
 
 ---
 
@@ -542,20 +494,19 @@ Keep the failure visible while the fix appears. The final click adds only the ta
 
 **Notes.** The course combines these measures. LLMLingua-2 reports task scores, compression, and latency together. Include uncompressed input and a simple selection baseline. Compare equal input budgets where possible, and report uncertainty across repeated runs.
 
-A compression ratio alone cannot show that a policy serves its task. These five measures cover the four objectives from Slide 5.2 and cost.
+A compression ratio alone cannot show that a policy serves its task. These five measures cover the three objectives from Slide 5.1 and cost.
 
-**Build.** Use `evaluation` in place of the teaching table.
-1. Check the next decision.
-2. Check facts and source references.
-3. Check meaning and unsupported claims.
-4. Measure original and replacement token counts.
-5. Count the complete run cost.
+**Build.** Figure `evaluation`, 5 clicks.
+1. Reveal the run lane and check 1: task success.
+2. Reveal check 2: evidence.
+3. Reveal check 3: faithfulness.
+4. Reveal check 4: compression.
+5. Reveal check 5: total work.
+6. Keep stage 5 and reveal the takeaway panel.
 
-Keep result values absent until measurements exist. Reveal the takeaway after the fifth check.
+![Five checks on the run, stage 5](../../slides/figures/context/evaluation-5.png)
 
-![Context evaluation click states](../../slides/figures/context/evaluation-steps.png)
-
-[TikZ source](../../slides/figures/context/src/evaluation.tikz) · [Final figure](../../slides/figures/context/evaluation-5.png)
+Click states: [1](../../slides/figures/context/evaluation-1.png), [2](../../slides/figures/context/evaluation-2.png), [3](../../slides/figures/context/evaluation-3.png), [4](../../slides/figures/context/evaluation-4.png), [5](../../slides/figures/context/evaluation-5.png), [6](../../slides/figures/context/evaluation-6.png). Source: [`evaluation.tikz`](../../slides/figures/context/src/evaluation.tikz).
 
 ### Slide 10.2 — Stress the details compaction can lose
 - **Delayed effects:** place an order with delivery after the next compaction. Check that the summary still records the expected arrival.
@@ -569,17 +520,13 @@ Keep result values absent until measurements exist. Reveal the takeaway after th
 
 For the vending run, test an empty shelf while an order remains in transit. Test a second order before the first arrives. Test a delivery notice that changes the expected date. Verify source access separately from summary wording.
 
-**Build.** Use `stress-tests`.
-1. Carry the paid order through the first compaction.
-2. Add the recurring daily fee.
-3. Revise the delivery date from a source notice.
-4. Check those commitments after another compaction.
+**Build.** Figure `evaluation`, 1 click.
+1. Open on stage 5. Reveal the four stress tests and the navy line.
+2. Keep stage 6 and reveal the takeaway panel.
 
-Day 5 is a contrived date update for this test.
+![Stress tests, stage 6](../../slides/figures/context/evaluation-6.png)
 
-![Compaction stress test click states](../../slides/figures/context/stress-tests-steps.png)
-
-[TikZ source](../../slides/figures/context/src/stress-tests.tikz) · [Final figure](../../slides/figures/context/stress-tests-4.png)
+Click states: [1](../../slides/figures/context/evaluation-1.png), [2](../../slides/figures/context/evaluation-2.png), [3](../../slides/figures/context/evaluation-3.png), [4](../../slides/figures/context/evaluation-4.png), [5](../../slides/figures/context/evaluation-5.png), [6](../../slides/figures/context/evaluation-6.png). Source: [`evaluation.tikz`](../../slides/figures/context/src/evaluation.tikz).
 
 ---
 
@@ -593,12 +540,11 @@ Day 5 is a contrived date update for this test.
 
 **Notes.** Connect the context representations to next week, which develops state ownership, run-local and durable state, checkpoint boundaries, resumption and replay. The vending run returns there: its carried-forward commitments are exactly what a checkpoint must hold.
 
-**Build.** Use `state-bridge` as a short signpost.
-1. Identify the context that survives compaction.
-2. Place it inside execution state.
+**Build.** Figure `state-bridge`, 2 clicks.
+1. Reveal the surviving context and the ghost of the execution state.
+2. Reveal the execution state: checkpoints, resume, replay, and the stored context.
+3. Keep stage 2 and reveal the takeaway panel.
 
-Reveal the closing sentence last. Keep the state architecture for next week.
+![The bridge to execution state, stage 2](../../slides/figures/context/state-bridge-2.png)
 
-![Execution state bridge click states](../../slides/figures/context/state-bridge-steps.png)
-
-[TikZ source](../../slides/figures/context/src/state-bridge.tikz) · [Final figure](../../slides/figures/context/state-bridge-2.png)
+Click states: [1](../../slides/figures/context/state-bridge-1.png), [2](../../slides/figures/context/state-bridge-2.png). Source: [`state-bridge.tikz`](../../slides/figures/context/src/state-bridge.tikz).

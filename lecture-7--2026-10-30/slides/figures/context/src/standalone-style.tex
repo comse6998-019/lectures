@@ -1,18 +1,31 @@
+% Lecture 7 figure style: the shared deck style (lectures/assets/standalone-style.tex) plus the local idioms of the
+% lecture 5 and 6 figures: time or zone bands, axis labels, verdict lines, code, chips and slots.
 \input{../../../../../assets/standalone-style.tex}
-
 \tikzset{
-  card/.style={gnode, draw=deckNavy, text=black, font=\sffamily\fontsize{11}{13}\selectfont,
-    minimum height=9mm, text width=3.3cm, align=center},
-  main/.style={card, fill=deckLilac!45},
-  record/.style={card, fill=black!4, align=left},
-  lost/.style={card, draw=deckRose, fill=deckRose!7},
-  quiet/.style={card, draw=black!25, text=black!40, dashed},
-  title/.style={font=\sffamily\fontsize{12}{14}\selectfont\bfseries, text=deckNavy, inner sep=1pt},
-  caption/.style={font=\sffamily\fontsize{10.5}{12}\selectfont, text=deckGrey, align=center},
-  edge/.style={-{Stealth[length=2.2mm]}, draw=deckNavy, line width=0.9pt},
-  risk/.style={edge, draw=deckRose, line width=1.4pt},
-  boundary/.style={draw=deckNavy, dashed, rounded corners=3pt, line width=0.9pt},
+  band/.style={fill=deckLilac!35, draw=none, rounded corners=3pt},
+  ghostband/.style={draw=ibmfg!35, dashed, rounded corners=3pt},
+  ghostbox/.style={draw=ibmfg!35, dashed, rounded corners=2pt},
+  axlab/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy, anchor=north},
+  verd/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy, align=left},
+  badverd/.style={verd, text=deckRose},
+  code/.style={font=\ttfamily\footnotesize},
+  chip/.style={evil, font=\sffamily\footnotesize, align=left, inner sep=3pt},
+  okchip/.style={gnode, draw=deckNavy, line width=1pt, font=\sffamily\footnotesize, align=left, inner sep=3pt},
+  slot/.style={gnode, inner ysep=2pt, font=\sffamily\footnotesize, align=left},
+  lane/.style={draw=ibmfg!45, rounded corners=2pt, line width=0.5pt},
+  capt/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy, inner sep=0pt},
+  kick/.style={font=\sffamily\footnotesize, text=deckGrey, inner sep=0pt},
+  small lab/.style={font=\sffamily\small, align=center, inner sep=1pt},
 }
-\newcommand{\stepedge}[3]{\atstage{#1}{%
-  \ifnum\stage=#1\draw[edge,line width=1.4pt] (#2) -- (#3);%
-  \else\draw[edge] (#2) -- (#3);\fi}}
+% \beforestage{k}{...}: draw only before stage k. Pair it with \atstage{k}{...} to fade an element from stage k on.
+\newcommand{\beforestage}[2]{\ifnum\stage<#1 #2\fi}
+\tikzset{
+  faded/.style={draw=ibmfg!25, text=ibmfg!40, fill=white},
+  fadedtext/.style={text=ibmfg!40},
+  fadedflow/.style={-{Stealth[length=2.2mm]}, thick, draw=ibmfg!30},
+  tok/.style={gnode, font=\sffamily\footnotesize, inner xsep=3pt, inner ysep=2pt, minimum height=5mm},
+  keep/.style={tok, draw=deckNavy, line width=0.8pt},
+  drop/.style={tok, draw=ibmfg!25, text=ibmfg!40},
+  pics/tick/.style={code={\draw[line width=1.5pt, line cap=round, line join=round] (-0.12,-0.01) -- (-0.04,-0.1) -- (0.11,0.11);}},
+  pics/xmark/.style={code={\draw[line width=1.5pt, line cap=round] (-0.1,-0.1) -- (0.1,0.1) (-0.1,0.1) -- (0.1,-0.1);}},
+}

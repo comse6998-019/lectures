@@ -1,12 +1,37 @@
+% compaction-policy: a compaction policy as four choices, on the vending case (Slide 9.1). Canvas 16.5 x 6.0 cm.
+% Four stages, one choice per stage, then the return path.
+% Stage 1: reveal specify: the objective the context must serve and the trigger that starts compaction.
+% Stage 2: reveal select: what to keep as written, what to summarize, what to leave as a reference.
+% Stage 3: reveal generate: the replacement, with its facts, open items and sources stated.
+% Stage 4: reveal check: the questions the replacement must answer, and the return path when a check fails.
+% The procedure is the course's synthesis of the objectives and mechanisms of Segments 5 to 7; the entries are the
+% teaching case.
 \begin{tikzpicture}
-\canvas{16.5}{5.4}
-
-\foreach \k/\x/\name/\text in {1/2.0/Specify/{Next decision\\Trigger},2/6.15/Select/{Keep\\Summarize\\Reference},3/10.3/Generate/{Facts\\Open items\\Sources},4/14.45/Check/{Order\\Payment\\Due date}}{
-  \atstage{\k}{\node[main, text width=2.8cm, minimum height=23mm] (p\k) at (\x,3.4) {\textbf{\name}\\\text};}
-}
-\stepedge{2}{p1.east}{p2.west}
-\stepedge{3}{p2.east}{p3.west}
-\stepedge{4}{p3.east}{p4.west}
-\atstage{4}{\draw[edge,dashed] (p4.south) -- (14.45,1.2) -- node[lab,below] {Failed check: revise selection or summary} (6.15,1.2) -- (p2.south);}
-
+  \canvas{16.5}{6.0}
+  \tikzset{
+    head/.style={mnode, minimum width=30mm, minimum height=8mm, font=\sffamily\small\bfseries},
+    body/.style={slot, text width=30mm, anchor=north, align=left, minimum height=20mm},
+  }
+  \newcommand{\choice}[4]{
+    \node[head] (h#1) at (#2,4.9) {#3};
+    \node[body] (b#1) at (#2,4.3) {#4};
+    \node[evnum] at ($(h#1.north west)+(0.05,-0.05)$) {#1};
+  }
+  \choice{1}{2.2}{specify}{\textbf{objective:} the next order decision\\ \textbf{trigger:} the window fills, or the day changes}
+  \atstage{2}{
+    \choice{2}{6.25}{select}{\textbf{keep:} the ledger line\\ \textbf{summarize:} the log\\ \textbf{reference:} the price list}
+    \draw[flow] (h1.east) -- (h2.west);
+  }
+  \atstage{3}{
+    \choice{3}{10.3}{generate}{\textbf{facts, open items, sources:}\\ 10 SKU-A paid, due Day 4, source ledger \#17}
+    \draw[flow] (h2.east) -- (h3.west);
+  }
+  \atstage{4}{
+    \choice{4}{14.35}{check}{\textbf{the order? the payment? the date? the source?}\\ then assemble the request}
+    \draw[flow] (h3.east) -- (h4.west);
+    \draw[back] (b4.south) -- ++(0,-0.5) -| (b2.south);
+    \node[lab, fill=none, anchor=north] at (10.3,1.75) {a failed check: revise the selection or the summary};
+    \node[verd, anchor=west] at (0.7,0.75) {specify what the replacement must preserve before you compress};
+  }
+  \node[note, anchor=north east, inner sep=0pt] at (16.4,5.95) {a proposed procedure, on the teaching case};
 \end{tikzpicture}

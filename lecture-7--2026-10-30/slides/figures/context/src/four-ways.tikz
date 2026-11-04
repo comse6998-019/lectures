@@ -1,0 +1,50 @@
+% four-ways: one ledger line and the four ways to carry it into a later call: retain, retrieve, extract, rewrite
+% (Segment 7, Slide 7.1). Canvas 16.5 x 6.4 cm. Four stages, one way per stage. The earlier rows stay.
+% Stage 1: reveal retain: the line itself, as written.
+% Stage 2: reveal retrieve: a reference in the context, the line itself in a store outside, fetched when needed.
+% Stage 3: reveal extract: the informative tokens kept, the punctuation dropped (greyed).
+% Stage 4: reveal rewrite: a new sentence that says the same thing in fewer words. Then the note.
+% Illustrative, not from a source: the ledger line and the four outputs.
+\begin{tikzpicture}
+  \canvas{16.5}{6.4}
+  \tikzset{
+    way/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy, anchor=south west, inner sep=0pt},
+    outrow/.style={gnode, font=\sffamily\footnotesize, align=left, anchor=west, text width=70mm, inner ysep=3pt},
+  }
+  \def\bus{5.1}
+  \node[rnode, anchor=west, text width=36mm, align=left, font=\sffamily\footnotesize] (src) at (0.2,3.3)
+    {\texttt{inventory-ledger} Day 1\\ ordered 10 SKU-A, paid,\\ due Day 4};
+  \node[kick, anchor=south west] at (0.2,4.15) {the source line};
+  \draw[ibmfg!60, thick] (src.east) -- (\bus,3.3);
+  % stage 1: retain
+  \node[way] at (6.3,5.7) {retain: keep the words as they are};
+  \node[outrow] (o1) at (6.3,5.3) {Day 1: ordered 10 SKU-A, paid, due Day 4};
+  \draw[flow] (\bus,3.3) |- (o1.west);
+  \node[evnum] at (5.6,5.3) {1};
+  % stage 2: retrieve
+  \atstage{2}{
+    \node[way] at (6.3,4.35) {retrieve: a reference now, the line itself when needed};
+    \node[okchip, anchor=west, text width=30mm, inner ysep=4pt] (o2) at (6.3,3.95) {ref: ledger, Day 1};
+    \node[rnode, anchor=west, text width=36mm, align=left, font=\sffamily\footnotesize] (store) at (11.6,3.95) {the store: the line itself};
+    \draw[flow] (\bus,3.3) |- (o2.west);
+    \node[evnum] at (5.6,3.95) {2};
+    \draw[back] (store.west) -- (o2.east);
+    \node[lab, fill=none, anchor=south] at (10.6,4.05) {fetch};
+  }
+  % stage 3: extract
+  \atstage{3}{
+    \node[way] at (6.3,3.0) {extract: keep the informative tokens, drop the rest};
+    \node[outrow] (o3) at (6.3,2.6) {Day 1\textcolor{ibmfg!35}{:} ordered 10 SKU-A\textcolor{ibmfg!35}{,} paid\textcolor{ibmfg!35}{,} due Day 4};
+    \draw[flow] (\bus,3.3) |- (o3.west);
+    \node[evnum] at (5.6,2.6) {3};
+    \node[kick, anchor=west] at (13.8,2.6) {greyed: dropped};
+  }
+  % stage 4: rewrite
+  \atstage{4}{
+    \node[way] at (6.3,1.65) {rewrite: a new sentence in fewer words};
+    \node[outrow] (o4) at (6.3,1.25) {a paid order for 10 units of SKU-A is due on Day 4};
+    \draw[flow] (\bus,3.3) |- (o4.west);
+    \node[evnum] at (5.6,1.25) {4};
+    \node[note, anchor=south west, inner sep=0pt] at (0.2,0.1) {retain and retrieve choose material. extract and rewrite change its form. a later call can combine them.};
+  }
+\end{tikzpicture}

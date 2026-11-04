@@ -1,23 +1,53 @@
+% context-tasks: three demands on the same long log, after RULER's task families (Hsieh et al., COLM 2024): retrieval,
+% multi-hop tracing and aggregation. Canvas 16.5 x 5.6 cm. Three stages. The log lines are the course's vending example.
+% Stage 1: reveal the retrieval row: one fact in one line of the log.
+% Stage 2: reveal the tracing row: a chain of three lines, each pointing at the next.
+% Stage 3: reveal the aggregation row: five lines that all count. Then the note.
+% Illustrative, not from a source: the twelve log lines and the answers. RULER's tests are synthetic; the figure borrows
+% its three families and makes no claim about any score.
 \begin{tikzpicture}
-\canvas{16.5}{5.4}
-
-\node[title, anchor=west] at (0.5,4.65) {Retrieve};
-\node[record, text width=5.1cm] (r) at (6.2,4.5) {Record: SKU-A arrives on Day 4};
-\node[main, text width=3.3cm] (ra) at (13.6,4.5) {Answer: Day 4};
-\draw[edge] (r.east) -- (ra.west);
-\atstage{2}{
-  \node[title, anchor=west] at (0.5,2.95) {Trace};
-  \node[record, text width=2.1cm] (a) at (4.7,2.8) {$a=4$};
-  \node[record, text width=2.1cm] (b) at (8.9,2.8) {$b=a$};
-  \node[main, text width=2.1cm] (c) at (13.6,2.8) {$c=b=4$};
-  \draw[edge] (a.east) -- (b.west); \draw[edge] (b.east) -- (c.west);
-}
-\atstage{3}{
-  \node[title, anchor=west] at (0.5,1.25) {Aggregate};
-  \node[record, text width=5.1cm] (vals) at (6.2,1.1) {Two orders: 4 units and 6 units};
-  \node[main, text width=3.3cm] (sum) at (13.6,1.1) {Total: 10 units};
-  \draw[edge] (vals.east) -- (sum.west);
-}
-\node[caption] at (8.25,0.2) {Teaching examples of task types. These are not RULER scores.};
-
+  \canvas{16.5}{5.6}
+  \tikzset{
+    line/.style={draw=ibmfg!40, fill=black!6, rounded corners=1pt, minimum width=6mm, minimum height=5mm, inner sep=0pt},
+    hitline/.style={line, draw=deckNavy, fill=deckNavy, text=white, font=\sffamily\scriptsize\bfseries},
+    rowlab/.style={font=\sffamily\small\bfseries, text=deckNavy, anchor=east},
+    ans/.style={gnode, draw=deckNavy, line width=0.8pt, font=\sffamily\footnotesize, align=center, text width=24mm, inner ysep=2pt},
+  }
+  \node[kick, anchor=west] at (2.3,5.3) {one log of twelve lines, the same window every time};
+  % \logrow{y}{hits}: twelve lines at height y; \hits lists the positions that matter
+  \newcommand{\logrow}[2]{
+    \foreach \i in {1,...,12}{
+      \pgfmathsetmacro{\x}{2.65+(\i-1)*0.72}
+      \node[line] (l\i) at (\x,#1) {};
+    }
+    \foreach \i in {#2}{
+      \pgfmathsetmacro{\x}{2.65+(\i-1)*0.72}
+      \node[hitline] (h\i) at (\x,#1) {\i};
+    }
+    \draw[flow] (11.0,#1) -- (11.4,#1);
+  }
+  % stage 1: retrieve
+  \node[rowlab] at (2.1,4.4) {retrieve};
+  \logrow{4.4}{8}
+  \node[ans, anchor=west] (a1) at (11.5,4.4) {due Day 4};
+  \node[verd, anchor=west] at (14.2,4.4) {one fact, one line};
+  % stage 2: trace
+  \atstage{2}{
+    \node[rowlab] at (2.1,2.9) {trace};
+    \logrow{2.9}{2,6,10}
+    \draw[flow] (3.37,3.15) -- ++(0,0.3) -| (6.25,3.15);
+    \draw[flow] (6.25,3.15) -- ++(0,0.3) -| (9.13,3.15);
+    \node[lab, fill=white, anchor=south] at (4.8,3.47) {order 17};
+    \node[lab, fill=white, anchor=south] at (7.7,3.47) {shipment 5};
+    \node[ans, anchor=west] (a2) at (11.5,2.9) {due Day 4,\\ through two hops};
+    \node[verd, anchor=west] at (14.2,2.9) {a chain of lines};
+  }
+  % stage 3: aggregate
+  \atstage{3}{
+    \node[rowlab] at (2.1,1.4) {aggregate};
+    \logrow{1.4}{1,4,7,9,12}
+    \node[ans, anchor=west] (a3) at (11.5,1.4) {26 units ordered\\ in all};
+    \node[verd, anchor=west] at (14.2,1.4) {every line counts};
+  }
+  \node[note, anchor=south west, inner sep=0pt] at (0.2,0.1) {RULER (Hsieh et al. 2024) tests these families on synthetic inputs. The log and the answers are the course's example.};
 \end{tikzpicture}

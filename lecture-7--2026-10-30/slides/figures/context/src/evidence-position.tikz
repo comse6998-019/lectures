@@ -1,15 +1,47 @@
+% evidence-position: the same answer document moved through a long input (Lost in the Middle, Liu et al., TACL 2024).
+% Canvas 16.5 x 5.6 cm. Three stages. The paper's setting: multi-document question answering, the answer in one of k
+% retrieved documents, with the position of that document varied. The figure draws the shape of the finding and no values.
+% Stage 1: reveal the first row: the answer document is the first of 20. The reported accuracy is high.
+% Stage 2: reveal the second row: the answer document sits in the middle. The reported accuracy is lowest there (rose).
+% Stage 3: reveal the third row: the answer document is last. The accuracy is high again. Then the scope note.
+% Illustrative, not from a source: the document count of 20 for all three rows (the paper varies k) and the vending question.
+% Reported in the paper for the models and prompts it tested: performance is often highest when the relevant information
+% is at the start or the end, and lowest in the middle. The figure quotes no numbers.
 \begin{tikzpicture}
-\canvas{16.5}{5.4}
-
-\node[title] at (8.25,4.9) {The same relevant passage, three positions};
-\foreach \i in {1,...,9}{
-  \pgfmathsetmacro{\x}{0.9+(\i-1)*1.82}
-  \node[quiet, text width=1.5cm, minimum height=13mm] at (\x,3.1) {doc \i};
-}
-\onlystage{1}{\node[main, text width=1.5cm, minimum height=13mm] at (0.9,3.1) {relevant};}
-\onlystage{2}{\node[main, text width=1.5cm, minimum height=13mm] at (8.18,3.1) {relevant};}
-\onlystage{3}{\node[main, text width=1.5cm, minimum height=13mm] at (15.46,3.1) {relevant};}
-\node[caption] at (8.25,1.65) {Position schematic for Lost in the Middle. No scores appear here.};
-\atstage{3}{\node[caption] at (8.25,0.65) {Apply the result to the models, prompts, and tasks in Liu et al. (2024).};}
-
+  \canvas{16.5}{5.6}
+  \tikzset{
+    doc/.style={draw=ibmfg!40, fill=black!6, rounded corners=1pt, minimum width=3.4mm, minimum height=5mm, inner sep=0pt},
+    hit/.style={doc, draw=deckNavy, fill=deckNavy, text=white, font=\sffamily\scriptsize\bfseries},
+    rowlab/.style={font=\sffamily\footnotesize, text=deckGrey, anchor=east, align=right},
+  }
+  \node[mnode, anchor=west, text width=30mm, align=left, font=\sffamily\footnotesize] (q) at (0.2,5.05)
+    {\textbf{question}\\ which order is due on Day 4?};
+  \node[kick, anchor=west] at (4.45,5.25) {the model reads all 20 documents, then answers};
+  \node[note, anchor=north east, inner sep=0pt] at (16.4,5.5) {shape of the finding, no values};
+  % \docrow{k}{y}{hit}: twenty documents at height y, the answer document at position hit
+  \newcommand{\docrow}[3]{
+    \foreach \i in {1,...,20}{
+      \pgfmathsetmacro{\x}{4.45+(\i-1)*0.47}
+      \ifnum\i=#3 \node[hit] at (\x,#2) {A}; \else \node[doc] at (\x,#2) {}; \fi
+    }
+    \draw[flow] (13.75,#2) -- (14.15,#2);
+  }
+  % stage 1: first
+  \node[rowlab] at (4.2,4.1) {answer first};
+  \docrow{1}{4.1}{1}
+  \node[verd, anchor=west] at (14.25,4.1) {accuracy high};
+  % stage 2: middle
+  \atstage{2}{
+    \node[rowlab] at (4.2,2.9) {answer in the middle};
+    \docrow{2}{2.9}{10}
+    \node[badverd, anchor=west] at (14.25,2.9) {accuracy lowest};
+  }
+  % stage 3: last
+  \atstage{3}{
+    \node[rowlab] at (4.2,1.7) {answer last};
+    \docrow{3}{1.7}{20}
+    \node[verd, anchor=west] at (14.25,1.7) {accuracy high};
+    \node[capt, anchor=west] at (4.45,0.95) {the same 20 documents, the same question, three positions of the answer};
+  }
+  \node[note, anchor=south west, inner sep=0pt] at (0.2,0.1) {Liu et al. 2024, multi-document QA, for the models and prompts they tested. The question is the course's example.};
 \end{tikzpicture}

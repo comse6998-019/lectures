@@ -1,11 +1,52 @@
+% abstractive: a generated summary replaces the history (Slides 7.3 and 7.4c). Canvas 16.5 x 6.2 cm. Four stages.
+% Stage 1: reveal the history, five messages and tool results, 60k tokens.
+% Stage 2: reveal the summarizer and its summary, 40 tokens. The history fades: the next call will not see it.
+% Stage 3: reveal the next request, built from the system prompt, the summary and the recent messages.
+% Stage 4: reveal the check: the summary omitted the paid order and its due date (rose), so a summary is a new claim
+%          to check against the source (navy).
+% Illustrative, not from a source: the messages, the token counts and the summary text. Anthropic's 2025 engineering
+% article describes the pattern (summarize, then continue in a fresh context) and warns about aggressive loss.
 \begin{tikzpicture}
-\canvas{16.5}{5.4}
-
-\node[record, text width=3.8cm, minimum height=22mm] (old) at (2.6,3.4) {\textbf{Earlier history}\\Day 1: 10 units ordered\\Payment complete\\Expected arrival: Day 4};
-\atstage{2}{\node[main, text width=3.8cm, minimum height=22mm] (sum) at (8.25,3.4) {\textbf{Generated summary}\\A paid order for 10 units\\is due on Day 4.};}
-\stepedge{2}{old.east}{sum.west}
-\atstage{3}{\node[card, text width=3.8cm, minimum height=22mm] (req) at (13.9,3.4) {\textbf{Next request}\\Summary\\Recent messages};}
-\stepedge{3}{sum.east}{req.west}
-\atstage{4}{\node[lost, text width=12.8cm] at (8.25,1.0) {Check the order, payment, date, and source before the next action.};}
-
+  \canvas{16.5}{6.2}
+  \tikzset{msg/.style={slot, text width=40mm, anchor=north west}}
+  \node[capt, anchor=south west] at (0.2,5.85) {the history: 60k tokens};
+  \newcommand{\history}[1]{
+    \node[msg, #1] (m1) at (0.2,5.75) {user: keep SKU-A stocked};
+    \node[msg, #1] (m2) at (0.2,5.2) {tool, ledger Day 1: 10 SKU-A\\ ordered, paid, due Day 4};
+    \node[msg, #1] (m3) at (0.2,4.35) {assistant: wait for delivery};
+    \node[msg, #1] (m4) at (0.2,3.8) {tool, log Day 2: shelf empty};
+    \node[msg, #1] (m5) at (0.2,3.25) {tool, log Day 3: shelf empty};
+  }
+  \beforestage{2}{\history{}}
+  \atstage{2}{\history{faded}}
+  % stage 2: the summarizer writes the summary
+  \onlystage{1}{\node[ghostbox, minimum width=36mm, minimum height=10mm, text=ibmfg!50, font=\sffamily\small] (sm) at (7.6,4.5) {summarizer};}
+  \atstage{2}{
+    \node[mnode, text width=32mm, align=center] (sm) at (7.6,4.5) {\textbf{summarizer}\\ an LLM writes a shorter account};
+    \draw[flow] (4.55,4.5) -- (sm.west);
+    \node[evnum] at (5.2,4.5) {1};
+    \node[lab, fill=none, anchor=south] at (5.2,4.78) {reads 60k};
+    \node[okchip, anchor=west, text width=46mm] (sum) at (10.7,4.5) {\textbf{summary, 40 tokens}\\ SKU-A is out of stock and the agent is waiting for stock.};
+    \draw[flow] (sm.east) -- (sum.west);
+    \node[evnum] at (10.05,4.5) {2};
+    \node[lab, fill=none, anchor=south] at (10.05,4.78) {writes};
+  }
+  % stage 3: the next request
+  \atstage{3}{
+    \node[mnode, anchor=south west, minimum width=52mm, minimum height=22mm] (req) at (10.7,0.9) {};
+    \node[anchor=east, fill=ibmblue!15, inner sep=2pt, font=\sffamily\small\bfseries] at ($(req.north east)+(-0.15,0)$) {the next request};
+    \node[slot, anchor=north west, text width=46mm] at (10.85,2.85) {system prompt and tools};
+    \node[slot, anchor=north west, text width=46mm, draw=deckNavy, line width=0.8pt] at (10.85,2.3) {the summary};
+    \node[slot, anchor=north west, text width=46mm] at (10.85,1.75) {recent messages: Day 3 onward};
+    \draw[flow] (sum.south) -- (sum.south |- req.north);
+    \node[evnum] at ($(sum.south)!0.5!(sum.south |- req.north)$) {3};
+    \node[lab, fill=none, anchor=west] at ($(sum.south)!0.5!(sum.south |- req.north)+(0.3,0)$) {replaces the history};
+  }
+  % stage 4: the check
+  \atstage{4}{
+    \node[badverd, text width=44mm, align=center] at (7.6,2.55) {omitted: the paid order\\ and its due date};
+    \pic[color=deckRose] at ($(sum.east)+(-0.25,0.42)$) {xmark};
+    \node[verd, text width=44mm, align=center] at (7.6,1.45) {a summary is a new claim:\\ check it against the source};
+  }
+  \node[note, anchor=south west, inner sep=0pt] at (0.2,0.1) {messages and token counts illustrative. The pattern follows Anthropic's 2025 article on context engineering.};
 \end{tikzpicture}

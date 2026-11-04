@@ -46,17 +46,17 @@ The [decision history](part-02-decisions.json) retains the answers verbatim. The
 
 | Time | Teaching band | What students see and learn |
 | --- | --- | --- |
-| 0:00–0:05 | Framing: what fills a model call | Name the input: instructions, tools, retrieved material, and history. Context capacity and resources are finite. Ask what must survive to the next useful step. |
-| 0:05–0:13 | Evidence: effective context is short | Lost in the Middle reports weaker performance for evidence in the middle of the tested inputs. RULER tests effective context across different tasks. Useful capacity can fall below the advertised window and varies by task. |
-| 0:13–0:23 | Mechanism: compaction, made concrete | Introduce selection, retrieval, extractive compression, learned compression, and generated summaries. Study LLMLingua-2, with LLMLingua as its origin. Give each strategy a visual slide (7.4a–f), then show the comparison recap (7.4g). Describe Pi, Claude Code, and Codex formats in Slides 7.5a–d. QwenGyre supplies an example of repeated compaction, delegation, and retries. This segment has fifteen topics, with timing still open. |
+| 0:00–0:03 | Framing: one call within a budget | One slide with three clicks. The call's context from the records that exist. The next decision and what it needs. The run meter: the context goes out again on every call. |
+| 0:03–0:11 | Evidence: effective context is short | Lost in the Middle reports weaker performance for evidence in the middle of the tested inputs. RULER tests effective context across different tasks. Useful capacity can fall below the advertised window and varies by task. |
+| 0:11–0:23 | Mechanism: compaction, made concrete | Introduce selection, retrieval, extractive compression, learned compression, and generated summaries. Study LLMLingua-2, with LLMLingua as its origin. Give each strategy a visual slide (7.4a–f), then show the comparison recap (7.4g). Describe Pi, Claude Code, and Codex formats in Slides 7.5a–d. QwenGyre supplies an example of repeated compaction, delegation, and retries. This segment has fifteen topics in twelve minutes, with timing still open. |
 | 0:23–0:31 | Task: what a long horizon needs | Move from one call to a run. Identify goals, plans, progress, pending commitments, evidence, and replanning triggers. Introduce Vending-Bench as the example task. Use SWE-bench as further evidence of agent task difficulty. Introduce the order with delayed delivery. |
 | 0:31–0:43 | Worked compaction policy on the task | Specify when to compact, what to retain, and how to preserve source references. Identify the pending order as information that must survive. Show the failure when compaction removes it. Compare a policy that preserves the commitment. |
 | 0:43–0:48 | Evaluation across a run | Assess task success, faithfulness, total cost, the effects of repeated compaction, drift, and repeated work. Connect each measure to the delayed-delivery case. |
 | 0:48–0:50 | Bridge to next week | The surviving context has to live somewhere. Next week: context in state, state ownership, run-local and durable state, checkpoint boundaries, resumption, and replay. |
 
-**Open after review 3: timing.** The draft contains 28 slide topics. Segment 7 contains fifteen and still overlaps Segment 8's proposed time. Each topic can produce several consecutive slide builds. Rehearsal must account for those clicks.
+**Open after review 5: timing.** The draft contains 26 slide topics. Segment 5 is one slide now, so Segments 6 and 7 start two minutes earlier. Segment 7 still holds fifteen topics in twelve minutes. Each topic reveals its figure one stage per click, so rehearsal must count those clicks.
 
-Revision 4 adds 22 TikZ figure groups with 75 rendered stages. The [visual notes](part-02-visuals.md) identify source patterns from Lectures 4–6. The [slide draft](section-02-slides-draft.md) includes previews and click instructions. Slides 5.3, 9.2, 9.3, and 10.1 now use diagrams. Tables remain only as the two recaps.
+Revision 5 adds 16 TikZ figures with 56 rendered stages in the Lecture 5 and 6 grammar. The [visual notes](part-02-visuals.md) record the grammar, the reveal and fade rules, and the reproduction command. The [slide draft](section-02-slides-draft.md) embeds each figure's final stage with its click list. Tables remain only as the two recaps.
 
 Options: use brief figure builds for the strategy and harness topics. Move the harness details to backup if the half exceeds 50 minutes. Decide the teaching time and backup split during review.
 
