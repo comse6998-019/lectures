@@ -1,0 +1,14 @@
+\begin{tikzpicture}
+\canvas{16.5}{5.4}
+
+\node[main, text width=4.6cm, minimum height=16mm] (dec) at (8.25,2.7) {\textbf{Next decision}\\Order more SKU-A?};
+\node[record, text width=3.7cm] (quality) at (2.6,4.3) {\textbf{Task quality}\\Correct next action};
+\stepedge{1}{quality.south east}{dec.north west}
+\atstage{2}{\node[record, text width=3.7cm] (budget) at (13.9,4.3) {\textbf{Efficiency}\\Tokens, time, charges};}
+\stepedge{2}{budget.south west}{dec.north east}
+\atstage{3}{\node[record, text width=3.7cm] (faith) at (2.6,1.0) {\textbf{Faithfulness}\\Paid order still recorded};}
+\stepedge{3}{faith.north east}{dec.south west}
+\atstage{4}{\node[record, text width=3.7cm] (source) at (13.9,1.0) {\textbf{Source access}\\Read the order ledger};}
+\stepedge{4}{source.north west}{dec.south east}
+
+\end{tikzpicture}

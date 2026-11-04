@@ -1,0 +1,13 @@
+\begin{tikzpicture}
+\canvas{16.5}{5.4}
+
+\node[main, text width=5.5cm, minimum height=21mm] (ctx) at (4.0,3.0) {\textbf{Surviving context}\\Facts, decisions, open commitments};
+\atstage{2}{
+  \draw[boundary] (9.0,1.25) rectangle (16.0,4.65);
+  \node[title] at (12.5,4.2) {Execution state};
+  \node[record, text width=5.2cm, minimum height=17mm] (state) at (12.5,2.85) {Context to preserve\\Checkpoint and resume};
+  \draw[edge] (ctx.east) -- (state.west);
+}
+\node[caption] at (8.25,0.6) {Next week: state ownership, checkpoints, resumption, and replay.};
+
+\end{tikzpicture}

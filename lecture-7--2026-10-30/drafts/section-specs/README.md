@@ -1,6 +1,6 @@
 # Lecture 7: section plans and specs
 
-**Current stage:** Part II planning has settled its decisions; the [Part II section plan](section-02-plan.md) is assembled and proposed for review. Section 1's complete plan also remains proposed for review. The overview's chat green light is recorded; no section has both plan and spec approval.
+**Current stage:** the [Part II plan](section-02-plan.md) and [slide prose, revision 4](section-02-slides-draft.md), await instructor review. The draft includes staged TikZ figures from the visual method in Lectures 4–6. Section 1's plan also awaits approval. No section has both plan and spec approval.
 
 **Part II decisions:** a few sources in depth with the rest supporting; one contrived task (Vending-Bench) carried through mechanisms, compaction, and evaluation; the failure anchored on outstanding orders with delayed deliveries; three sources in depth (Lost in the Middle, LLMLingua-2, Vending-Bench), grounded by the [literature map](part-02-literature.md), with the long-horizon claim resting on a tier-A benchmark (proposed SWE-bench); and narrative structure A (problem-first linear). See the [brainstorming record](part-02-brainstorm.md).
 
@@ -23,7 +23,7 @@ Use separate files for each section: `section-01-plan.md`, then `section-01-spec
 | Section | Plan | Detailed spec | Slides |
 | --- | --- | --- | --- |
 | 1. OpenShell through two access checks (proposed combined section) | [Plan for review](section-01-plan.md) | After plan approval | After plan and spec approval |
-| 2. Context and compaction (Part II, problem-first linear) | [Plan for review](section-02-plan.md) | Folded into the [slide prose draft](section-02-slides-draft.md) | [Slide prose, rev 2](section-02-slides-draft.md) — reviewed once ([feedback](../reviews/part-02-slides-feedback-1.json)), revised, back for review |
+| 2. Context and compaction (Part II, problem-first linear) | [Plan for review](section-02-plan.md) | Included in the [slide prose draft](section-02-slides-draft.md) | [Slide prose, revision 4](section-02-slides-draft.md), with [TikZ figures and click notes](part-02-visuals.md). Three feedback rounds. Approval remains open. |
 
 ## What to preserve
 

@@ -1,0 +1,12 @@
+\begin{tikzpicture}
+\canvas{16.5}{5.4}
+
+\foreach \k/\x/\name/\text in {1/2.0/Specify/{Next decision\\Trigger},2/6.15/Select/{Keep\\Summarize\\Reference},3/10.3/Generate/{Facts\\Open items\\Sources},4/14.45/Check/{Order\\Payment\\Due date}}{
+  \atstage{\k}{\node[main, text width=2.8cm, minimum height=23mm] (p\k) at (\x,3.4) {\textbf{\name}\\\text};}
+}
+\stepedge{2}{p1.east}{p2.west}
+\stepedge{3}{p2.east}{p3.west}
+\stepedge{4}{p3.east}{p4.west}
+\atstage{4}{\draw[edge,dashed] (p4.south) -- (14.45,1.2) -- node[lab,below] {Failed check: revise selection or summary} (6.15,1.2) -- (p2.south);}
+
+\end{tikzpicture}

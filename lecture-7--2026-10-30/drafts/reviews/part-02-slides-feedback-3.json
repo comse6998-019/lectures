@@ -1,0 +1,21 @@
+{
+  "session": "pn-9ac153",
+  "artifact": "drafts/section-specs/section-02-slides-draft.md",
+  "companions": [
+    "drafts/section-specs/section-02-plan.md",
+    "drafts/section-specs/part-02-harness-compaction.md"
+  ],
+  "tool": "plannotator",
+  "decision": "annotated",
+  "date": "2026-11-04",
+  "annotations": [
+    {
+      "id": 1,
+      "scope": "document",
+      "note": "Use the tikz diagrams and transitions from ../lecture-{4,5,6}-* and then add them here.",
+      "resolution": "Use the earlier lectures as the visual reference. Adapt their fixed-canvas TikZ figures and consecutive slide builds. Add rendered previews, source links, and click instructions to the Part II draft. Preserve the separate plan and spec approval steps."
+    }
+  ],
+  "plan_approved": false,
+  "spec_approved": false
+}

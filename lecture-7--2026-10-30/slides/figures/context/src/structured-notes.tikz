@@ -1,0 +1,10 @@
+\begin{tikzpicture}
+\canvas{16.5}{5.4}
+
+\draw[boundary] (2.0,0.6) rectangle (14.5,4.9);
+\node[title] at (8.25,4.5) {Task state card};
+\node[record, text width=10.5cm] at (8.25,3.65) {\textbf{Goal:} keep SKU-A available};
+\atstage{2}{\node[main, text width=10.5cm] at (8.25,2.45) {\textbf{Open order:} 10 units, paid, expected Day 4};}
+\atstage{3}{\node[record, text width=10.5cm] at (8.25,1.25) {\textbf{Next check:} confirm delivery on Day 4};}
+
+\end{tikzpicture}

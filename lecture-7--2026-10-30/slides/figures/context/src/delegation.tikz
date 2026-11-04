@@ -1,0 +1,12 @@
+\begin{tikzpicture}
+\canvas{16.5}{5.4}
+
+\node[main, text width=3.8cm, minimum height=18mm] (main) at (2.7,3.25) {\textbf{Main context}\\Decide whether to order};
+\draw[boundary] (7.0,0.9) rectangle (16.0,4.8);
+\node[title] at (11.5,4.4) {Separate sub-agent context};
+\node[card, text width=4.8cm] (task) at (11.5,3.25) {Check the pending order};
+\draw[edge] (main.east) -- node[lab,above] {subtask} (task.west);
+\atstage{2}{\node[record, text width=6.6cm] at (11.5,1.9) {Ledger and delivery notices stay here.};}
+\atstage{3}{\draw[edge,dashed] (task.west) -- (6.3,2.0) -- node[lab,below] {Paid. Due Day 4.} (4.8,2.0) -- (main.south east);}
+
+\end{tikzpicture}

@@ -1,0 +1,11 @@
+\begin{tikzpicture}
+\canvas{16.5}{5.4}
+
+\node[record, text width=3.8cm, minimum height=22mm] (old) at (2.6,3.4) {\textbf{Earlier history}\\Day 1: 10 units ordered\\Payment complete\\Expected arrival: Day 4};
+\atstage{2}{\node[main, text width=3.8cm, minimum height=22mm] (sum) at (8.25,3.4) {\textbf{Generated summary}\\A paid order for 10 units\\is due on Day 4.};}
+\stepedge{2}{old.east}{sum.west}
+\atstage{3}{\node[card, text width=3.8cm, minimum height=22mm] (req) at (13.9,3.4) {\textbf{Next request}\\Summary\\Recent messages};}
+\stepedge{3}{sum.east}{req.west}
+\atstage{4}{\node[lost, text width=12.8cm] at (8.25,1.0) {Check the order, payment, date, and source before the next action.};}
+
+\end{tikzpicture}

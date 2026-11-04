@@ -1,0 +1,23 @@
+\begin{tikzpicture}
+\canvas{16.5}{5.4}
+
+\node[title, anchor=west] at (0.5,4.65) {Retrieve};
+\node[record, text width=5.1cm] (r) at (6.2,4.5) {Record: SKU-A arrives on Day 4};
+\node[main, text width=3.3cm] (ra) at (13.6,4.5) {Answer: Day 4};
+\draw[edge] (r.east) -- (ra.west);
+\atstage{2}{
+  \node[title, anchor=west] at (0.5,2.95) {Trace};
+  \node[record, text width=2.1cm] (a) at (4.7,2.8) {$a=4$};
+  \node[record, text width=2.1cm] (b) at (8.9,2.8) {$b=a$};
+  \node[main, text width=2.1cm] (c) at (13.6,2.8) {$c=b=4$};
+  \draw[edge] (a.east) -- (b.west); \draw[edge] (b.east) -- (c.west);
+}
+\atstage{3}{
+  \node[title, anchor=west] at (0.5,1.25) {Aggregate};
+  \node[record, text width=5.1cm] (vals) at (6.2,1.1) {Two orders: 4 units and 6 units};
+  \node[main, text width=3.3cm] (sum) at (13.6,1.1) {Total: 10 units};
+  \draw[edge] (vals.east) -- (sum.west);
+}
+\node[caption] at (8.25,0.2) {Teaching examples of task types. These are not RULER scores.};
+
+\end{tikzpicture}

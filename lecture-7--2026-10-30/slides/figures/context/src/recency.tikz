@@ -1,0 +1,16 @@
+\begin{tikzpicture}
+\canvas{16.5}{5.4}
+
+\node[title] at (8.25,4.9) {History in time order};
+\foreach \i/\x/\txt in {1/1.65/{Day 1\\Order paid},2/4.3/{Day 1\\Due Day 4},3/6.95/{Day 2\\Tool result},4/9.6/{Day 3\\Empty shelf},5/12.25/{Day 3\\No sales},6/14.9/{Day 3\\Next step}}{
+  \ifnum\i<4
+    \onlystage{1}{\node[record, text width=1.8cm, minimum height=16mm] at (\x,3.35) {\txt};}
+    \onlystage{2}{\node[quiet, text width=1.8cm, minimum height=16mm] at (\x,3.35) {\txt};}
+  \else
+    \node[main, text width=1.8cm, minimum height=16mm] at (\x,3.35) {\txt};
+  \fi
+}
+\atstage{2}{\draw[boundary] (8.35,2.1) rectangle (16.1,4.4); \node[caption] at (12.2,2.45) {Retained recent turns};}
+\atstage{3}{\node[lost, text width=13.0cm] at (8.25,0.9) {The retained text loses the paid order and expected arrival.};}
+
+\end{tikzpicture}

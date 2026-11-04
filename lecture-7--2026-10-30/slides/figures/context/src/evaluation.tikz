@@ -1,0 +1,13 @@
+\begin{tikzpicture}
+\canvas{16.5}{5.4}
+
+\node[record, text width=3.2cm] (src) at (2.0,4.4) {Original history};
+\node[main, text width=3.2cm] (sum) at (8.25,4.4) {Replacement context};
+\node[card, text width=3.2cm] (dec) at (14.5,4.4) {Next decision};
+\draw[edge] (src.east) -- (sum.west); \draw[edge] (sum.east) -- (dec.west);
+\foreach \k/\x/\name/\txt in {1/1.8/Success/{Correct action?},2/5.0/Evidence/{Order and source?},3/8.2/Faithfulness/{Meaning unchanged?},4/11.4/Compression/{Token counts?},5/14.6/Total work/{All calls and costs?}}{
+  \atstage{\k}{\node[main, text width=2.5cm, minimum height=18mm] at (\x,2.0) {\textbf{\name}\\\txt};}
+}
+\node[caption] at (8.25,0.65) {Repeat with delayed delivery, date updates, fees, and repeated compaction.};
+
+\end{tikzpicture}

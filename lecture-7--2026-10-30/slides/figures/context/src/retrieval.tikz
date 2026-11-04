@@ -1,0 +1,12 @@
+\begin{tikzpicture}
+\canvas{16.5}{5.4}
+
+\draw[boundary] (0.5,1.6) rectangle (6.9,4.8);
+\node[title] at (3.7,4.4) {Current context};
+\node[main, text width=4.5cm] (ref) at (3.7,3.25) {\textbf{Reference}\\\texttt{inventory-ledger}, Day 1};
+\node[record, text width=5.6cm, minimum height=22mm] (store) at (12.5,3.25) {\textbf{External records}\\Day 1: 10 units, paid\\Expected Day 4};
+\atstage{2}{\draw[edge] (ref.east) -- node[lab,above] {fetch by reference} (store.west);}
+\atstage{3}{\draw[edge,dashed] (store.south) -- (12.5,1.2) -- node[lab,below] {return the source record} (3.7,1.2) -- (ref.south);}
+\node[caption] at (8.25,0.4) {Check that the reference still reaches the needed evidence.};
+
+\end{tikzpicture}

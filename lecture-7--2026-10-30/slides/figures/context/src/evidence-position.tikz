@@ -1,0 +1,15 @@
+\begin{tikzpicture}
+\canvas{16.5}{5.4}
+
+\node[title] at (8.25,4.9) {The same relevant passage, three positions};
+\foreach \i in {1,...,9}{
+  \pgfmathsetmacro{\x}{0.9+(\i-1)*1.82}
+  \node[quiet, text width=1.5cm, minimum height=13mm] at (\x,3.1) {doc \i};
+}
+\onlystage{1}{\node[main, text width=1.5cm, minimum height=13mm] at (0.9,3.1) {relevant};}
+\onlystage{2}{\node[main, text width=1.5cm, minimum height=13mm] at (8.18,3.1) {relevant};}
+\onlystage{3}{\node[main, text width=1.5cm, minimum height=13mm] at (15.46,3.1) {relevant};}
+\node[caption] at (8.25,1.65) {Position schematic for Lost in the Middle. No scores appear here.};
+\atstage{3}{\node[caption] at (8.25,0.65) {Apply the result to the models, prompts, and tasks in Liu et al. (2024).};}
+
+\end{tikzpicture}

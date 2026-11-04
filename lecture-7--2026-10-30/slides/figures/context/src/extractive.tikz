@@ -1,0 +1,15 @@
+\begin{tikzpicture}
+\canvas{16.5}{5.4}
+
+\node[record, text width=14.0cm] (src) at (8.25,4.55) {\textbf{Source}\\SKU-A is empty. The order is paid and due on Day 4.};
+\atstage{2}{
+  \node[main, text width=6.2cm] (model) at (8.25,3.05) {Classifier: keep or drop each token};
+  \draw[edge] (src.south) -- (model.north);
+}
+\atstage{3}{
+  \node[record, text width=10.8cm] (kept) at (8.25,1.6) {\textbf{Selected source words}\\SKU-A empty. order paid due Day 4.};
+  \draw[edge] (model.south) -- (kept.north);
+}
+\atstage{4}{\node[caption, text=deckRose] at (8.25,0.45) {Test the paid order and due date after deletion.};}
+
+\end{tikzpicture}

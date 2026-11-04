@@ -1,0 +1,18 @@
+\input{../../../../../assets/standalone-style.tex}
+
+\tikzset{
+  card/.style={gnode, draw=deckNavy, text=black, font=\sffamily\fontsize{11}{13}\selectfont,
+    minimum height=9mm, text width=3.3cm, align=center},
+  main/.style={card, fill=deckLilac!45},
+  record/.style={card, fill=black!4, align=left},
+  lost/.style={card, draw=deckRose, fill=deckRose!7},
+  quiet/.style={card, draw=black!25, text=black!40, dashed},
+  title/.style={font=\sffamily\fontsize{12}{14}\selectfont\bfseries, text=deckNavy, inner sep=1pt},
+  caption/.style={font=\sffamily\fontsize{10.5}{12}\selectfont, text=deckGrey, align=center},
+  edge/.style={-{Stealth[length=2.2mm]}, draw=deckNavy, line width=0.9pt},
+  risk/.style={edge, draw=deckRose, line width=1.4pt},
+  boundary/.style={draw=deckNavy, dashed, rounded corners=3pt, line width=0.9pt},
+}
+\newcommand{\stepedge}[3]{\atstage{#1}{%
+  \ifnum\stage=#1\draw[edge,line width=1.4pt] (#2) -- (#3);%
+  \else\draw[edge] (#2) -- (#3);\fi}}

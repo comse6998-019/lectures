@@ -1,0 +1,21 @@
+\begin{tikzpicture}
+\canvas{16.5}{5.4}
+
+\node[title] at (3.8,4.9) {One request};
+\draw[boundary] (0.7,2.1) rectangle (6.9,4.4);
+\node[main, text width=3.6cm] at (2.8,3.5) {Input tokens};
+\node[card, text width=1.5cm] at (5.9,3.5) {Output\\room};
+\node[caption] at (3.8,2.55) {A finite context window};
+\atstage{2}{
+  \node[title] at (11.65,4.9) {The complete run};
+  \foreach \x/\n in {8.8/1,11.6/2,14.4/3}{
+    \node[main, text width=1.9cm] at (\x,3.5) {Call \n\\history again};}
+  \draw[edge] (9.95,3.5) -- (10.45,3.5);
+  \draw[edge] (12.75,3.5) -- (13.25,3.5);
+  \node[caption] at (11.6,2.45) {Count tokens across every call.};
+}
+\atstage{3}{
+  \node[record, text width=13.7cm] at (8.25,0.9) {Also count summary calls, source reads, elapsed time, and charges.};
+}
+
+\end{tikzpicture}

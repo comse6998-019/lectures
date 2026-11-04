@@ -2,7 +2,7 @@
   "part": 2,
   "title": "Context, compaction, and extended planning",
   "lecture_date": "2026-11-06",
-  "stage": "brainstorming with instructor, step by step",
+  "stage": "slide prose and staged figures for instructor review",
   "plan_approved": false,
   "spec_approved": false,
   "decisions": [
@@ -50,7 +50,12 @@
       "id": "slides_review_2",
       "answer": "Plannotator annotations (2026-11-04): remove teaching tables (tables become recap summaries); convert Slide 7.4 to one slide per strategy with rich visuals; find and add Claude Code, Codex, and Pi compaction formats grouped by strategy (ref https://arxiv.org/pdf/2609.33848).",
       "consequence": "Revision 3 of the slide prose. Segment 7 restructured: 7.1 table becomes a concept slide; 7.4 becomes one visual slide per strategy (7.4a-f) with the table demoted to a recap (7.4g); new harness-format slides 7.5a-c (Pi, Claude Code, Codex) grounded in part-02-harness-compaction.md, with a grouping recap (7.5d). Deck now 28 slides; Segment 7 holds fifteen and overlaps Segment 8's time. Remaining tables (5.3, 9.2, 9.3, 10.1) still need the same table-to-concept treatment. Timing split (full slide vs quick build visual vs backup) is open for the next review. Full record in reviews/part-02-slides-feedback-2.json."
+    },
+    {
+      "id": "slides_review_3",
+      "answer": "Use the tikz diagrams and transitions from ../lecture-{4,5,6}-* and then add them here.",
+      "consequence": "Revision 4 adds 22 TikZ figure groups and 75 rendered stages. The figures adapt the earlier fixed canvases, node styles, request and return arrows, context boundaries, and consecutive slide builds. The draft includes previews, source links, and click instructions for 26 visual topics. Slides 7.4g and 7.5d remain row-by-row recap tables. The four other teaching tables now use visual builds. The draft retains 28 logical topics. Teaching time still needs review. The annotation does not approve the plan or spec. See reviews/part-02-slides-feedback-3.json and part-02-visuals.md."
     }
   ],
-  "next_decision": "Settle Part II slide timing (full vs build vs backup) and convert the remaining tables (5.3, 9.2, 9.3, 10.1); review revision 3 in Plannotator via the agent tool after /reload"
+  "next_decision": "Review revision 4 prose and staged TikZ figures in Plannotator. Decide the 50-minute pacing and backup split. Record plan and spec approval separately."
 }

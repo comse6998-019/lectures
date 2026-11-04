@@ -1,0 +1,508 @@
+[
+  {
+    "name": "context-input",
+    "topics": [
+      "5.1"
+    ],
+    "source": "src/context-input.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "context-input-1.png",
+      "context-input-2.png",
+      "context-input-3.png",
+      "context-input-4.png"
+    ],
+    "steps": [
+      "Add instructions and tool definitions.",
+      "Add messages and observations.",
+      "Add selected source material.",
+      "Assemble the request and leave other records outside."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "objectives",
+    "topics": [
+      "5.2"
+    ],
+    "source": "src/objectives.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "objectives-1.png",
+      "objectives-2.png",
+      "objectives-3.png",
+      "objectives-4.png"
+    ],
+    "steps": [
+      "Start with the next useful decision.",
+      "Add the resource budget.",
+      "Check whether the record preserves meaning.",
+      "Keep access to the source record."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "capacity-cost",
+    "topics": [
+      "5.3"
+    ],
+    "source": "src/capacity-cost.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "capacity-cost-1.png",
+      "capacity-cost-2.png",
+      "capacity-cost-3.png"
+    ],
+    "steps": [
+      "Show the capacity limit of one request.",
+      "Repeat the history across three calls.",
+      "Add the work of compression and retrieval."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "evidence-position",
+    "topics": [
+      "6.1"
+    ],
+    "source": "src/evidence-position.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "evidence-position-1.png",
+      "evidence-position-2.png",
+      "evidence-position-3.png"
+    ],
+    "steps": [
+      "Place the relevant passage near the start.",
+      "Move the same passage to the middle.",
+      "Move it near the end and state the study limits."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "context-tasks",
+    "topics": [
+      "6.2"
+    ],
+    "source": "src/context-tasks.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "context-tasks-1.png",
+      "context-tasks-2.png",
+      "context-tasks-3.png"
+    ],
+    "steps": [
+      "Retrieve a specified fact.",
+      "Trace a value through several assignments.",
+      "Combine several facts into one answer."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "context-choices",
+    "topics": [
+      "7.1"
+    ],
+    "source": "src/context-choices.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "context-choices-1.png",
+      "context-choices-2.png",
+      "context-choices-3.png",
+      "context-choices-4.png"
+    ],
+    "steps": [
+      "Retain original material.",
+      "Retrieve a record through a reference.",
+      "Select tokens from the source.",
+      "Rewrite the source as a summary."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "extractive",
+    "topics": [
+      "7.2",
+      "7.4b"
+    ],
+    "source": "src/extractive.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "extractive-1.png",
+      "extractive-2.png",
+      "extractive-3.png",
+      "extractive-4.png"
+    ],
+    "steps": [
+      "Show a source passage from the teaching case.",
+      "Classify each source token as keep or drop.",
+      "Assemble the selected source words.",
+      "Check whether deletion loses the paid order or due date."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "abstractive",
+    "topics": [
+      "7.3",
+      "7.4c"
+    ],
+    "source": "src/abstractive.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "abstractive-1.png",
+      "abstractive-2.png",
+      "abstractive-3.png",
+      "abstractive-4.png"
+    ],
+    "steps": [
+      "Start from messages and source records.",
+      "Generate a shorter account in new words.",
+      "Assemble the next request from the summary and recent messages.",
+      "Check for omissions and unsupported claims."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "recency",
+    "topics": [
+      "7.4a"
+    ],
+    "source": "src/recency.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "recency-1.png",
+      "recency-2.png",
+      "recency-3.png"
+    ],
+    "steps": [
+      "Show the old commitment among the recorded turns.",
+      "Keep the recent turns and dim the older turns.",
+      "Remove the older turns and expose the lost commitment."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "structured-notes",
+    "topics": [
+      "7.4d"
+    ],
+    "source": "src/structured-notes.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "structured-notes-1.png",
+      "structured-notes-2.png",
+      "structured-notes-3.png"
+    ],
+    "steps": [
+      "Write the goal in a state card.",
+      "Add the paid order as an open commitment.",
+      "Update its next check while the run advances."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "delegation",
+    "topics": [
+      "7.4e"
+    ],
+    "source": "src/delegation.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "delegation-1.png",
+      "delegation-2.png",
+      "delegation-3.png"
+    ],
+    "steps": [
+      "Start a subtask in a separate context.",
+      "Keep its large reads inside that context.",
+      "Return a short result to the main agent."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "retrieval",
+    "topics": [
+      "7.4f"
+    ],
+    "source": "src/retrieval.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "retrieval-1.png",
+      "retrieval-2.png",
+      "retrieval-3.png"
+    ],
+    "steps": [
+      "Keep a compact reference inside the request.",
+      "Fetch the matching record from an external store.",
+      "Return the evidence needed for the next decision."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "harness-branches",
+    "topics": [
+      "7.5"
+    ],
+    "source": "src/harness-branches.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "harness-branches-1.png",
+      "harness-branches-2.png",
+      "harness-branches-3.png"
+    ],
+    "steps": [
+      "Replace the older trajectory with a summary branch.",
+      "Add an isolated sub-agent context.",
+      "Retry a failed path from a recorded point."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "pi-format",
+    "topics": [
+      "7.5a"
+    ],
+    "source": "src/pi-format.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "pi-format-1.png",
+      "pi-format-2.png",
+      "pi-format-3.png"
+    ],
+    "steps": [
+      "Show the fixed summary sections.",
+      "Keep recent messages after the summary.",
+      "Carry the cumulative file lists with the record."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "claude-format",
+    "topics": [
+      "7.5b"
+    ],
+    "source": "src/claude-format.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "claude-format-1.png",
+      "claude-format-2.png",
+      "claude-format-3.png"
+    ],
+    "steps": [
+      "Replace conversation history with a structured summary.",
+      "Read up to five recent files again.",
+      "Add hook output and skill text again."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "codex-format",
+    "topics": [
+      "7.5c"
+    ],
+    "source": "src/codex-format.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "codex-format-1.png",
+      "codex-format-2.png",
+      "codex-format-3.png"
+    ],
+    "steps": [
+      "Write the context-checkpoint handoff summary.",
+      "Retain the state of the tools the previous model used.",
+      "Keep cross-session memories separate from this compaction step."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "delayed-order",
+    "topics": [
+      "8.1",
+      "8.2",
+      "9.2"
+    ],
+    "source": "src/delayed-order.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "delayed-order-1.png",
+      "delayed-order-2.png",
+      "delayed-order-3.png",
+      "delayed-order-4.png"
+    ],
+    "steps": [
+      "Place and pay for the order on Day 1.",
+      "Observe an empty shelf on Days 2 and 3.",
+      "Move the context boundary past the original order.",
+      "Preserve the commitment until the Day 4 delivery check."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "compaction-policy",
+    "topics": [
+      "9.1"
+    ],
+    "source": "src/compaction-policy.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "compaction-policy-1.png",
+      "compaction-policy-2.png",
+      "compaction-policy-3.png",
+      "compaction-policy-4.png"
+    ],
+    "steps": [
+      "Specify the objective and trigger.",
+      "Select the source material.",
+      "Generate the replacement context.",
+      "Check the preserved commitment and revise on failure."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "replacement-check",
+    "topics": [
+      "9.3"
+    ],
+    "source": "src/replacement-check.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "replacement-check-1.png",
+      "replacement-check-2.png",
+      "replacement-check-3.png"
+    ],
+    "steps": [
+      "Show candidate A, which retains only the empty shelf.",
+      "Reveal the duplicate-order failure.",
+      "Add candidate B with the paid order, date, and source."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "evaluation",
+    "topics": [
+      "10.1"
+    ],
+    "source": "src/evaluation.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "evaluation-1.png",
+      "evaluation-2.png",
+      "evaluation-3.png",
+      "evaluation-4.png",
+      "evaluation-5.png"
+    ],
+    "steps": [
+      "Check the next decision.",
+      "Check the facts and source references.",
+      "Check for changed meaning or unsupported additions.",
+      "Measure original and replacement token counts.",
+      "Count the complete run cost, including extra calls."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "stress-tests",
+    "topics": [
+      "10.2"
+    ],
+    "source": "src/stress-tests.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "stress-tests-1.png",
+      "stress-tests-2.png",
+      "stress-tests-3.png",
+      "stress-tests-4.png"
+    ],
+    "steps": [
+      "Carry the paid order through the first compaction.",
+      "Add the recurring daily fee.",
+      "Revise the delivery date from the source notice.",
+      "Check the same commitments after another compaction."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  },
+  {
+    "name": "state-bridge",
+    "topics": [
+      "11.1"
+    ],
+    "source": "src/state-bridge.tikz",
+    "canvas_cm": [
+      16.5,
+      5.4
+    ],
+    "stages": [
+      "state-bridge-1.png",
+      "state-bridge-2.png"
+    ],
+    "steps": [
+      "Identify the context that survives compaction.",
+      "Place it inside the execution state for next week."
+    ],
+    "takeaway": "Repeat the final figure state and reveal the takeaway."
+  }
+]
