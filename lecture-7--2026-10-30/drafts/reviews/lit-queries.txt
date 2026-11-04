@@ -1,0 +1,40 @@
+# Long-context evaluation
+Lost in the Middle how language models use long contexts
+RULER what is the real context size of long-context language models
+LongBench bilingual multitask benchmark long context understanding
+InfiniteBench extending long context evaluation beyond 100k tokens
+L-Eval instituting standardized evaluation for long context language models
+Needle in a haystack pressure testing long context
+# Prompt / context compression
+LLMLingua compressing prompts accelerated inference large language models
+LongLLMLingua accelerating and enhancing LLMs long context scenarios prompt compression
+LLMLingua-2 data distillation efficient faithful task-agnostic prompt compression
+Learning to compress prompts with gist tokens
+Adapting language models to compress contexts AutoCompressor
+In-context autoencoder for context compression large language model
+RECOMP improving retrieval-augmented language models with compression
+# Retrieval-augmented generation (foundational)
+Retrieval-augmented generation for knowledge-intensive NLP tasks
+REALM retrieval-augmented language model pre-training
+Dense passage retrieval for open-domain question answering
+Improving language models by retrieving from trillions of tokens RETRO
+Self-RAG learning to retrieve generate critique through self-reflection
+Active retrieval augmented generation FLARE
+# Memory and agents
+Generative agents interactive simulacra of human behavior
+MemGPT towards LLMs as operating systems
+ReAct synergizing reasoning and acting in language models
+Reflexion language agents with verbal reinforcement learning
+Toolformer language models can teach themselves to use tools
+Voyager open-ended embodied agent large language models
+# Planning / replanning
+LLM-Planner few-shot grounded planning embodied agents large language models
+Tree of thoughts deliberate problem solving large language models
+Describe explain plan select interactive planning Minecraft DEPS
+# Long-horizon / agent benchmarks
+AgentBench evaluating LLMs as agents
+WebArena realistic web environment building autonomous agents
+SWE-bench can language models resolve real-world github issues
+GAIA a benchmark for general AI assistants
+tau-bench tool-agent-user interaction real-world domains
+Vending-Bench benchmark long-term coherence autonomous agents

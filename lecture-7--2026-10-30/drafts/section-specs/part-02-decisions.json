@@ -1,0 +1,46 @@
+{
+  "part": 2,
+  "title": "Context, compaction, and extended planning",
+  "lecture_date": "2026-11-06",
+  "stage": "brainstorming with instructor, step by step",
+  "plan_approved": false,
+  "spec_approved": false,
+  "decisions": [
+    {
+      "id": "source_depth",
+      "answer": "I agree with you that using a few sources in depth, keeping others as supporting readings make sense.",
+      "consequence": "Select a small number of sources for detailed teaching; retain other relevant sources as supporting readings. Specific selections remain open."
+    },
+    {
+      "id": "running_task",
+      "answer": "We can use a contrived task through the mechanisms, compaction, and evaluation discussions.",
+      "consequence": "Use a contrived running task across those discussions. The task objective and concrete events remain open."
+    },
+    {
+      "id": "planning_process",
+      "answer": "Let's plan this out step by step.",
+      "consequence": "Discuss one decision at a time before assembling the complete section plans and detailed specs for separate review."
+    },
+    {
+      "id": "running_task_setting",
+      "answer": "Vending bench is okay, let's settle on that.",
+      "consequence": "Anchor the contrived running task on Vending-Bench (and Vending-Bench 2): the agent runs a vending-machine business over simulated calendar time. Carry it through mechanisms, compaction, and evaluation. Keep the Part I triage world only as a familiar aside if useful. Keep simulated calendar duration distinct from agent wall-clock runtime and plan depth."
+    },
+    {
+      "id": "anchor_failure",
+      "answer": "This works for me.",
+      "consequence": "Anchor the failure on outstanding stock orders with delayed deliveries: a pending commitment with a delayed effect falls out of context, so the agent double-orders or declares itself stuck. This is the clean illustration that compaction must preserve commitments whose effects have not yet landed. Cash position and prior pricing/fee decisions remain supporting examples."
+    },
+    {
+      "id": "sources_in_depth",
+      "answer": "Let's ground it.",
+      "consequence": "Adopt the citation-grounded refined set (see part-02-literature.md). Study three in depth: Lost in the Middle (evidence; RULER as companion), LLMLingua-2 (mechanism; LLMLingua cited as the line's origin), and Vending-Bench (the running task). Ground the long-horizon claim on a tier-A benchmark rather than on Vending-Bench alone; instructor's proposed anchor is SWE-bench (AgentBench is the alternative), correctable. All other researched papers become cited supporting readings."
+    },
+    {
+      "id": "narrative_structure",
+      "answer": "A",
+      "consequence": "Use the problem-first linear structure: evidence then mechanism then the long-horizon spine. Establish that effective context is short, introduce a concrete compression method, then stress it on the Vending-Bench long-horizon task and evaluate across the run. The recommended B+C (task-first spiral framed by 'what must survive') was not chosen."
+    }
+  ],
+  "next_decision": "Review the assembled Part II section plan (minute-by-minute) in Plannotator"
+}

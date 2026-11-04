@@ -1,6 +1,8 @@
 # Lecture 7: section plans and specs
 
-**Current stage:** Section 1's complete plan is proposed for review. It proposes combining the overview's first three sections into one worked example. The overview's chat green light is recorded; no section has both plan and spec approval.
+**Current stage:** Part II planning has settled its decisions; the [Part II section plan](section-02-plan.md) is assembled and proposed for review. Section 1's complete plan also remains proposed for review. The overview's chat green light is recorded; no section has both plan and spec approval.
+
+**Part II decisions:** a few sources in depth with the rest supporting; one contrived task (Vending-Bench) carried through mechanisms, compaction, and evaluation; the failure anchored on outstanding orders with delayed deliveries; three sources in depth (Lost in the Middle, LLMLingua-2, Vending-Bench), grounded by the [literature map](part-02-literature.md), with the long-horizon claim resting on a tier-A benchmark (proposed SWE-bench); and narrative structure A (problem-first linear). See the [brainstorming record](part-02-brainstorm.md).
 
 **Latest instructor feedback:** present on November 6; use the existing `HW1-sol` directly; shorten the familiar HW1 opening; clarify the lecture image's preparation; remove the closing student prompt. The separate eight-minute HW2 debrief remains removed. The revised plan proposes 42 minutes of teaching and eight minutes available for questions or demo overrun.
 
@@ -21,6 +23,7 @@ Use separate files for each section: `section-01-plan.md`, then `section-01-spec
 | Section | Plan | Detailed spec | Slides |
 | --- | --- | --- | --- |
 | 1. OpenShell through two access checks (proposed combined section) | [Plan for review](section-01-plan.md) | After plan approval | After plan and spec approval |
+| 2. Context and compaction (Part II, problem-first linear) | [Plan for review](section-02-plan.md) | After plan approval | After plan and spec approval |
 
 ## What to preserve
 

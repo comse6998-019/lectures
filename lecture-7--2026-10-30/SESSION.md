@@ -1,12 +1,16 @@
 # Lecture 7 session handoff
 
-Saved November 3, 2026. The lecture is now scheduled for **November 6, 2026**. The working directory retains its original name, `lecture-7--2026-10-30`.
+Updated November 4, 2026. The lecture is now scheduled for **November 6, 2026**. The working directory retains its original name, `lecture-7--2026-10-30`.
 
 ## Resume here
 
-Open the revised [Section 1 plan](drafts/section-specs/section-01-plan.md) in Plannotator for Rahul's review. Its full plan approval is pending. The six saved annotations from the previous review have already been applied and preserved in the [feedback record](drafts/reviews/section-01-plan-feedback-1.json).
+Part II planning is **settled** and drafted. Open for review in Plannotator: the [Part II slide prose](drafts/section-specs/section-02-slides-draft.md) (every slide, house voice) and the [Part II section plan](drafts/section-specs/section-02-plan.md). Rahul will annotate the slide prose; convert his feedback into slides in the deck format. The gated review may already be running on a local Plannotator port; if not, relaunch with `plannotator annotate drafts/section-specs/section-02-slides-draft.md drafts/section-specs/section-02-plan.md --gate --json`.
 
-After plan approval, work with Rahul on the separate detailed spec, decision by decision. Review that complete spec separately in Plannotator. Produce slides only after both approvals. A suggested resume prompt is: “Read SESSION.md and the current Section 1 plan, then reopen the plan in Plannotator so we can continue.”
+**Part II settled decisions** (see [brainstorming record](drafts/section-specs/part-02-brainstorm.md) and [decisions](drafts/section-specs/part-02-decisions.json)): running task is **Vending-Bench**; anchored failure is an **outstanding stock order with a delayed delivery**; three sources in depth — **Lost in the Middle**, **LLMLingua-2**, **Vending-Bench** — grounded by the [literature map](drafts/section-specs/part-02-literature.md); long-horizon claim rests on a tier-A benchmark (**SWE-bench**, AgentBench the alternative); narrative structure **A (problem-first linear)**. Reproduce the citation grounding with `drafts/reviews/litsearch.py` + `lit-queries.txt` (OpenAlex; counts order-of-magnitude).
+
+The revised [Section 1 plan](drafts/section-specs/section-01-plan.md) still awaits full plan approval. Its six prior annotations are applied and preserved in the [feedback record](drafts/reviews/section-01-plan-feedback-1.json).
+
+After each plan approval, work with Rahul on the separate detailed spec, decision by decision, then review it in Plannotator. Produce slides only after approval. Resume prompt: "Read SESSION.md, then pick up the Part II Plannotator feedback."
 
 ## Review workflow and preferences
 

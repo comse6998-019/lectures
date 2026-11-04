@@ -39,6 +39,8 @@ For each section, we first walk through its plan and review that plan in Plannot
 
 **Outcome:** students understand what context management aims to preserve, how planning and continued execution over long and extremely long horizons change those requirements, and how to choose and evaluate the available mechanisms.
 
+**Latest instructor decisions:** study a few sources in depth and keep the others as supporting readings. Use a contrived task through the mechanisms, compaction, and evaluation discussions. Continue [planning step by step](section-specs/part-02-brainstorm.md); the task and specific in-depth sources are still to be chosen. The allocations below remain the earlier proposal.
+
 | § | Elapsed | Proposed section | Purpose and progression |
 | --- | --- | --- | --- |
 | 5 | 1:00–1:06 (6 min) | The objectives of context management | Define the input to one model invocation. Separate context capacity, cumulative cost, task quality, faithfulness, and access to supporting sources. |
