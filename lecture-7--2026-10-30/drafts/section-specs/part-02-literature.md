@@ -101,6 +101,9 @@ we send" from "compression inside the model," but out of scope to teach in depth
 | GAIA | ICLR *(OA: arXiv)* | 2023/24 | ~116 | 10.48550/arXiv.2311.12983 |
 | τ-bench (tool-agent-user) | arXiv *(unverified)* | 2024 | ~tens (fragmented) | 10.48550/arXiv.2406.12045 |
 | Vending-Bench (long-term coherence) | arXiv (Andon Labs) | 2025 | ~9 | 10.48550/arXiv.2502.15840 |
+| QwenGyre (XLong-horizon RL training; harness practice) | arXiv (Alibaba) | 2026 | ~0 | 10.48550/arXiv.2609.33848 |
+
+*QwenGyre was added from the first slide review. Its own contribution is RL training infrastructure; we cite its description of how production harnesses compact saturated histories into summary branches, delegate to sub-agents with isolated contexts, and retry failed paths, and its XLong profile (hours, hundreds of interactions, ~1M tokens per rollout). Very new (cites~0): practice grounding, not evidence.*
 
 ## 9. First-party engineering reports — supporting, not citable as evidence
 
@@ -140,5 +143,9 @@ Three findings bear on the "in depth vs supporting" decision:
 **Supporting (cited, not walked through):** RULER, LongBench; LLMLingua, LongLLMLingua, Gist,
 AutoCompressor; RAG + one of DPR/Self-RAG; Generative Agents or MemGPT (memory framing); SWE-bench
 *or* AgentBench (long-horizon evidence); LLM-Planner (grounded replanning); both Anthropic reports.
+
+**Added from the first slide review:** QwenGyre (compaction-in-practice at extreme-long horizons);
+StreamingLLM and H2O named explicitly as the KV-cache-eviction contrast to text-level compaction.
+These support the new compaction compare/contrast slides (7.4–7.5).
 
 Open question for the instructor is recorded in `part-02-brainstorm.md`.

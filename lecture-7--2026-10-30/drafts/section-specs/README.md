@@ -23,7 +23,7 @@ Use separate files for each section: `section-01-plan.md`, then `section-01-spec
 | Section | Plan | Detailed spec | Slides |
 | --- | --- | --- | --- |
 | 1. OpenShell through two access checks (proposed combined section) | [Plan for review](section-01-plan.md) | After plan approval | After plan and spec approval |
-| 2. Context and compaction (Part II, problem-first linear) | [Plan for review](section-02-plan.md) | After plan approval | After plan and spec approval |
+| 2. Context and compaction (Part II, problem-first linear) | [Plan for review](section-02-plan.md) | Folded into the [slide prose draft](section-02-slides-draft.md) | [Slide prose, rev 2](section-02-slides-draft.md) — reviewed once ([feedback](../reviews/part-02-slides-feedback-1.json)), revised, back for review |
 
 ## What to preserve
 

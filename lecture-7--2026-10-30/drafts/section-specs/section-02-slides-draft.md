@@ -14,6 +14,8 @@ benchmark (**SWE-bench**). Plan: [`section-02-plan.md`](section-02-plan.md). Gro
 (the navy panel sentence), **Notes** (speaker notes with citations and scope cautions), and **Build**
 (the figure). Part II continues the lecture's segment numbering at 5; Part I holds 1–4.
 
+**Revision 2** folds in the first review ([feedback record](../reviews/part-02-slides-feedback-1.json)): a compaction compare/contrast (Slides 7.4–7.5) and the QwenGyre XLong-horizon source.
+
 ---
 
 ## Segment 5 — What context must accomplish (0:00–0:05)
@@ -121,6 +123,34 @@ benchmark (**SWE-bench**). Plan: [`section-02-plan.md`](section-02-plan.md). Gro
 
 **Build.** Retain, retrieve, extract and rewrite in one comparison figure; keep obtaining material distinct from transforming its representation.
 
+### Slide 7.4 — Compaction strategies, compared
+| Strategy | How it works | Strength | Main failure |
+| --- | --- | --- | --- |
+| Recency / truncation | Keep the last turns; drop older ones | No extra compute | Drops an old but open commitment |
+| Extractive selection | Keep the informative tokens (LLMLingua-2) | Cheap, model-agnostic | Lexical choice can shed meaning |
+| Abstractive summary | Rewrite history into a shorter account | Preserves meaning flexibly | Omission and unsupported claims |
+| Structured notes | Maintain a running state of goals and open items | Commitments persist by design | The schema must anticipate needs |
+| Sub-agent delegation | Run a subtask in an isolated context | Keeps the main context small | The returned summary is lossy |
+| Retrieve on demand | Store history outside; fetch by reference | Scales past any window | A query miss or a stale reference |
+
+**Takeaway.** Each strategy buys room by giving up a different kind of recall.
+
+**Notes.** The four families from Slide 7.1 map onto this table: recency, extractive, abstractive and structured notes are ways to compact; retrieve is retrieval; sub-agent delegation is a routing choice that also manages context. Contrast all of these with KV-cache eviction — StreamingLLM attention sinks (Xiao et al., ICLR 2024) and H2O heavy-hitters (Zhang et al., NeurIPS 2023) — which shrinks activations inside the model rather than the text we send, a different layer. Real harnesses combine several rows at once, shown next.
+
+**Build.** A six-row comparison table that is the whole slide; draw a 1.5 pt rule above the row where retrieval and delegation begin, so the compaction rows read as one group.
+
+### Slide 7.5 — Real harnesses compact, delegate, and retry
+- **Compact saturated histories:** when the window fills, the harness summarizes the history and continues from the summary.
+- **Delegate to sub-agents:** a subtask runs in its own context and returns a summary to the main agent.
+- **Retry failed paths:** a failed branch is re-attempted, so one task becomes a graph of context paths.
+- **The scale:** a single extreme-long run can span hours, hundreds of model–environment interactions, and nearly 1M tokens.
+
+**Takeaway.** At extreme-long horizons, compaction runs continuously and in layers.
+
+**Notes.** Wang et al., *QwenGyre: An Elastic Reinforcement Learning Framework for Training XLong-Horizon Agents*, arXiv:2609.33848, 2026 (Alibaba). The paper's own contribution is RL training infrastructure; we cite its description of how production harnesses (it names Claude Code and Codex) manage context — compaction produces a summary branch that replaces the pre-compaction history, and sub-agents hold separate contexts. Treat the scale as the paper's XLong profile, a very recent report (cites≈0). It bounds these runs; later systems may differ. These are the conditions the compaction policy in the next segment has to live in.
+
+**Build.** A branching execution graph: a main trajectory that forks into a summary branch at a compaction point, with one sub-agent branch in its own context.
+
 ---
 
 ## Segment 8 — What a long horizon demands (0:23–0:31)
@@ -133,7 +163,7 @@ benchmark (**SWE-bench**). Plan: [`section-02-plan.md`](section-02-plan.md). Gro
 
 **Takeaway.** A long run must carry its open commitments forward to act well.
 
-**Notes.** Course synthesis, drawn from the planning literature kept as supporting reading: LLM-Planner (Song et al., ICCV 2023) for grounded replanning, and Anthropic's *Effective harnesses for long-running agents* for progress records and verification. The pending-commitment row is the one the next segments stress.
+**Notes.** Course synthesis, drawn from the planning literature kept as supporting reading: LLM-Planner (Song et al., ICCV 2023) for grounded replanning, and Anthropic's *Effective harnesses for long-running agents* for progress records and verification. The extreme-long-horizon scale that makes this acute was grounded on the previous slide (QwenGyre). The pending-commitment row is the one the next segments stress.
 
 **Build.** A run as a lengthening ribbon of steps; mark one commitment made early whose effect lands much later.
 

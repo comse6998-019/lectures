@@ -1,0 +1,21 @@
+{
+  "artifact": "drafts/section-specs/section-02-slides-draft.md",
+  "companion": "drafts/section-specs/section-02-plan.md",
+  "tool": "plannotator annotate --gate --json",
+  "decision": "annotated",
+  "date": "2026-11-04",
+  "annotations": [
+    {
+      "id": 1,
+      "scope": "document",
+      "note": "What are the various compaction strategies, compare, contrast. That's missing.",
+      "resolution": "Add a dedicated compare/contrast of compaction strategies to Segment 7: a strategies comparison table (how it works, strength, main failure) plus a 'compaction in practice' slide grounding the strategies in real harnesses. Tie the comparison to the delayed-delivery commitment from the spine."
+    },
+    {
+      "id": 2,
+      "scope": "document",
+      "note": "https://arxiv.org/pdf/2609.33848",
+      "resolution": "QwenGyre (Alibaba, arXiv:2609.33848, Oct 2026): an elastic RL framework for training XLong-horizon agents. Use it to (a) ground the extreme-long-horizon scale in Segment 8 (hours, hundreds of model-environment interactions, ~1M tokens per rollout) and (b) ground compaction-in-practice: production harnesses compact saturated histories into summary branches, delegate sub-tasks to sub-agents with isolated contexts, and retry failed paths. Scope caution: it is an RL-training-infrastructure paper (cites=0, not canonical); cite it for the real-harness practice it describes, not as evidence about compaction quality."
+    }
+  ]
+}

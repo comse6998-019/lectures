@@ -40,7 +40,12 @@
       "id": "narrative_structure",
       "answer": "A",
       "consequence": "Use the problem-first linear structure: evidence then mechanism then the long-horizon spine. Establish that effective context is short, introduce a concrete compression method, then stress it on the Vending-Bench long-horizon task and evaluate across the run. The recommended B+C (task-first spiral framed by 'what must survive') was not chosen."
+    },
+    {
+      "id": "slides_review_1",
+      "answer": "Plannotator annotations (2026-11-04): (1) the various compaction strategies, compare/contrast, is missing; (2) https://arxiv.org/pdf/2609.33848",
+      "consequence": "Revision 2 of the slide prose adds a compaction compare/contrast to Segment 7: Slide 7.4 (strategies table: recency, extractive, abstractive, structured notes, sub-agent delegation, retrieve on demand; KV-cache eviction as the contrasting layer) and Slide 7.5 (how real harnesses compact, delegate, and retry, grounded on QwenGyre, arXiv:2609.33848). QwenGyre added to the literature map for practice grounding, not as evidence (cites~0). Full record in reviews/part-02-slides-feedback-1.json."
     }
   ],
-  "next_decision": "Review the assembled Part II section plan (minute-by-minute) in Plannotator"
+  "next_decision": "Review revised Part II slide prose (revision 2) in Plannotator"
 }
