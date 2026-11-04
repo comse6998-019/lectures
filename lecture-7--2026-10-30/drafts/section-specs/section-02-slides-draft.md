@@ -16,6 +16,8 @@ benchmark (**SWE-bench**). Plan: [`section-02-plan.md`](section-02-plan.md). Gro
 
 **Revision 2** folds in the first review ([feedback record](../reviews/part-02-slides-feedback-1.json)): a compaction compare/contrast (Slides 7.4–7.5) and the QwenGyre XLong-horizon source.
 
+**Revision 3** folds in the second review ([feedback record](../reviews/part-02-slides-feedback-2.json)). Tables become recap summaries. Each compaction strategy gets its own visual slide (7.4a–f). The Pi, Claude Code, and Codex formats are added and grouped (7.5a–d), grounded in the [harness compaction research](part-02-harness-compaction.md).
+
 ---
 
 ## Segment 5 — What context must accomplish (0:00–0:05)
@@ -85,19 +87,21 @@ benchmark (**SWE-bench**). Plan: [`section-02-plan.md`](section-02-plan.md). Gro
 
 ---
 
-## Segment 7 — Four ways to manage context (0:13–0:23)
+## Segment 7 — Context management: strategies and harness formats (0:13–0:26, expanded)
 
-### Slide 7.1 — Retention and retrieval choose material
-| Operation | What enters the request | What can go wrong |
-| --- | --- | --- |
-| Retain | Selected original messages, passages or tool results | A selection rule can discard a detail the next task needs. |
-| Retrieve | Material fetched by query or source reference | The query can miss evidence; a reference can go stale or unreachable. |
+> Reviewer note: this band grew from review 2. Each compaction strategy now has its own visual slide. Each table is demoted to a recap. The three harness formats are added at the end. Timing and any move to backup stay open, flagged in the plan.
 
-**Takeaway.** Selection and retrieval determine which source material is available.
+### Slide 7.1 — Four ways to manage context
+- **Retain** keeps selected original messages or results.
+- **Retrieve** fetches material by query or reference when needed.
+- **Compress** keeps only the informative tokens of what stays.
+- **Rewrite** replaces a span with a generated summary.
 
-**Notes.** Anthropic's 2025 engineering article describes keeping lightweight identifiers and loading material through tools when required; that account is practitioner guidance, and the retain/retrieve failure cases here are course synthesis. Retrieval here includes ordinary file and search tools, and is the subject of a large literature (RAG, Lewis et al., NeurIPS 2020) kept as supporting reading.
+**Takeaway.** Managing context means choosing what to keep, fetch, shrink, or rewrite.
 
-**Build.** Two paths from source documents to a request: immediate selection, and fetch by reference.
+**Notes.** This four-way split is the course's organizing scheme. Retrieve draws on a large literature, such as RAG (Lewis et al., NeurIPS 2020), kept as supporting reading. The next slides open each way, then compare the compaction strategies one by one.
+
+**Build.** Four arrows from a source history into one request, each labelled with its verb: retain, retrieve, compress, rewrite.
 
 ### Slide 7.2 — Extractive compression selects tokens
 - **Pan et al., Findings of ACL 2024:** LLMLingua-2 trains a classifier to keep or drop source tokens.
@@ -123,21 +127,87 @@ benchmark (**SWE-bench**). Plan: [`section-02-plan.md`](section-02-plan.md). Gro
 
 **Build.** Retain, retrieve, extract and rewrite in one comparison figure; keep obtaining material distinct from transforming its representation.
 
-### Slide 7.4 — Compaction strategies, compared
+### Slide 7.4a — Recency keeps the last turns
+- **How:** keep the most recent turns and drop older ones.
+- **Strength:** no extra computation.
+- **Failure:** an old but open commitment falls away.
+
+**Takeaway.** Recency is the cheapest strategy and forgets the oldest commitment first.
+
+**Notes.** Every harness falls back on this. Pi keeps a recent window around its summary (Slide 7.5a).
+
+**Build.** A window that slides over a ribbon of turns. The window moves right. The leftmost turns gray out and drop.
+
+### Slide 7.4b — Extractive selection keeps key tokens
+- **How:** a classifier keeps informative tokens and drops filler.
+- **Strength:** cheap and model-agnostic.
+- **Failure:** lexical choice can drop meaning.
+
+**Takeaway.** Extraction shortens the text and keeps the original words.
+
+**Notes.** LLMLingua-2 (Slide 7.2) is the worked method. The kept tokens read as a terse excerpt of the source.
+
+**Build.** A paragraph with some words highlighted, then the highlighted words alone as the kept sequence.
+
+### Slide 7.4c — Abstractive summary rewrites a span
+- **How:** an LLM writes a shorter account of a span.
+- **Strength:** it preserves meaning flexibly.
+- **Failure:** omission and unsupported claims.
+
+**Takeaway.** A summary restates meaning in new words and needs checking.
+
+**Notes.** This is the core of every harness format in Slide 7.5. The summary becomes a new representation to verify.
+
+**Build.** A block of turns that collapses into one short summary card.
+
+### Slide 7.4d — Structured notes hold a running state
+- **How:** keep a schema of goals, open items, and decisions, updated each step.
+- **Strength:** commitments persist by design.
+- **Failure:** the schema must anticipate what matters.
+
+**Takeaway.** A running state card carries commitments across every compaction.
+
+**Notes.** Pi's fixed summary sections and file lists are structured notes (Slide 7.5a). Codex's memories pipeline is a cross-session version (Slide 7.5c).
+
+**Build.** A state card with Goals, Open orders, and Decisions. One field updates as steps advance.
+
+### Slide 7.4e — Sub-agent delegation isolates a context
+- **How:** run a subtask in its own context and return a summary.
+- **Strength:** the main context stays small.
+- **Failure:** the returned summary is lossy.
+
+**Takeaway.** Delegation moves a subtask's reads out of the main context.
+
+**Notes.** Claude Code uses subagents this way (Slide 7.5b). The main agent sees the result rather than the subtask's reads.
+
+**Build.** A main trajectory spawns a bubble that does work and returns one summary arrow.
+
+### Slide 7.4f — Retrieve on demand externalizes history
+- **How:** store history outside and fetch it by reference.
+- **Strength:** it scales past any window.
+- **Failure:** a query miss or a stale reference.
+
+**Takeaway.** Retrieval trades in-context text for a fetch when needed.
+
+**Notes.** Claude Code's re-read of recent files is a bounded form (Slide 7.5b). The RAG line is the general case.
+
+**Build.** A store outside the window with a reference pointer, and a fetch arrow back into the request.
+
+### Slide 7.4g — Compaction strategies, compared (recap)
 | Strategy | How it works | Strength | Main failure |
 | --- | --- | --- | --- |
-| Recency / truncation | Keep the last turns; drop older ones | No extra compute | Drops an old but open commitment |
+| Recency / truncation | Keep the last turns, drop older ones | No extra compute | Drops an old but open commitment |
 | Extractive selection | Keep the informative tokens (LLMLingua-2) | Cheap, model-agnostic | Lexical choice can shed meaning |
-| Abstractive summary | Rewrite history into a shorter account | Preserves meaning flexibly | Omission and unsupported claims |
-| Structured notes | Maintain a running state of goals and open items | Commitments persist by design | The schema must anticipate needs |
+| Abstractive summary | Rewrite a span into a shorter account | Preserves meaning flexibly | Omission and unsupported claims |
+| Structured notes | Keep a running state of goals and open items | Commitments persist by design | The schema must anticipate needs |
 | Sub-agent delegation | Run a subtask in an isolated context | Keeps the main context small | The returned summary is lossy |
-| Retrieve on demand | Store history outside; fetch by reference | Scales past any window | A query miss or a stale reference |
+| Retrieve on demand | Store history outside, fetch by reference | Scales past any window | A query miss or a stale reference |
 
 **Takeaway.** Each strategy buys room by giving up a different kind of recall.
 
-**Notes.** The four families from Slide 7.1 map onto this table: recency, extractive, abstractive and structured notes are ways to compact; retrieve is retrieval; sub-agent delegation is a routing choice that also manages context. Contrast all of these with KV-cache eviction — StreamingLLM attention sinks (Xiao et al., ICLR 2024) and H2O heavy-hitters (Zhang et al., NeurIPS 2023) — which shrinks activations inside the model rather than the text we send, a different layer. Real harnesses combine several rows at once, shown next.
+**Notes.** Show this table only as a recap, after the six strategy slides have taught each one. Contrast all six with KV-cache eviction. StreamingLLM (ICLR 2024) and H2O (NeurIPS 2023) shrink activations inside the model, a different layer from the text we send.
 
-**Build.** A six-row comparison table that is the whole slide; draw a 1.5 pt rule above the row where retrieval and delegation begin, so the compaction rows read as one group.
+**Build.** The six-row table, shown once as a recap. Dim each row as you recall its slide.
 
 ### Slide 7.5 — Real harnesses compact, delegate, and retry
 - **Compact saturated histories:** when the window fills, the harness summarizes the history and continues from the summary.
@@ -147,9 +217,55 @@ benchmark (**SWE-bench**). Plan: [`section-02-plan.md`](section-02-plan.md). Gro
 
 **Takeaway.** At extreme-long horizons, compaction runs continuously and in layers.
 
-**Notes.** Wang et al., *QwenGyre: An Elastic Reinforcement Learning Framework for Training XLong-Horizon Agents*, arXiv:2609.33848, 2026 (Alibaba). The paper's own contribution is RL training infrastructure; we cite its description of how production harnesses (it names Claude Code and Codex) manage context — compaction produces a summary branch that replaces the pre-compaction history, and sub-agents hold separate contexts. Treat the scale as the paper's XLong profile, a very recent report (cites≈0). It bounds these runs; later systems may differ. These are the conditions the compaction policy in the next segment has to live in.
+**Notes.** Wang et al., *QwenGyre: An Elastic Reinforcement Learning Framework for Training XLong-Horizon Agents*, arXiv:2609.33848, 2026 (Alibaba). Its contribution is RL training infrastructure, and we cite its account of real harnesses. Compaction produces a summary branch that replaces the pre-compaction history, and sub-agents hold separate contexts. Treat the scale as the paper's XLong profile, a very recent report (cites≈0). It bounds these runs, and later systems may differ.
 
-**Build.** A branching execution graph: a main trajectory that forks into a summary branch at a compaction point, with one sub-agent branch in its own context.
+**Build.** A branching execution graph: a main trajectory forks into a summary branch at a compaction point, with one sub-agent branch in its own context.
+
+### Slide 7.5a — Pi compacts into a structured summary
+- **Core:** one LLM summary of the old span, with a recent window kept around it.
+- **Format:** Goal, Constraints, Progress, Key Decisions, Next Steps, Critical Context.
+- **Also:** cumulative file lists carried forward.
+
+**Takeaway.** Pi pairs an abstractive summary with a recent window and structured notes.
+
+**Notes.** Source: Pi `docs/compaction.md`. It triggers above the window minus a 16384 reserve, or on `/compact`. This maps to Slides 7.4c, 7.4a, and 7.4d. See part-02-harness-compaction.md.
+
+**Build.** The Pi summary card with its six sections, a recent-window strip beneath, and a file list.
+
+### Slide 7.5b — Claude Code summarizes and re-reads files
+- **Core:** the conversation becomes a structured summary.
+- **Also:** it re-reads up to five recently touched files.
+- **Also:** it re-injects hooks and skills, and subagents hold big reads.
+
+**Takeaway.** Claude Code pairs a summary with a recent-file re-read.
+
+**Notes.** Source: Claude Code docs (context-window). A file over 5000 tokens returns as a path reference. This maps to Slides 7.4c, 7.4f, and 7.4e.
+
+**Build.** A summary card plus five file chips that re-enter the window, with a subagent bubble to the side.
+
+### Slide 7.5c — Codex writes a resumable handoff summary
+- **Core:** a context-checkpoint handoff summary for the next model.
+- **Also:** it retains the state of tools the prior model used.
+- **Also:** it keeps resume metadata and a cross-session memories pipeline.
+
+**Takeaway.** Codex pairs a handoff summary with retained tool state.
+
+**Notes.** Source: openai/codex compact prompt templates. The summary lists progress, decisions, context, next steps, and key references. This maps to Slide 7.4c, selective retain, and Slide 7.4d.
+
+**Build.** A handoff card labelled for the next model, with a tool-state panel attached.
+
+### Slide 7.5d — Three harness formats share one core (recap)
+| Harness | Core | Second strategy | Also |
+| --- | --- | --- | --- |
+| Pi | Abstractive structured summary | Recency window | File lists |
+| Claude Code | Abstractive structured summary | Re-read recent files | Hooks, skills, subagents |
+| Codex | Abstractive handoff summary | Retain tool outputs | Resume metadata, memories |
+
+**Takeaway.** Every shipped format leads with an abstractive summary, then adds one more strategy.
+
+**Notes.** Source: part-02-harness-compaction.md. Pi adds a recent window. Claude Code re-reads files. Codex retains tool state. Show this table as the recap after the three harness slides.
+
+**Build.** The three-row grouping table, revealed one row per harness.
 
 ---
 

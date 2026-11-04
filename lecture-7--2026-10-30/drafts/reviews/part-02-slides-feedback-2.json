@@ -1,0 +1,33 @@
+{
+  "artifact": "drafts/section-specs/section-02-slides-draft.md",
+  "companion": "drafts/section-specs/section-02-plan.md",
+  "tool": "plannotator annotate --gate --json (CLI, pre-agentTool)",
+  "decision": "annotated",
+  "date": "2026-11-04",
+  "annotations": [
+    {
+      "id": 1,
+      "scope": "document",
+      "note": "Remove the use of tables, it's super hard to explain in the class. Tables are now summary slides after the slides have done their job.",
+      "resolution": "Stop teaching from tables. Convert each table to a sequence of concept slides, one idea per slide, each with a visualization. Keep the table only as a recap/summary slide placed after those slides."
+    },
+    {
+      "id": 2,
+      "scope": "Slide 7.4 (Compaction strategies, compared)",
+      "note": "Convert to slides for each row with rich rich visualizations.",
+      "resolution": "Give each compaction strategy its own slide with a rich diagram. Keep the comparison table as the closing summary of the group."
+    },
+    {
+      "id": 3,
+      "scope": "Slide 7.4 Build note (six-row table)",
+      "note": "Convert to slides for each row with rich rich visualizations.",
+      "resolution": "Same as annotation 2: one visual slide per strategy, table demoted to a summary."
+    },
+    {
+      "id": 4,
+      "scope": "Slide 7.5 (Real harnesses compact, delegate, and retry)",
+      "note": "I want you to find and add compaction formats for claude code, codex, pi. And reference the above section to group their strategies.",
+      "resolution": "Research the actual compaction formats of Claude Code, Codex, and Pi from primary sources. Map each to the strategies from Slide 7.4. Add slides that show each harness's format and group them by strategy."
+    }
+  ]
+}

@@ -45,7 +45,12 @@
       "id": "slides_review_1",
       "answer": "Plannotator annotations (2026-11-04): (1) the various compaction strategies, compare/contrast, is missing; (2) https://arxiv.org/pdf/2609.33848",
       "consequence": "Revision 2 of the slide prose adds a compaction compare/contrast to Segment 7: Slide 7.4 (strategies table: recency, extractive, abstractive, structured notes, sub-agent delegation, retrieve on demand; KV-cache eviction as the contrasting layer) and Slide 7.5 (how real harnesses compact, delegate, and retry, grounded on QwenGyre, arXiv:2609.33848). QwenGyre added to the literature map for practice grounding, not as evidence (cites~0). Full record in reviews/part-02-slides-feedback-1.json."
+    },
+    {
+      "id": "slides_review_2",
+      "answer": "Plannotator annotations (2026-11-04): remove teaching tables (tables become recap summaries); convert Slide 7.4 to one slide per strategy with rich visuals; find and add Claude Code, Codex, and Pi compaction formats grouped by strategy (ref https://arxiv.org/pdf/2609.33848).",
+      "consequence": "Revision 3 of the slide prose. Segment 7 restructured: 7.1 table becomes a concept slide; 7.4 becomes one visual slide per strategy (7.4a-f) with the table demoted to a recap (7.4g); new harness-format slides 7.5a-c (Pi, Claude Code, Codex) grounded in part-02-harness-compaction.md, with a grouping recap (7.5d). Deck now 28 slides; Segment 7 holds fifteen and overlaps Segment 8's time. Remaining tables (5.3, 9.2, 9.3, 10.1) still need the same table-to-concept treatment. Timing split (full slide vs quick build visual vs backup) is open for the next review. Full record in reviews/part-02-slides-feedback-2.json."
     }
   ],
-  "next_decision": "Review revised Part II slide prose (revision 2) in Plannotator"
+  "next_decision": "Settle Part II slide timing (full vs build vs backup) and convert the remaining tables (5.3, 9.2, 9.3, 10.1); review revision 3 in Plannotator via the agent tool after /reload"
 }
