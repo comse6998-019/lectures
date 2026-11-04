@@ -4,9 +4,17 @@ Updated November 4, 2026. The lecture is now scheduled for **November 6, 2026**.
 
 ## Resume here
 
-Part II planning is **settled** and drafted; the slide prose is at **revision 2** after one Plannotator review. Review 1 ([feedback](drafts/reviews/part-02-slides-feedback-1.json)) asked for a compaction compare/contrast and pointed at QwenGyre (arXiv:2609.33848); revision 2 added Slides 7.4 (strategies table) and 7.5 (real-harness practice), and added QwenGyre to the literature map as practice grounding (cites~0). Open for review in Plannotator: the [Part II slide prose](drafts/section-specs/section-02-slides-draft.md) and the [Part II section plan](drafts/section-specs/section-02-plan.md). Rahul annotates the slide prose; convert his feedback into slides in the deck format. Relaunch the gated review with `plannotator annotate drafts/section-specs/section-02-slides-draft.md drafts/section-specs/section-02-plan.md --gate --json` (background it and read the `--result-file`).
+The [Part II slide prose](drafts/section-specs/section-02-slides-draft.md) is at **revision 4** after three feedback rounds. The instructor requests staged TikZ figures and transitions from Lectures 4–6. The draft now includes 22 figure groups, 75 rendered stages, and click instructions. The [visual notes](drafts/section-specs/part-02-visuals.md) identify the reference sources and reproduction command.
 
-**Part II settled decisions** (see [brainstorming record](drafts/section-specs/part-02-brainstorm.md) and [decisions](drafts/section-specs/part-02-decisions.json)): running task is **Vending-Bench**; anchored failure is an **outstanding stock order with a delayed delivery**; three sources in depth — **Lost in the Middle**, **LLMLingua-2**, **Vending-Bench** — grounded by the [literature map](drafts/section-specs/part-02-literature.md); long-horizon claim rests on a tier-A benchmark (**SWE-bench**, AgentBench the alternative); narrative structure **A (problem-first linear)**. Reproduce the citation grounding with `drafts/reviews/litsearch.py` + `lit-queries.txt` (OpenAlex; counts order-of-magnitude).
+The draft retains 28 logical topics. Its four remaining teaching tables now use diagrams. Two comparison tables remain as recaps. Timing still needs review. Both plan and spec approval remain open.
+
+**Native review workflow:** use the `plannotator` tool with `action: annotate` and `gate: true`. Review the slide prose, [section plan](drafts/section-specs/section-02-plan.md), and visual notes. End the turn after the tool opens the review. Submitted feedback returns as a new conversation message. Do not poll or use a background CLI review. The instructor does not want Inbox.
+
+The latest feedback came from native review `pn-9ac153`. Its [feedback record](drafts/reviews/part-02-slides-feedback-3.json) preserves the annotation. That annotation requests changes and does not approve the plan or spec.
+
+**Part II decisions:** use **Vending-Bench** as the teaching task. The example failure concerns an **outstanding stock order with delayed delivery**. Study **Lost in the Middle**, **LLMLingua-2**, and **Vending-Bench** in depth. Use **SWE-bench** as the proposed tier-A source, with AgentBench as the alternative. Follow **structure A (problem-first linear)**.
+
+The [brainstorming record](drafts/section-specs/part-02-brainstorm.md), [decisions](drafts/section-specs/part-02-decisions.json), and [literature map](drafts/section-specs/part-02-literature.md) preserve the source choices and scope. The query script is `drafts/reviews/litsearch.py`, with `lit-queries.txt`. Use OpenAlex counts as estimates.
 
 The revised [Section 1 plan](drafts/section-specs/section-01-plan.md) still awaits full plan approval. Its six prior annotations are applied and preserved in the [feedback record](drafts/reviews/section-01-plan-feedback-1.json).
 
