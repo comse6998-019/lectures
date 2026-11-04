@@ -9,12 +9,12 @@
 \begin{tikzpicture}
   \canvas{16.5}{6.2}
   \tikzset{
-    runstep/.style={mnode, text width=30mm, align=left, font=\sffamily\footnotesize, anchor=west, minimum height=9mm},
-    field/.style={slot, text width=86mm, anchor=west, minimum height=9mm},
+    runstep/.style={mnode, text width=30mm, align=left, font=\sffamily\footnotesize, anchor=west, minimum height=8mm},
+    field/.style={slot, text width=86mm, anchor=west, minimum height=8mm},
   }
   % the card: each field centred on its row, so every connector is one straight line
-  \def\yA{5.0}\def\yB{4.2}\def\yC{3.4}\def\yD{2.6}
-  \node[rnode, anchor=south west, minimum width=96mm, minimum height=36.5mm] (card) at (6.4,2.0) {};
+  \def\yA{5.3}\def\yB{4.4}\def\yC{3.5}\def\yD{2.6}
+  \node[rnode, anchor=south west, minimum width=96mm, minimum height=38mm] (card) at (6.4,2.05) {};
   \node[tab] at (card.north) {task state card};
   \node[field] (f1) at (6.55,\yA) {\textbf{goal:} keep SKU-A stocked at a profit};
   \node[field] (f2) at (6.55,\yB) {\textbf{open orders:} 10 SKU-A, paid Day 1, due Day 4};
@@ -48,11 +48,11 @@
     \stepnode{faded}{s3}{\yD}{\textbf{Day 3} shelf empty, no sales}
     \draw[fadedflow] (s2.east) -- (f3.west);
     \draw[fadedflow] (s3.east) -- (f4.west);
-    \draw[deckRose, dashed, line width=1.2pt] (0.2,1.85) -- (6.2,1.85);
-    \node[badverd, anchor=north west, text width=60mm] at (0.3,1.7) {compaction: the steps are gone, and so is what the schema never asked for};
-    \stepnode{}{s4}{0.55}{\textbf{Day 4} decide: order more?}
-    \draw[flow] (s4.east) -- (11.2,0.55) -- (card.south);
-    \node[lab, fill=none, anchor=south] at (7.4,0.65) {reads the card};
+    \draw[deckRose, dashed, line width=1.2pt] (0.2,1.95) -- (6.2,1.95);
+    \node[badverd, anchor=west] at (0.3,1.7) {compaction: the steps are gone, and so is what the schema never asked for};
+    \stepnode{}{s4}{0.75}{\textbf{Day 4} decide: order more?}
+    \draw[flow] (s4.east) -- (11.2,0.75) -- (card.south);
+    \node[lab, fill=none, anchor=south] at (7.4,0.85) {reads the card};
     \node[verd, anchor=west] at (11.5,1.3) {the open order survives by design:\\ the schema asked for it};
   }
   \node[note, anchor=north east, inner sep=0pt] at (16.4,6.15) {illustrative card};

@@ -2,7 +2,9 @@
 
 ## Scope
 
-Review 3 asked for the TikZ diagrams and transitions from Lectures 4 to 6. Review 5 rejected the first attempt and approved two redone samples with two changes. The connectors must use right angles, with labels in clear space. Each click needs a reveal or fade note. Review 6 added seven layout rules from image annotations. This note records the grammar, the figure set, and the checks.
+Review 3 asked for the TikZ diagrams and transitions from Lectures 4 to 6. Review 5 rejected the first attempt and approved two redone samples with two changes. The connectors must use right angles, with labels in clear space. Each click needs a reveal or fade note.
+
+Review 6 added seven layout rules from image annotations. Review 7 identified two overlaps in `abstractive`, with the same spacing defect in four related figures. This note records the grammar, the figure set, and the checks.
 
 The draft contains 26 slide topics. Each topic reveals its figure one stage per click, so one topic produces several consecutive slides in the final deck. The final deck still needs plan and spec approval.
 
@@ -40,6 +42,13 @@ Review 6 added these rules, from eleven image annotations:
 - Leave no unexplained empty space inside a panel. Stack the boxes with one fixed gap.
 - Keep every label and every box inside its panel and inside the canvas.
 - Give sibling boxes in a row the same height.
+
+Review 7 added checks for stacked boxes and their panels:
+
+- Use 5.5 mm as the default minimum height for one-line slots. Longer text can increase the actual height.
+- Measure gaps between rendered box edges. Include the border widths in the check.
+- Fit the request panel around its three boxes, with a 3 mm inset. Keep it clear of the source note.
+- Check every stage, including the faded history and the final failure callout.
 
 ## The figure set
 
@@ -80,9 +89,19 @@ python3 slides/figures/context/render.py --only recency retrieval
 
 Each figure is one TikZ file in `slides/figures/context/src/`. Its header lists the stages. The renderer writes one PNG per stage at 240 dpi. It checks TeX overflow, missing glyphs, fixed stage dimensions, and distinct image content. The [figure manifest](../../slides/figures/context/figures.json) records the source, the stage files, and the stage descriptions.
 
+Check the box geometry:
+
+```sh
+python3 slides/figures/context/check_layout.py
+```
+
+The layout check measures stacked boxes and panel bounds in the five revised figures. It uses the actual TikZ font metrics. It does not check every connector or label.
+
 ## Verification
 
-All 56 stages render with the same canvas per figure. Each stage differs from the earlier stages in its figure. TeX reports no text overflow or missing glyphs. The final stage of every figure passed a visual check for overlaps and clipped text.
+All 56 stages render with the same canvas per figure. Each stage differs from the earlier stages in its figure. TeX reports no text overflow or missing glyphs.
+
+The geometry check reports 121 checks and zero failures. The earlier revision, `7c65831`, fails 49 of those checks and reproduces both annotated overlaps. All four `abstractive` stages and the other four revised figures also received visual inspection. Keep visual inspection as a separate step for connectors, labels, and text clipping.
 
 ## Review limits
 

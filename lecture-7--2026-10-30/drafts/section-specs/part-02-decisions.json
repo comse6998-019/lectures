@@ -70,7 +70,12 @@
       "id": "slides_review_6",
       "answer": "Eleven image annotations that apply to all images: an unexplained dashed arrow, an overflowing label, uneven frame padding, overlapping labels, unclean arrows, boxes too wide to show arrows, box names to be centred on a navy tab with white text, unexplained empty space in panels, number circles overlapping boxes.",
       "consequence": "Seven layout rules added to part-02-visuals.md and applied to all sixteen figures. Stage count unchanged at 56. See reviews/part-02-slides-feedback-6.json."
+    },
+    {
+      "id": "slides_review_7",
+      "answer": "Two image annotations on abstractive-3.png: Overlap, and Weird overlap? The marked regions cover the history stack and the next-request panel.",
+      "consequence": "Revision 6 separates the history and request slots, then fits the request panel around its contents. Four related figures receive the same spacing fixes. A geometry check measures actual TikZ bounds across their stages. It reproduces both defects in revision 7c65831 and reports 121 checks with zero failures after the fixes. Topic count, stage count, and proposed timing remain unchanged. See reviews/part-02-slides-feedback-7.json."
     }
   ],
-  "next_decision": "Review the figures after the review-6 rules, the merged Segment 5 slide, and the per-click notes. Decide the 50-minute pacing and the backup split. Record plan and spec approval separately."
+  "next_decision": "Review revision 6 after the overlap fixes. Decide the 50-minute pacing and the backup split. Record plan and spec approval separately."
 }

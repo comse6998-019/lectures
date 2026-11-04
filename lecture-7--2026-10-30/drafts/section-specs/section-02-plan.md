@@ -54,9 +54,9 @@ The [decision history](part-02-decisions.json) retains the answers verbatim. The
 | 0:43–0:48 | Evaluation across a run | Assess task success, faithfulness, total cost, the effects of repeated compaction, drift, and repeated work. Connect each measure to the delayed-delivery case. |
 | 0:48–0:50 | Bridge to next week | The surviving context has to live somewhere. Next week: context in state, state ownership, run-local and durable state, checkpoint boundaries, resumption, and replay. |
 
-**Open after review 5: timing.** The draft contains 26 slide topics. Segment 5 is one slide now, so Segments 6 and 7 start two minutes earlier. Segment 7 still holds fifteen topics in twelve minutes. Each topic reveals its figure one stage per click, so rehearsal must count those clicks.
+**Open after review 7: timing.** The draft contains 26 slide topics. Segment 5 is one slide now, so Segments 6 and 7 start two minutes earlier. Segment 7 still holds fifteen topics in twelve minutes. Each topic reveals its figure one stage per click, so rehearsal must count those clicks.
 
-Revision 5 adds 16 TikZ figures with 56 rendered stages in the Lecture 5 and 6 grammar. The [visual notes](part-02-visuals.md) record the grammar, the reveal and fade rules, and the reproduction command. The [slide draft](section-02-slides-draft.md) embeds each figure's final stage with its click list. Tables remain only as the two recaps.
+Revision 6 retains 16 TikZ figures with 56 rendered stages in the Lecture 5 and 6 grammar. Review 7 corrects overlapping boxes and adds checks for their rendered bounds. Teaching content, click order, and proposed timing remain unchanged. The [visual notes](part-02-visuals.md) record the grammar, the reveal and fade rules, and the reproduction command. The [slide draft](section-02-slides-draft.md) embeds each figure's final stage with its click list. Tables remain only as the two recaps.
 
 Options: use brief figure builds for the strategy and harness topics. Move the harness details to backup if the half exceeds 50 minutes. Decide the teaching time and backup split during review.
 

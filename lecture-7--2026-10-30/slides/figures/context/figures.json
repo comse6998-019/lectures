@@ -13,10 +13,10 @@
       "abstractive-4.png"
     ],
     "steps": [
-      "reveal the history, five messages and tool results, 60k tokens.",
-      "reveal the summarizer and its summary, 40 tokens. The history fades: the next call will not see it.",
-      "reveal the next request, built from the system prompt, the summary and the recent messages.",
-      "reveal the check: the summary omitted the paid order and its due date (rose), so a summary is a new claim"
+      "reveal the history: five messages and tool results, 60k tokens.",
+      "reveal the summarizer and its 40-token summary. Fade the history.",
+      "reveal the next request: system prompt, summary, and recent messages.",
+      "reveal the omitted order in rose and the source check in navy."
     ]
   },
   {

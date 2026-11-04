@@ -1,0 +1,54 @@
+{
+  "session": "pn-768a3b",
+  "artifact": "drafts/section-specs/section-02-slides-draft.md",
+  "companions": [
+    "drafts/section-specs/part-02-visuals.md",
+    "drafts/section-specs/section-02-plan.md"
+  ],
+  "tool": "plannotator",
+  "decision": "annotated",
+  "date": "2026-11-04",
+  "annotations": [
+    {
+      "id": 1,
+      "line": 160,
+      "image": "slides/figures/context/abstractive-3.png",
+      "region": {"x": 12, "y": 94, "width": 427, "height": 84, "image_width": 1581, "image_height": 600},
+      "note": "Overlap",
+      "cause": "The history slots inherited a 7 mm minimum height, greater than the distance between their top edges.",
+      "resolution": "Set a 5.5 mm minimum height for one-line slots and separate the history boxes. Check their actual rendered bounds in all four stages."
+    },
+    {
+      "id": 2,
+      "line": 160,
+      "image": "slides/figures/context/abstractive-3.png",
+      "region": {"x": 1019, "y": 388, "width": 500, "height": 166, "image_width": 1581, "image_height": 600},
+      "note": "Weird overlap?",
+      "cause": "The request slots inherited the same height. Their boxes overlapped, and the last box extended below the fixed panel.",
+      "resolution": "Separate the three request slots and fit the panel around their rendered bounds with a 3 mm inset. Centre its navy name tab on the fitted panel. Keep the panel clear of its source note."
+    }
+  ],
+  "related_fixes": [
+    "one-call: separate the records, context slots, decision requirements, and run-meter labels.",
+    "delegation: separate the goal, history, and subtask boxes.",
+    "retrieval: separate the store rows and the fetched result.",
+    "structured-notes: separate the state-card fields and preserve the aligned write arrows."
+  ],
+  "verification": {
+    "layout_command": "python3 slides/figures/context/check_layout.py",
+    "layout_scope": "Stacked box gaps and panel containment in the five revised figures, across every stage. Also check the gap between the request panel and its source note.",
+    "layout_checks": 121,
+    "layout_failures": 0,
+    "prior_revision_command": "python3 slides/figures/context/check_layout.py --ref 7c65831",
+    "prior_revision_failures": 49,
+    "prior_revision_reproduces_both_annotations": true,
+    "render_command": "python3 slides/figures/context/render.py",
+    "figures": 16,
+    "rendered_stages": 56,
+    "canvas_sizes_changed": false,
+    "stage_count_changed": false,
+    "visual_inspection": "All four abstractive stages and the other four revised figures. The geometry check does not cover every connector or label."
+  },
+  "plan_approved": false,
+  "spec_approved": false
+}

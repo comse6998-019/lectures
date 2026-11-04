@@ -18,6 +18,8 @@ Plan: [`section-02-plan.md`](section-02-plan.md). Sources: [`part-02-literature.
 
 **Revision 5** applies the [fourth review](../reviews/part-02-slides-feedback-4.json), the [figure review](../reviews/part-02-slides-feedback-5.json), and the [figure rules of review 6](../reviews/part-02-slides-feedback-6.json). Slides 5.1 to 5.3 become one slide with three clicks. The figures now follow the Lecture 5 and 6 grammar: bands, record boxes, numbered events, rose failures, navy verdicts, right-angled connectors. Every Build block states what each click reveals and what it fades.
 
+**Revision 6** applies the [seventh review](../reviews/part-02-slides-feedback-7.json). It separates the history and request boxes in `abstractive`. The request panel fits its contents. Four related figures receive the same spacing checks. The [layout check](../../slides/figures/context/check_layout.py) measures stacked boxes and panel bounds across their stages.
+
 **Figure-led slides:** the figure carries the example. The prose rows state the teaching points. Keep the figure, the source citation, and the takeaway visible. Place duplicate explanations in speaker notes.
 
 **Click rule:** each click reveals one figure stage. A fade turns an element grey when the run no longer sees it. On the final click, keep the last stage and reveal the navy takeaway panel. Keep the title and the figure position fixed. The two recap tables reveal one row per click, then the takeaway.

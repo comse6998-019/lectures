@@ -11,16 +11,16 @@
   % the main context
   \node[mnode, anchor=south west, minimum width=52mm, minimum height=46mm] (main) at (0.2,0.9) {};
   \node[tab] at (main.north) {main context};
-  \node[slot, anchor=north west, text width=46mm] (g) at (0.35,5.25) {goal: keep SKU-A stocked};
-  \node[slot, anchor=north west, text width=46mm] (h) at (0.35,4.7) {history: 30k tokens so far};
-  \node[okchip, anchor=north west, text width=46mm] (task) at (0.35,3.95) {subtask: is the SKU-A order on the way?};
+  \node[slot, anchor=north west, text width=46mm] (g) at (0.35,5.15) {goal: keep SKU-A stocked};
+  \node[slot, anchor=north west, text width=46mm] (h) at (0.35,4.5) {history: 30k tokens so far};
+  \node[okchip, anchor=north west, text width=46mm] (task) at (0.35,3.8) {subtask: is the SKU-A order on the way?};
   % the sub-agent zone
   \draw[zone] (7.0,0.9) rectangle (16.3,5.5);
   \node[tab] at (11.65,5.5) {sub-agent: its own context};
-  \node[okchip, anchor=north west, text width=46mm] (ztask) at (7.2,3.95) {subtask: is the SKU-A order on the way?};
+  \node[okchip, anchor=north west, text width=46mm] (ztask) at (7.2,3.8) {subtask: is the SKU-A order on the way?};
   \draw[flow] (task.east) -- (ztask.west);
-  \node[evnum] at (6.2,3.55) {1};
-  \node[lab, fill=none, anchor=south] at (6.2,3.85) {hands over};
+  \node[evnum] at (6.2,3.36) {1};
+  \node[lab, fill=none, anchor=south] at (6.2,3.66) {hands over};
   % stage 2: the reads
   \atstage{2}{
     \node[rnode, anchor=north west, text width=24mm, align=left, font=\sffamily\footnotesize] (r1) at (7.75,5.0) {\texttt{inventory-ledger}\\ 40 lines};
@@ -34,8 +34,8 @@
     \node[okchip, anchor=north west, text width=46mm] (zres) at (7.2,1.95) {result: paid Day 1, due Day 4, source ledger line 17};
     \node[okchip, anchor=north west, text width=46mm] (mres) at (0.35,1.95) {result: paid Day 1, due Day 4, source ledger line 17};
     \draw[back] (zres.west) -- (mres.east);
-    \node[evnum] at (6.2,1.55) {3};
-    \node[lab, fill=none, anchor=north] at (6.2,1.25) {returns};
+    \node[evnum] at (6.2,1.51) {3};
+    \node[lab, fill=none, anchor=north] at (6.2,1.22) {returns};
     \node[verd, anchor=west] at (0.35,0.5) {the main context grows by one line};
     \node[badverd, anchor=west] at (7.2,0.5) {what the line left out stays in the sub-agent's window};
   }
