@@ -11,22 +11,22 @@
 \begin{tikzpicture}
   \canvas{16.5}{6.4}
   \tikzset{
-    chk/.style={gnode, draw=deckNavy, line width=0.8pt, text width=26mm, align=left, anchor=north, font=\sffamily\footnotesize, inner ysep=3pt},
-    stress/.style={okchip, text width=32mm, anchor=north west},
+    chk/.style={gnode, draw=deckNavy, line width=0.8pt, text width=22mm, align=left, anchor=north, font=\sffamily\footnotesize, inner ysep=3pt, minimum height=20mm},
+    stress/.style={okchip, text width=32mm, anchor=north west, minimum height=10mm},
   }
   % the run lane
-  \node[rnode, minimum width=26mm] (hist) at (1.9,5.7) {the history};
-  \node[mnode, minimum width=26mm] (comp) at (6.0,5.7) {compaction};
-  \node[okchip, minimum width=26mm, align=center] (rep) at (10.1,5.7) {the replacement};
-  \node[gnode, minimum width=26mm, align=center] (dec) at (14.2,5.7) {the next decision};
+  \node[rnode, minimum width=26mm] (hist) at (1.9,5.9) {the history};
+  \node[mnode, minimum width=26mm] (comp) at (6.0,5.9) {compaction};
+  \node[okchip, minimum width=26mm, align=center] (rep) at (10.1,5.9) {the replacement};
+  \node[gnode, minimum width=26mm, align=center] (dec) at (14.2,5.9) {the next decision};
   \draw[flow] (hist) -- (comp); \draw[flow] (comp) -- (rep); \draw[flow] (rep) -- (dec);
   % the bracket of checks
-  \draw[ibmfg!45, line width=0.6pt] (1.9,4.75) -- (14.5,4.75);
-  \node[kick, anchor=east] at (1.7,4.75) {inspect};
+  \draw[ibmfg!45, line width=0.6pt] (1.9,5.0) -- (14.5,5.0);
+  \node[kick, anchor=east] at (1.6,5.0) {inspect};
   \newcommand{\checkbox}[4]{
-    \draw[ibmfg!45, line width=0.6pt] (#2,4.75) -- (#2,4.45);
-    \node[chk] (c#1) at (#2,4.45) {\textbf{#3}\\ #4};
-    \node[evnum] at ($(c#1.north west)+(-0.1,0.1)$) {#1};
+    \draw[ibmfg!45, line width=0.6pt] (#2,5.0) -- (#2,4.6);
+    \node[chk] (c#1) at (#2,4.6) {\textbf{#3}\\ #4};
+    \node[evnum] at (#2,5.0) {#1};
   }
   \checkbox{1}{1.9}{task success}{did it wait for Day 4?}
   \atstage{2}{\checkbox{2}{5.05}{evidence}{the order, the payment, the date, the source?}}
@@ -35,12 +35,12 @@
   \atstage{5}{\checkbox{5}{14.5}{total work}{summary calls, fetches, later calls, time, charges}}
   % stage 6: the stress tests
   \atstage{6}{
-    \node[capt, anchor=south west] at (0.6,2.0) {stress tests: the commitments the decisions depend on};
-    \node[stress] at (0.6,1.85) {a delivery that lands after the next compaction};
-    \node[stress] at (4.55,1.85) {the daily fee, every day};
-    \node[stress] at (8.5,1.85) {a revised date, with its source};
-    \node[stress] at (12.45,1.85) {the same order through two compactions};
-    \node[verd, anchor=west] at (0.6,0.4) {compare task quality at a measured total cost};
+    \node[capt, anchor=south west] at (0.6,2.25) {stress tests: the commitments the decisions depend on};
+    \node[stress] at (0.6,2.1) {a delivery that lands after the next compaction};
+    \node[stress] at (4.55,2.1) {the daily fee, every day};
+    \node[stress] at (8.5,2.1) {a revised date, with its source};
+    \node[stress] at (12.45,2.1) {the same order through two compactions};
+    \node[verd, anchor=west] at (0.6,0.55) {compare task quality at a measured total cost};
   }
-  \node[note, anchor=north east, inner sep=0pt] at (16.4,6.35) {rubric and entries: the course's};
+  \node[note, anchor=south east, inner sep=0pt] at (16.4,0.45) {rubric and entries: the course's};
 \end{tikzpicture}

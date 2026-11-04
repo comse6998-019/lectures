@@ -3,8 +3,8 @@
 % Stage 1: reveal the records that exist (left band) and the call's context built from a selection of them: instructions and
 %          tool definitions, the history so far, the selected ledger line. The window meter shows the input and the room
 %          left for the output. Older sessions stay outside.
-% Stage 2: reveal the call. The model reads the context and proposes the next action, order more SKU-A or wait. On the right,
-%          what that decision needs from the context: the paid order, its meaning intact, a route back to the ledger.
+% Stage 2: reveal the call. The model reads the context and proposes the next action, order more SKU-A or wait. Under the
+%          action, what that decision needs from the context: the paid order, its meaning intact, a route back to the ledger.
 % Stage 3: reveal the run meter. Every call sends the context again, so tokens, time and charges add up over the run.
 % Illustrative, not from a source: the records, the token numbers and the number of calls. The task is the Vending-Bench
 % vending business (Andon Labs, 2025); the ledger and log lines are the course's teaching case.
@@ -14,53 +14,53 @@
   \def\yBlo{0.45}\def\yBhi{0.95}
   % ---- the records that exist: the left band
   \begin{scope}[on background layer]
-    \fill[band] (0,1.35) rectangle (4.7,6.0);
+    \fill[band] (0,1.35) rectangle (4.7,5.75);
   \end{scope}
-  \node[anchor=north west, font=\sffamily\small\bfseries, text=deckNavy, inner sep=0pt] at (0.2,5.9) {the records that exist};
-  \node[rnode, anchor=north west, text width=40mm, align=left, font=\sffamily\footnotesize] (ledger) at (0.2,5.45)
+  \node[tab] at (2.35,5.75) {the records that exist};
+  \node[rnode, anchor=north west, text width=40mm, align=left, font=\sffamily\footnotesize] (ledger) at (0.2,5.3)
     {\texttt{inventory-ledger}\\ Day 1: ordered 10 SKU-A, paid, due Day 4};
-  \node[rnode, anchor=north west, text width=40mm, align=left, font=\sffamily\footnotesize] (log) at (0.2,4.35)
+  \node[rnode, anchor=north west, text width=40mm, align=left, font=\sffamily\footnotesize] (log) at (0.2,4.2)
     {\texttt{ops-log}\\ Days 1 to 3: shelf empty, no sales};
-  \node[rnode, anchor=north west, text width=40mm, align=left, font=\sffamily\footnotesize] (fees) at (0.2,3.25)
+  \node[rnode, anchor=north west, text width=40mm, align=left, font=\sffamily\footnotesize] (fees) at (0.2,3.1)
     {\texttt{fees-and-prices}\\ the daily fee, the price list};
   \node[ghost, anchor=north west, text width=40mm, align=left, font=\sffamily\footnotesize] (old) at (0.2,2.2)
     {older sessions: outside the call};
   % ---- the call's context: the blue panel in the middle
-  \node[mnode, anchor=south west, minimum width=48mm, minimum height=38mm] (ctx) at (5.2,1.95) {};
-  \node[anchor=west, fill=ibmblue!15, inner sep=2pt, font=\sffamily\small\bfseries] at ($(ctx.north west)+(0.15,0)$) {the call's context};
-  \node[slot, anchor=north west, text width=42mm] (r1) at (5.35,5.45) {\textbf{instructions:} the system prompt and the tool definitions};
-  \node[slot, anchor=north west, text width=42mm] (r2) at (5.35,4.6) {\textbf{history:} the messages and tool results so far};
-  \node[okchip, anchor=north west, text width=42mm] (r3) at (5.35,3.75) {\textbf{selected:} the ledger line\\ 10 SKU-A paid, due Day 4};
-  \node[kick, anchor=west] at (5.35,2.72) {window: 128k tokens (illustrative)};
-  \draw[lane, fill=white] (5.35,2.1) rectangle (9.85,2.5);
+  \node[mnode, anchor=south west, minimum width=48mm, minimum height=39mm] (ctx) at (5.2,1.85) {};
+  \node[tab] at (ctx.north) {the call's context};
+  \node[slot, anchor=north west, text width=42mm] (r1) at (5.35,5.3) {\textbf{instructions:} the system prompt and the tool definitions};
+  \node[slot, anchor=north west, text width=42mm] (r2) at (5.35,4.45) {\textbf{history:} the messages and tool results so far};
+  \node[okchip, anchor=north west, text width=42mm] (r3) at (5.35,3.6) {\textbf{selected:} the ledger line\\ 10 SKU-A paid, due Day 4};
+  \node[kick, anchor=west] at (5.35,2.6) {window: 128k tokens (illustrative)};
+  \draw[lane, fill=white] (5.35,2.0) rectangle (9.85,2.4);
   \begin{scope}
-    \clip[rounded corners=2pt] (5.35,2.1) rectangle (9.85,2.5);
-    \fill[deckNavy] (5.35,2.1) rectangle (8.5,2.5);
+    \clip[rounded corners=2pt] (5.35,2.0) rectangle (9.85,2.4);
+    \fill[deckNavy] (5.35,2.0) rectangle (8.2,2.4);
   \end{scope}
-  \draw[lane] (5.35,2.1) rectangle (9.85,2.5);
-  \node[font=\sffamily\footnotesize\bfseries, text=white, anchor=east, inner sep=0pt] at (8.4,2.3) {input 80k};
-  \node[kick, anchor=west, font=\sffamily\scriptsize] at (8.6,2.3) {output room};
+  \draw[lane] (5.35,2.0) rectangle (9.85,2.4);
+  \node[font=\sffamily\footnotesize\bfseries, text=white, anchor=east, inner sep=0pt] at (8.1,2.2) {input 80k};
+  \node[kick, anchor=west, font=\sffamily\scriptsize] at (8.3,2.2) {output};
   % ---- stage 1: the selection
   \draw[flow] (ledger.east) -- ++(0.35,0) |- (r3.west);
-  \node[evnum] at (4.95,4.2) {1};
+  \node[evnum] at (4.95,4.1) {1};
   % ---- stage 2: the call and the decision
   \onlystage{1}{
-    \node[ghostbox, minimum width=18mm, minimum height=8mm, text=ibmfg!50, font=\sffamily\small] (model) at (12.1,4.9) {model};
+    \node[ghostbox, minimum width=18mm, minimum height=8mm, text=ibmfg!50, font=\sffamily\small] (model) at (12.1,5.15) {model};
   }
   \atstage{2}{
-    \node[mnode, minimum width=18mm, minimum height=8mm] (model) at (12.1,4.9) {model};
+    \node[mnode, minimum width=18mm, minimum height=8mm] (model) at (12.1,5.15) {model};
     \draw[flow] (ctx.east |- model) -- (model.west);
     \node[evnum] at ($(ctx.east |- model)!0.5!(model.west)$) {2};
     \node[lab, fill=none, anchor=south] at ($(ctx.east |- model)!0.5!(model.west)+(0,0.28)$) {one call};
-    \node[gnode, minimum width=24mm, align=center] (dec) at (12.1,3.35) {next action\\ order more SKU-A?};
+    \node[gnode, minimum width=26mm, align=center] (dec) at (12.1,3.8) {next action\\ order more SKU-A?};
     \draw[flow] (model.south) -- (dec.north);
     \node[evnum] at ($(model.south)!0.5!(dec.north)$) {3};
     \node[lab, fill=none, anchor=west] at ($(model.south)!0.5!(dec.north)+(0.3,0)$) {decides};
-    \node[capt, anchor=south] at (15.1,4.3) {the decision needs};
-    \node[slot, anchor=north, text width=24mm, align=center] (n1) at (15.1,4.2) {the paid order};
-    \node[slot, anchor=north, text width=24mm, align=center] (n2) at (15.1,3.6) {meaning intact};
-    \node[slot, anchor=north, text width=24mm, align=center] (n3) at (15.1,3.0) {a route to the ledger};
-    \draw[back] (dec.east) -- (dec.east -| n2.west);
+    \node[slot, anchor=north, text width=30mm, align=center, inner ysep=1.5pt] (n1) at (12.1,3.05) {the paid order};
+    \node[slot, anchor=north, text width=30mm, align=center, inner ysep=1.5pt] (n2) at (12.1,2.55) {meaning intact};
+    \node[slot, anchor=north, text width=30mm, align=center, inner ysep=1.5pt] (n3) at (12.1,2.05) {a route to the ledger};
+    \draw[flow] (dec.south) -- (n1.north);
+    \node[lab, fill=none, anchor=west] at (12.45,3.2) {it needs};
   }
   % ---- stage 3: across the run
   \node[gnode, minimum width=29mm, minimum height=10mm, anchor=east, align=center, font=\sffamily\footnotesize] at (3.4,0.7) {tokens billed\\ across the run};
@@ -72,16 +72,16 @@
     \draw[lane, fill=white] (\Xa,\yBlo) rectangle (\Xb,\yBhi);
     \begin{scope}
       \clip[rounded corners=2pt] (\Xa,\yBlo) rectangle (\Xb,\yBhi);
-      \fill[deckNavy] (\Xa,\yBlo) rectangle (13.4,\yBhi);
+      \fill[deckNavy] (\Xa,\yBlo) rectangle (12.4,\yBhi);
     \end{scope}
     \draw[lane] (\Xa,\yBlo) rectangle (\Xb,\yBhi);
     \foreach \x/\k in {4.0/1, 5.3/2, 6.9/3, 8.8/4, 11.0/5}{
       \fill[ibmblue] (\x,\yBhi) circle (0.065);
       \node[small lab, anchor=south, font=\sffamily\scriptsize] at (\x,\yBhi+0.08) {call \k};
     }
-    \node[small lab, anchor=south, font=\sffamily\scriptsize, text=deckGrey] at (12.6,\yBhi+0.08) {\dots};
-    \node[font=\sffamily\footnotesize\bfseries, text=white, anchor=east, inner sep=0pt] at (13.25,0.7) {the context is sent again on every call};
-    \node[verd, anchor=east] at (\Xb,1.3) {the run is what we pay for};
+    \node[small lab, anchor=south, font=\sffamily\scriptsize, text=deckGrey] at (12.0,\yBhi+0.08) {\dots};
+    \node[font=\sffamily\footnotesize\bfseries, text=white, anchor=east, inner sep=0pt] at (12.25,0.7) {the context is sent again on every call};
+    \node[verd, anchor=east] at (\Xb-0.1,0.7) {the run is what we pay for};
   }
   \node[note, anchor=north east, inner sep=0pt] at (16.4,5.93) {token counts illustrative, not to scale};
 \end{tikzpicture}

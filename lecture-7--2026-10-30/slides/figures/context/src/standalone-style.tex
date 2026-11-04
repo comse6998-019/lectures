@@ -29,3 +29,9 @@
   pics/tick/.style={code={\draw[line width=1.5pt, line cap=round, line join=round] (-0.12,-0.01) -- (-0.04,-0.1) -- (0.11,0.11);}},
   pics/xmark/.style={code={\draw[line width=1.5pt, line cap=round] (-0.1,-0.1) -- (0.1,0.1) (-0.1,0.1) -- (0.1,-0.1);}},
 }
+% Review 6 rules: a box name is a navy tab with white text, centred on the box's top edge; a zone name the same.
+\tikzset{
+  tab/.style={fill=deckNavy, text=white, inner xsep=6pt, inner ysep=2.5pt, font=\sffamily\small\bfseries, rounded corners=1.5pt, anchor=center},
+  ghosttab/.style={tab, fill=white, draw=ibmfg!35, dashed, text=ibmfg!50},
+  zonelab/.style={tab},
+}

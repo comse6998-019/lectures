@@ -15,7 +15,7 @@
   \newcommand{\choice}[4]{
     \node[head] (h#1) at (#2,4.9) {#3};
     \node[body] (b#1) at (#2,4.3) {#4};
-    \node[evnum] at ($(h#1.north west)+(0.05,-0.05)$) {#1};
+    \node[evnum] at ($(h#1.north west)+(0.25,0.35)$) {#1};
   }
   \choice{1}{2.2}{specify}{\textbf{objective:} the next order decision\\ \textbf{trigger:} the window fills, or the day changes}
   \atstage{2}{
@@ -33,5 +33,5 @@
     \node[lab, fill=none, anchor=north] at (10.3,1.75) {a failed check: revise the selection or the summary};
     \node[verd, anchor=west] at (0.7,0.75) {specify what the replacement must preserve before you compress};
   }
-  \node[note, anchor=north east, inner sep=0pt] at (16.4,5.95) {a proposed procedure, on the teaching case};
+  \node[note, anchor=south east, inner sep=0pt] at (16.4,0.65) {a proposed procedure, on the teaching case};
 \end{tikzpicture}

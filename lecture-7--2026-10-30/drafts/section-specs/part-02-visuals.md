@@ -2,7 +2,7 @@
 
 ## Scope
 
-Review 3 asked for the TikZ diagrams and transitions from Lectures 4 to 6. Review 5 rejected the first attempt and approved two redone samples with two changes. The connectors must use right angles, with labels in clear space. Each click needs a reveal or fade note. This note records the grammar, the figure set, and the checks.
+Review 3 asked for the TikZ diagrams and transitions from Lectures 4 to 6. Review 5 rejected the first attempt and approved two redone samples with two changes. The connectors must use right angles, with labels in clear space. Each click needs a reveal or fade note. Review 6 added seven layout rules from image annotations. This note records the grammar, the figure set, and the checks.
 
 The draft contains 26 slide topics. Each topic reveals its figure one stage per click, so one topic produces several consecutive slides in the final deck. The final deck still needs plan and spec approval.
 
@@ -30,6 +30,16 @@ The earlier decks use consecutive slides as build states. Package checks found n
 - Reveal one teaching step per click. Fade an element to grey when the run no longer sees it. Use a ghost for what the next click brings.
 - Keep the takeaway for the slide's navy panel. The figure's last click adds its own verdict line only.
 - Keep tables as recaps after the concept slides.
+
+Review 6 added these rules, from eleven image annotations:
+
+- Name a box or a zone on a navy tab with white text, centred on its top edge.
+- Keep every number circle clear of every box. Put it on a connector, on a bracket, or in open space.
+- Keep at least 0.35 cm between boxes in a row, so the arrow between them shows.
+- Give a frame or a panel the same padding on every side.
+- Leave no unexplained empty space inside a panel. Stack the boxes with one fixed gap.
+- Keep every label and every box inside its panel and inside the canvas.
+- Give sibling boxes in a row the same height.
 
 ## The figure set
 

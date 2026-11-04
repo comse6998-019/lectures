@@ -33,14 +33,14 @@
   }
   % stage 3: the next request
   \atstage{3}{
-    \node[mnode, anchor=south west, minimum width=52mm, minimum height=22mm] (req) at (10.7,0.9) {};
-    \node[anchor=east, fill=ibmblue!15, inner sep=2pt, font=\sffamily\small\bfseries] at ($(req.north east)+(-0.15,0)$) {the next request};
-    \node[slot, anchor=north west, text width=46mm] at (10.85,2.85) {system prompt and tools};
-    \node[slot, anchor=north west, text width=46mm, draw=deckNavy, line width=0.8pt] at (10.85,2.3) {the summary};
-    \node[slot, anchor=north west, text width=46mm] at (10.85,1.75) {recent messages: Day 3 onward};
-    \draw[flow] (sum.south) -- (sum.south |- req.north);
-    \node[evnum] at ($(sum.south)!0.5!(sum.south |- req.north)$) {3};
-    \node[lab, fill=none, anchor=west] at ($(sum.south)!0.5!(sum.south |- req.north)+(0.3,0)$) {replaces the history};
+    \node[mnode, anchor=south west, minimum width=52mm, minimum height=19mm] (req) at (10.7,0.8) {};
+    \node[tab] (reqtab) at (req.north) {the next request};
+    \node[slot, anchor=north west, text width=46mm] at (10.85,2.45) {system prompt and tools};
+    \node[slot, anchor=north west, text width=46mm, draw=deckNavy, line width=0.8pt] at (10.85,1.95) {the summary};
+    \node[slot, anchor=north west, text width=46mm] at (10.85,1.45) {recent messages: Day 3 onward};
+    \draw[flow] (sum.south) -- (sum.south |- reqtab.north);
+    \node[evnum] at ($(sum.south)!0.5!(sum.south |- reqtab.north)$) {3};
+    \node[lab, fill=none, anchor=west] at ($(sum.south)!0.5!(sum.south |- reqtab.north)+(0.3,0)$) {replaces the history};
   }
   % stage 4: the check
   \atstage{4}{

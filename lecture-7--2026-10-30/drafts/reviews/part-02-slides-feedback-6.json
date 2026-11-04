@@ -1,0 +1,26 @@
+{
+  "session": "pn-8ac344",
+  "artifact": "drafts/section-specs/section-02-slides-draft.md",
+  "companions": [
+    "drafts/section-specs/part-02-visuals.md",
+    "drafts/section-specs/section-02-plan.md"
+  ],
+  "tool": "plannotator",
+  "decision": "annotated",
+  "date": "2026-11-04",
+  "annotations": [
+    {"id": 1, "scope": "document", "note": "I left you a lot of image comments, all of these apply to all images. Please take a look.", "resolution": "Each image comment became a rule in part-02-visuals.md and was applied to all sixteen figures."},
+    {"id": 2, "scope": "one-call-3.png, the dashed arrow beside the decision", "note": "What's happening here?", "resolution": "Removed the dashed arrow. The three needs now sit under the decision with one solid arrow labelled 'it needs'."},
+    {"id": 3, "scope": "one-call-3.png, the meter label", "note": "Overflow", "resolution": "Shortened the meter label to 'output' and kept it inside the panel."},
+    {"id": 4, "scope": "recency-3.png, the window frame", "note": "The padding above the Day box is more than below", "resolution": "The frame now has 0.2 cm above and below the boxes. Rule: equal padding on every side."},
+    {"id": 5, "scope": "abstractive-4.png, the request panel label", "note": "The label text overlaps, add more spacing", "resolution": "The panel moved down, its name is a centred navy tab, and the arrow ends at the tab."},
+    {"id": 6, "scope": "structured-notes-3.png, the step arrows", "note": "Arrows are ill organized and unclean", "resolution": "Each step sits on the row of the field it writes, so every connector is one straight line. Day 4 reads the card through one elbow from below."},
+    {"id": 7, "scope": "harness-branches-3.png, the step boxes", "note": "Make the boxes narrower so I can see the arrows clearly", "resolution": "Step boxes are 6.5 mm wide with 0.45 cm gaps. Rule: at least 0.35 cm between boxes in a row."},
+    {"id": 8, "scope": "harness-formats-3.png, the column names", "note": "The name must be: a) centered, b) have a contrasting bg (go navy blue bg with white fg)", "resolution": "Every box and zone name is a navy tab with white text, centred on the top edge, in all figures."},
+    {"id": 9, "scope": "harness-formats-4.png, the Pi column", "note": "Why this space?", "resolution": "The boxes in each column stack with one fixed gap and the panel fits them."},
+    {"id": 10, "scope": "harness-formats-4.png, the Codex column", "note": "Why this space?", "resolution": "Same fix as annotation 9. All three columns share one bottom edge."},
+    {"id": 11, "scope": "evaluation-6.png, the check boxes", "note": "Space out the boxes so that the circled text boxes don't overlap!", "resolution": "Narrower boxes with 0.65 cm gaps and equal heights. The number circles sit on the bracket above the boxes, clear of every box."}
+  ],
+  "plan_approved": false,
+  "spec_approved": false
+}

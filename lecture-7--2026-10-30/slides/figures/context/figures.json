@@ -229,7 +229,7 @@
     ],
     "steps": [
       "reveal the records that exist (left band) and the call's context built from a selection of them: instructions and",
-      "reveal the call. The model reads the context and proposes the next action, order more SKU-A or wait. On the right,",
+      "reveal the call. The model reads the context and proposes the next action, order more SKU-A or wait. Under the",
       "reveal the run meter. Every call sends the context again, so tokens, time and charges add up over the run."
     ]
   },
@@ -290,7 +290,7 @@
     "source": "src/structured-notes.tikz",
     "canvas_cm": [
       16.5,
-      6.0
+      6.2
     ],
     "stages": [
       "structured-notes-1.png",
@@ -298,8 +298,8 @@
       "structured-notes-3.png"
     ],
     "steps": [
-      "reveal the card with its schema (goal, open orders, observations, next check) and the Day 1 step that fills",
-      "reveal Days 2 and 3: each step updates the observations and the next check. The order line stays.",
+      "reveal the card with its schema (goal, open orders, observations, next check) and the Day 1 step that",
+      "reveal Days 2 and 3: one writes the observations, the other the next check. The order line stays.",
       "reveal the compaction boundary and Day 4. The steps fade: the history is gone. The card stays, so the"
     ]
   }

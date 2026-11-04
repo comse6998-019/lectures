@@ -1,4 +1,4 @@
-% harness-formats: what Pi, Claude Code and Codex keep at compaction (Slides 7.5a to 7.5c). Canvas 16.5 x 6.6 cm.
+% harness-formats: what Pi, Claude Code and Codex keep at compaction (Slides 7.5a to 7.5d). Canvas 16.5 x 6.6 cm.
 % Four stages, one column per harness, then the common core.
 % Stage 1: reveal Pi: a summary with fixed sections, the recent messages kept, the file lists carried forward.
 % Stage 2: reveal Claude Code: a structured summary, up to five recent files read again, hooks and skills re-injected.
@@ -10,38 +10,49 @@
 \begin{tikzpicture}
   \canvas{16.5}{6.6}
   \tikzset{
-    col/.style={mnode, anchor=south west, minimum width=52mm, minimum height=52mm},
-    head/.style={anchor=west, fill=ibmblue!15, inner sep=2pt, font=\sffamily\small\bfseries},
-    sumbox/.style={okchip, anchor=north west, text width=46mm},
-    second/.style={slot, anchor=north west, text width=46mm},
+    col/.style={mnode, inner sep=3mm},
+    sumbox/.style={okchip, anchor=north west, text width=43mm},
+    second/.style={slot, anchor=north west, text width=43mm},
     src/.style={font=\sffamily\scriptsize, text=deckGrey, anchor=north west, inner sep=0pt},
   }
-  \newcommand{\column}[6]{
-    \node[col] (c#1) at (#2,0.9) {};
-    \node[head] at ($(c#1.north west)+(0.15,0)$) {#3};
-    \node[sumbox] (s#1) at (#2+0.15,5.75) {#4};
-    \node[second] at (#2+0.15,#5) {#6};
+  \def\gap{0.25}
+  % \column{k}{x}{title}{summary}{second}{third}{source}: the boxes stack with one gap, the panel fits them
+  \newcommand{\column}[7]{
+    \node[sumbox] (s#1) at (#2,5.75) {#4};
+    \node[second] (p#1) at ($(s#1.south west)+(0,-\gap)$) {#5};
+    \node[second] (q#1) at ($(p#1.south west)+(0,-\gap)$) {#6};
+    \node[src] (r#1) at ($(q#1.south west)+(0,-\gap)$) {#7};
+    \begin{scope}[on background layer]
+      \node[col, fit={(s#1) (p#1) (q#1) (r#1) (#2,0.75)}] (c#1) {};
+    \end{scope}
+    \node[tab] at (c#1.north) {#3};
   }
   % stage 1: Pi
-  \column{1}{0.2}{Pi}{\textbf{summary, fixed sections}\\ Goal, Constraints and Preferences, Progress (Done, In Progress, Blocked), Key Decisions, Next Steps, Critical Context}{3.2}{\textbf{plus} the recent messages, kept verbatim (\texttt{keepRecentTokens}, 20k by default)}
-  \node[second] at (0.35,2.0) {\textbf{plus} file lists carried forward: \texttt{readFiles}, \texttt{modifiedFiles}};
-  \node[src] at (0.35,0.8) {docs/compaction.md};
+  \column{1}{0.45}{Pi}
+    {\textbf{summary, fixed sections}\\ Goal, Constraints and Preferences, Progress (Done, In Progress, Blocked), Key Decisions, Next Steps, Critical Context}
+    {\textbf{plus} the recent messages, kept verbatim (\texttt{keepRecentTokens}, 20k by default)}
+    {\textbf{plus} file lists carried forward: \texttt{readFiles}, \texttt{modifiedFiles}}
+    {docs/compaction.md}
   % stage 2: Claude Code
   \atstage{2}{
-    \column{2}{5.65}{Claude Code}{\textbf{structured summary}\\ of the conversation, written by the model\\[6pt] \texttt{/compact}, auto-compact as the window fills}{3.5}{\textbf{plus} up to five recently touched files, read again (over 5000 tokens: a path only)}
-    \node[second] at (5.8,2.3) {\textbf{plus} hook output and skill text re-injected, large reads left to subagents};
-    \node[src] at (5.8,0.8) {docs: context-window, how-claude-code-works};
+    \column{2}{5.9}{Claude Code}
+      {\textbf{structured summary}\\ of the conversation, written by the model, on \texttt{/compact} or as the window fills}
+      {\textbf{plus} up to five recently touched files, read again (over 5000 tokens: a path only)}
+      {\textbf{plus} hook output and skill text re-injected, large reads left to subagents}
+      {docs: context-window}
   }
   % stage 3: Codex
   \atstage{3}{
-    \column{3}{11.1}{Codex}{\textbf{context checkpoint compaction}\\ a handoff for the next model\\ progress and key decisions\\ context and preferences\\ next steps\\ critical data and references}{2.95}{\textbf{plus} the state of the tools the previous model used, retained}
-    \node[second] at (11.25,2.05) {\textbf{plus} checkpoints and resume metadata, a separate memories pipeline};
-    \node[src] at (11.25,0.8) {codex-rs/prompts/templates/compact};
+    \column{3}{11.35}{Codex}
+      {\textbf{context checkpoint compaction}\\ a handoff for the next model: progress and key decisions, context and preferences, next steps, critical data and references}
+      {\textbf{plus} the state of the tools the previous model used, retained}
+      {\textbf{plus} checkpoints and resume metadata, a separate memories pipeline}
+      {codex-rs/prompts/templates/compact}
   }
   % stage 4: the common core
   \atstage{4}{
     \foreach \k in {1,2,3}{ \draw[hl] ($(s\k.south west)+(-0.08,-0.08)$) rectangle ($(s\k.north east)+(0.08,0.08)$); }
-    \node[capt, inner sep=0pt] at (8.25,0.22) {one core in all three: an abstractive, structured summary. each adds its own second move.};
+    \node[capt, inner sep=0pt] at (8.25,0.2) {one core in all three: an abstractive, structured summary. each adds its own second move.};
   }
   \node[note, anchor=north east, inner sep=0pt] at (16.4,6.55) {sources read 2026-11-04, defaults can change};
 \end{tikzpicture}

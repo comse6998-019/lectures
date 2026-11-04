@@ -11,7 +11,7 @@
 \begin{tikzpicture}
   \canvas{16.5}{6.0}
   \tikzset{
-    stp/.style={mnode, minimum width=9mm, minimum height=7mm, inner sep=1pt, font=\sffamily\footnotesize},
+    stp/.style={mnode, minimum width=6.5mm, minimum height=7mm, inner sep=1pt, font=\sffamily\footnotesize},
     sub/.style={stp, fill=black!6},
   }
   \def\ym{4.6}
@@ -37,14 +37,14 @@
   \node[lab, fill=none, anchor=west] at (6.8,3.6) {compaction: the run continues};
   % stage 2: a sub-agent branch
   \atstage{2}{
-    \draw[zone] (8.4,1.3) rectangle (13.1,3.05);
-    \node[zonelab, anchor=west] at (8.6,3.05) {sub-agent: its own context};
-    \foreach \k/\x in {a/9.3,b/10.6,c/11.9}{ \node[sub] (s\k) at (\x,2.1) {\k}; }
+    \draw[zone] (8.1,1.2) rectangle (12.8,3.05);
+    \node[tab] at (10.45,3.05) {sub-agent context};
+    \foreach \k/\x in {a/9.0,b/10.3,c/11.6}{ \node[sub] (s\k) at (\x,2.0) {\k}; }
     \draw[flow] (sa) -- (sb); \draw[flow] (sb) -- (sc);
-    \draw[flow] (m8.south) -- (12.3,2.75) -| (sa.north);
+    \draw[flow] (m8.south) -- (12.3,2.7) -| (sa.north);
     \draw[back] (sc.east) -| (m9.south);
-    \node[evnum] at (12.75,2.1) {2};
-    \node[lab, fill=none, anchor=north] at (12.9,1.1) {one result returns to step 9};
+    \node[evnum] at (13.4,3.2) {2};
+    \node[lab, fill=none, anchor=north] at (12.9,1.0) {one result returns to step 9};
   }
   % stage 3: a failed path and its retry
   \atstage{3}{

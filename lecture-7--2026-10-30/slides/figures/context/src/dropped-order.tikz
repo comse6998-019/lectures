@@ -46,7 +46,7 @@
   \atstage{2}{
     \node[rnode, anchor=north, text width=40mm, align=left, font=\sffamily\footnotesize] (log) at (\sx,5.95)
       {\texttt{ops-log}\\ Day 2: shelf empty, no sales\\ Day 3: shelf empty, no sales};
-    \node[evnum] at (log.north west) {2};
+    \node[evnum] at (5.45,5.7) {2};
     \node[mnode, minimum width=34mm, align=center] (comp) at (\sx,3.1) {\textbf{compaction}\\ summarize the history,\\ drop the rest};
     \draw[flow] (log.south) -- (comp.north);
     \node[evnum] at ($(log.south)!0.5!(comp.north)$) {3};

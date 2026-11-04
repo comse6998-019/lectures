@@ -11,11 +11,11 @@
   \node[okchip, anchor=north west, text width=46mm] (o) at (0.2,2.65) {\textbf{open commitments} 10 SKU-A paid, due Day 4};
   \onlystage{1}{
     \draw[ghostband] (7.0,0.6) rectangle (16.3,4.6);
-    \node[anchor=north west, font=\sffamily\small\bfseries, text=ibmfg!50] at (7.2,4.5) {execution state};
+    \node[ghosttab] at (11.65,4.6) {execution state, next week};
   }
   \atstage{2}{
     \draw[zone] (7.0,0.6) rectangle (16.3,4.6);
-    \node[zonelab, anchor=west] at (7.2,4.6) {execution state, next week};
+    \node[tab] at (11.65,4.6) {execution state, next week};
     \draw[ibmfg!60, thick] (7.6,3.6) -- (15.9,3.6);
     \foreach \x/\lab in {8.4/step,10.0/checkpoint,11.6/step,13.2/checkpoint,14.8/resume}{
       \fill[deckNavy] (\x,3.6) circle (0.09);

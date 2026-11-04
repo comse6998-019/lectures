@@ -16,7 +16,7 @@ Plan: [`section-02-plan.md`](section-02-plan.md). Sources: [`part-02-literature.
 
 **Revision 4** applies the [third review](../reviews/part-02-slides-feedback-3.json). The figures reuse the TikZ style and consecutive slide builds from Lectures 4–6. The [visual notes](part-02-visuals.md) identify those sources. Each visual topic now includes its rendered click states and TikZ source.
 
-**Revision 5** applies the [fourth review](../reviews/part-02-slides-feedback-4.json) and the [figure review](../reviews/part-02-slides-feedback-5.json). Slides 5.1 to 5.3 become one slide with three clicks. The figures now follow the Lecture 5 and 6 grammar: bands, record boxes, numbered events, rose failures, navy verdicts, right-angled connectors. Every Build block states what each click reveals and what it fades.
+**Revision 5** applies the [fourth review](../reviews/part-02-slides-feedback-4.json), the [figure review](../reviews/part-02-slides-feedback-5.json), and the [figure rules of review 6](../reviews/part-02-slides-feedback-6.json). Slides 5.1 to 5.3 become one slide with three clicks. The figures now follow the Lecture 5 and 6 grammar: bands, record boxes, numbered events, rose failures, navy verdicts, right-angled connectors. Every Build block states what each click reveals and what it fades.
 
 **Figure-led slides:** the figure carries the example. The prose rows state the teaching points. Keep the figure, the source citation, and the takeaway visible. Place duplicate explanations in speaker notes.
 
@@ -225,8 +225,8 @@ Click states: [1](../../slides/figures/context/abstractive-1.png), [2](../../sli
 
 **Build.** Figure `structured-notes`, 3 clicks.
 1. Reveal the card and Day 1: the step writes the open order into the card.
-2. Reveal Days 2 and 3: the steps update the observations and the next check. The order line stays.
-3. Reveal the compaction boundary and Day 4. The earlier steps fade. The card stays.
+2. Reveal Days 2 and 3: one writes the observations, the other the next check. The order line stays.
+3. Reveal the compaction boundary and Day 4, which reads the card. The earlier steps fade. The card stays.
 4. Keep stage 3 and reveal the takeaway panel.
 
 ![The state card, stage 3](../../slides/figures/context/structured-notes-3.png)

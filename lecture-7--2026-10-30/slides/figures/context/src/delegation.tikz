@@ -9,24 +9,24 @@
 \begin{tikzpicture}
   \canvas{16.5}{6.0}
   % the main context
-  \node[mnode, anchor=south west, minimum width=52mm, minimum height=47mm] (main) at (0.2,0.9) {};
-  \node[anchor=west, fill=ibmblue!15, inner sep=2pt, font=\sffamily\small\bfseries] at ($(main.north west)+(0.15,0)$) {main context};
-  \node[slot, anchor=north west, text width=46mm] (g) at (0.35,5.45) {goal: keep SKU-A stocked};
-  \node[slot, anchor=north west, text width=46mm] (h) at (0.35,4.9) {history: 30k tokens so far};
+  \node[mnode, anchor=south west, minimum width=52mm, minimum height=46mm] (main) at (0.2,0.9) {};
+  \node[tab] at (main.north) {main context};
+  \node[slot, anchor=north west, text width=46mm] (g) at (0.35,5.25) {goal: keep SKU-A stocked};
+  \node[slot, anchor=north west, text width=46mm] (h) at (0.35,4.7) {history: 30k tokens so far};
   \node[okchip, anchor=north west, text width=46mm] (task) at (0.35,3.95) {subtask: is the SKU-A order on the way?};
   % the sub-agent zone
-  \draw[zone] (7.0,0.9) rectangle (16.3,5.6);
-  \node[zonelab, anchor=west] at (7.2,5.6) {sub-agent: its own context};
+  \draw[zone] (7.0,0.9) rectangle (16.3,5.5);
+  \node[tab] at (11.65,5.5) {sub-agent: its own context};
   \node[okchip, anchor=north west, text width=46mm] (ztask) at (7.2,3.95) {subtask: is the SKU-A order on the way?};
   \draw[flow] (task.east) -- (ztask.west);
   \node[evnum] at (6.2,3.55) {1};
   \node[lab, fill=none, anchor=south] at (6.2,3.85) {hands over};
   % stage 2: the reads
   \atstage{2}{
-    \node[rnode, anchor=north west, text width=24mm, align=left, font=\sffamily\footnotesize] (r1) at (7.2,5.15) {\texttt{inventory-ledger}\\ 40 lines};
-    \node[rnode, anchor=north west, text width=24mm, align=left, font=\sffamily\footnotesize] (r2) at (10.2,5.15) {\texttt{supplier-notices}\\ 12 pages};
-    \node[rnode, anchor=north west, text width=24mm, align=left, font=\sffamily\footnotesize] (r3) at (13.2,5.15) {\texttt{ops-log}\\ 300 lines};
-    \node[evnum] at (r1.north west) {2};
+    \node[rnode, anchor=north west, text width=24mm, align=left, font=\sffamily\footnotesize] (r1) at (7.75,5.0) {\texttt{inventory-ledger}\\ 40 lines};
+    \node[rnode, anchor=north west, text width=24mm, align=left, font=\sffamily\footnotesize] (r2) at (10.6,5.0) {\texttt{supplier-notices}\\ 12 pages};
+    \node[rnode, anchor=north west, text width=24mm, align=left, font=\sffamily\footnotesize] (r3) at (13.45,5.0) {\texttt{ops-log}\\ 300 lines};
+    \node[evnum] at (7.35,4.6) {2};
     \node[kick, anchor=west] at (7.2,2.65) {it reads 90k tokens here, and none of them enter the main context};
   }
   % stage 3: the one-line result
@@ -35,7 +35,7 @@
     \node[okchip, anchor=north west, text width=46mm] (mres) at (0.35,1.95) {result: paid Day 1, due Day 4, source ledger line 17};
     \draw[back] (zres.west) -- (mres.east);
     \node[evnum] at (6.2,1.55) {3};
-    \node[lab, fill=none, anchor=north] at (6.2,1.25) {returns one line};
+    \node[lab, fill=none, anchor=north] at (6.2,1.25) {returns};
     \node[verd, anchor=west] at (0.35,0.5) {the main context grows by one line};
     \node[badverd, anchor=west] at (7.2,0.5) {what the line left out stays in the sub-agent's window};
   }

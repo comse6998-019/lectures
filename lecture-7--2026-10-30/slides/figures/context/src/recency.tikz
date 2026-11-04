@@ -28,9 +28,9 @@
     \node[kick, font=\sffamily\scriptsize] at (\x,\yt-0.88) {turn \i};
   }
   % the window
-  \ifnum\stage=1 \draw[hl] (0.1,3.0) rectangle (9.9,4.3); \node[capt, anchor=south west] at (0.15,4.45) {the window: the last five turns};\fi
-  \ifnum\stage=2 \draw[hl] (4.0,3.0) rectangle (13.8,4.3); \node[capt, anchor=south west] at (4.05,4.45) {the window moved on: turns 6 and 7 came in};\fi
-  \ifnum\stage=3 \draw[hl] (5.95,3.0) rectangle (15.75,4.3); \node[capt, anchor=south west] at (6.0,4.45) {the window moved again: turn 8 came in};\fi
+  \ifnum\stage=1 \draw[hl] (0.1,2.95) rectangle (9.9,4.25); \node[capt, anchor=south west] at (0.15,4.4) {the window: the last five turns};\fi
+  \ifnum\stage=2 \draw[hl] (4.0,2.95) rectangle (13.8,4.25); \node[capt, anchor=south west] at (4.05,4.4) {the window moved on: turns 6 and 7 came in};\fi
+  \ifnum\stage=3 \draw[hl] (5.95,2.95) rectangle (15.75,4.25); \node[capt, anchor=south west] at (6.0,4.4) {the window moved again: turn 8 came in};\fi
   \draw[-{Stealth[length=2mm]}, thick, ibmfg!30] (0.1,2.2) -- (16.4,2.2);
   \node[kick, anchor=north east] at (16.3,2.15) {time};
   \node[kick, anchor=north west] at (0.2,5.5) {eight turns of the run, newest on the right};
