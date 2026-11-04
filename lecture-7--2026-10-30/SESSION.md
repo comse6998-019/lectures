@@ -12,7 +12,7 @@ The two comparison tables remain as recaps. Timing still needs review. Both plan
 
 **Native review workflow:** use the `plannotator` tool with `action: annotate` and `gate: true`. Review the slide prose, [section plan](drafts/section-specs/section-02-plan.md), and visual notes. End the turn after the tool opens the review. Submitted feedback returns as a new conversation message. Do not poll or use a background CLI review. The instructor does not want Inbox.
 
-The latest feedback came from native reviews `pn-db02a7` and `pn-2932df`. The [fourth](drafts/reviews/part-02-slides-feedback-4.json) and [fifth](drafts/reviews/part-02-slides-feedback-5.json) feedback records preserve the annotations. They request changes and do not approve the plan or spec.
+The latest feedback came from native reviews `pn-db02a7`, `pn-2932df`, and `pn-8ac344`. The [fourth](drafts/reviews/part-02-slides-feedback-4.json), [fifth](drafts/reviews/part-02-slides-feedback-5.json), and [sixth](drafts/reviews/part-02-slides-feedback-6.json) feedback records preserve the annotations. Review 6 set seven figure layout rules, now in the visual notes. These records request changes and do not approve the plan or spec.
 
 **Part II decisions:** use **Vending-Bench** as the teaching task. The example failure concerns an **outstanding stock order with delayed delivery**. Study **Lost in the Middle**, **LLMLingua-2**, and **Vending-Bench** in depth. Use **SWE-bench** as the proposed tier-A source, with AgentBench as the alternative. Follow **structure A (problem-first linear)**.
 
