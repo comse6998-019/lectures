@@ -1,0 +1,115 @@
+\section{What each piece does}
+\label{sec:row-p1-0}
+
+We start with the two ways OpenShell governs an agent, then the pieces that do it and the job of each.
+
+\subsection{OpenShell enforces and verifies policy}
+\label{sec:it-os-1-1}
+
+\bi
+\item \textbf{Kernel-level enforcement:} kernel controls confine each agent's files and system calls, and every connection passes a policy check.
+\item \textbf{Verified policy changes:} formal verification flags risky new access that a change would grant, and that change waits for human review.
+\ei
+
+The page opens with the two ways OpenShell governs what agents can do. It instruments the kernel to enforce policy on every file access, system call and network connection at runtime, and it uses formal verification to check what a policy change would allow before it is applied.
+
+Kernel-level enforcement: each agent runs in an isolated sandbox. Kernel controls confine which files it can access and which system calls it can make, and every network connection passes through a policy check before it leaves the sandbox. Agents never see real credentials. OpenShell adds them only to requests bound for approved endpoints.
+
+Formally verified policy changes: before a policy change is approved, OpenShell uses formal verification to flag risky new access it would grant, such as reaching a new host with credentials or calling a new API method, so those changes wait for human review.
+
+The figure is the policy lifecycle strip from the bottom of NVIDIA's system architecture figure. In the full figure, both dashed lines run up to the supervisor, so a copy of the supervisor's box sits above the strip here. The next slide shows the rest of the figure: the gateway, and the supervisor's duties.
+
+The figure is NVIDIA's own, from the same page, under the Apache-2.0 license. Its text is unchanged, and the slide reveals it one part per click. Source: NVIDIA, OpenShell Developer Guide, ``Architecture'', documentation version v0.1.7, read on November 6, 2026 (\url{https://docs.nvidia.com/openshell/v0.1.7/about/architecture}).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{openshell/os-policy-lifecycle-4.png}
+\caption{OpenShell enforces and verifies policy. The figure as it stands after the build's last click.}
+\label{fig:os-policy-lifecycle-4}
+\end{figure}
+
+\paragraph{The figure, stage by stage.}
+\be
+\item The agent proposes a policy change ``via policy.local'', and the supervisor sends it on (``supervisor proposes'').
+\item The gateway's policy prover checks the change and ``flags risky new access''.
+\item A person approves it: ``manual by default'', or automatically when the prover finds no new risk.
+\item The approved policy reloads into the supervisor, which ``retries'' (``approved policy reloaded'').
+\ee
+
+\begin{takeaway}OpenShell enforces policy while the agent runs and checks each policy change before it applies.\end{takeaway}
+
+\subsection{The gateway manages every sandbox}
+\label{sec:it-os-1-2}
+
+The gateway is the control plane. It manages the lifecycle of sandboxes and provides connectivity and management of sandboxes to end users and operators. When a user creates a sandbox, its compute driver provisions a workload and a separate supervisor, establishes their protected channel, and builds the isolation boundary. The supervisor confirms that boundary before starting the agent, and then connects back to the gateway for policy, credentials, logs and interactive sessions.
+
+This is NVIDIA's system architecture figure without its policy lifecycle strip, which the previous slide showed. The two dashed lines that join the supervisor to that strip are left out here.
+
+The figure is NVIDIA's own, from the same page, under the Apache-2.0 license. Its text is unchanged, and the slide reveals it one part per click. Source: NVIDIA, OpenShell Developer Guide, ``Architecture'', documentation version v0.1.7, read on November 6, 2026 (\url{https://docs.nvidia.com/openshell/v0.1.7/about/architecture}).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{openshell/os-architecture-3.png}
+\caption{The gateway manages every sandbox. The figure as it stands after the build's last click.}
+\label{fig:os-architecture-3}
+\end{figure}
+
+\paragraph{The figure, stage by stage.}
+\be
+\item The control plane. The CLI, the SDK and the TUI reach the gateway over gRPC or HTTP. Inside the gateway sit the API server (``API, authentication, lifecycle, relays''), the policy prover, the durable state (``sandboxes, policies, providers, settings'') and the compute driver, which ``places and fences each sandbox''.
+\item The data plane. The compute driver starts the runtime. The supervisor ``governs the agent'': policy evaluation, credential resolution, DNS and proxying, agent session multiplexing, and it maintains the gateway session. Beside it, the network-isolated sandbox (a container or a VM) holds the sandbox, the ``process owner and syscall boundary'', and the agent, the ``untrusted workload''.
+\item The network. The mediated channel from the sandbox to the supervisor is the workload's only way out: the workload network rule says ``deny all egress, except to the supervisor'', and only the supervisor's ``policy-approved egress'' reaches external services and models.
+\ee
+
+\begin{takeaway}The gateway manages every sandbox, and the supervisor confirms its boundary before the agent starts.\end{takeaway}
+
+\subsection{Each piece of OpenShell has its own job}
+\label{sec:it-os-1-3}
+
+\textbf{The supervisor row holds every policy decision.}
+
+This is the page's table ``What Each Piece Does'', one row per click, in the page's order from the sandbox outward. The cells are shortened. The page's full entries follow.
+
+Sandbox: lives inside the boundary with the agent. It owns the agent's processes, knows which program made each request, applies process controls, and forwards TCP and DNS traffic to the supervisor.
+
+Outer network fence: denies all network egress from the workload except its protected connection to the supervisor. Each runtime builds this with its own native tools.
+
+Supervisor: lives on the trusted side of the boundary. It checks requests against policy, supplies credentials, resolves DNS, opens approved connections, and keeps the link to the gateway alive. It works with every runtime through one isolation backend interface to confirm the boundary, start the agent, run commands, forward connections, and see network requests.
+
+Policies: describe what the agent can touch: files, processes, network destinations, API calls, and where provider credentials can go.
+
+Providers: connect a service name to a stored credential. The supervisor hands that credential out only where policy allows it.
+
+Policy prover: runs in the gateway and uses formal verification to check agent-proposed network rules. It flags changes such as new credentialed reach, new HTTP methods, or access to cloud metadata endpoints, and any finding blocks auto-approval. It also ships as the standalone openshell-prover command for checking a policy against a boundary in CI.
+
+Gateway: checks who the user is and remembers everything about the sandboxes. It delivers policy and settings, attaches providers, decides who can do what, and coordinates connections into sandboxes.
+
+Compute runtime: creates the sandbox, starts the supervisor and the workload, sets up the private channel between them, and builds the network fence. It reports status back and cleans up when the sandbox goes away.
+
+Source: NVIDIA, OpenShell Developer Guide, ``Architecture'', documentation version v0.1.7, read on November 6, 2026 (\url{https://docs.nvidia.com/openshell/v0.1.7/about/architecture}).
+
+\begin{center}\footnotesize
+\begin{tabularx}{\linewidth}{L{0.22\linewidth}X}
+\toprule
+\textbf{Piece} & \textbf{What it does} \\
+\midrule
+Sandbox & Owns the agent's processes and forwards TCP and DNS traffic to the supervisor. \\
+Outer network fence & Denies all workload egress except the protected connection to the supervisor. \\
+Supervisor & Checks requests against policy, supplies credentials and opens approved connections. \\
+Policies & Describe what the agent can touch, from files to where credentials can go. \\
+Providers & Connect a service name to a stored credential. \\
+Policy prover & Uses formal verification to check agent-proposed network rules. \\
+Gateway & Checks who each user is, keeps every sandbox's record and delivers policy. \\
+Compute runtime & Creates the sandbox, starts the supervisor and the workload, and builds the fence. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{takeaway}The gateway manages, the supervisor decides, and the sandbox reports from beside the agent.\end{takeaway}
+
+\subsection*{Key points}
+\bi
+\item OpenShell enforces policy while the agent runs and checks each policy change before it applies.
+\item The gateway manages every sandbox, and the supervisor confirms its boundary before the agent starts.
+\item The gateway manages, the supervisor decides, and the sandbox reports from beside the agent.
+\ei

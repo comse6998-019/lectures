@@ -1,0 +1,37 @@
+\section{How each runtime builds the boundary}
+\label{sec:row-p1-3}
+
+The boundary is the same contract on every runtime, built with different tools.
+
+\subsection{Each runtime builds the boundary its own way}
+\label{sec:it-os-4-1}
+
+\textbf{Every runtime follows the same contract.}
+
+Every runtime follows the same contract, but each one uses the tools it already has to place the supervisor, connect it to the sandbox, and fence off the network. The table is the page's, one row per click.
+
+The runtime's job is to build the boundary and prove it's in place. It never decides whether a request is allowed. That decision always belongs to the shared supervisor and policy engine, which is why the same policy behaves the same way everywhere. Runtimes can differ in how they report readiness and which features they support. Each one advertises its capabilities so the gateway knows what it can do.
+
+The page ends with existing infrastructure. OpenShell plugs into the tools a team already uses, including container runtimes, schedulers, secret stores, identity providers, image pipelines, storage and device plugins. The gateway and the supervisor define how OpenShell behaves. Drivers translate that behavior into whatever the platform understands and report back what happened, which keeps platform-specific details out of the core control plane and the policy model.
+
+Source: NVIDIA, OpenShell Developer Guide, ``Architecture'', documentation version v0.1.7, read on November 6, 2026 (\url{https://docs.nvidia.com/openshell/v0.1.7/about/architecture}).
+
+\begin{center}\footnotesize
+\begin{tabularx}{\linewidth}{L{0.22\linewidth}XXX}
+\toprule
+\textbf{Runtime} & \textbf{Where the supervisor runs} & \textbf{How it talks to the sandbox} & \textbf{How direct egress is blocked} \\
+\midrule
+Docker & Its own container & Authenticated Unix socket on a driver-owned volume & Workload container has networking turned off \\
+Podman & Its own container & Authenticated Unix socket on a driver-owned volume & Workload container has networking turned off \\
+Kubernetes & Its own pod & Private service with mutual TLS & NetworkPolicy allows only the supervisor service \\
+VM & A process on the host & Authenticated vsock & Guest has no network device \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{takeaway}The runtime builds and proves the boundary, and the shared supervisor decides every request.\end{takeaway}
+
+\subsection*{Key points}
+\bi
+\item The runtime builds and proves the boundary, and the shared supervisor decides every request.
+\ei
