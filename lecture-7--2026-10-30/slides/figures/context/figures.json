@@ -4,7 +4,7 @@
     "source": "src/abstractive.tikz",
     "canvas_cm": [
       16.5,
-      6.2
+      4.85
     ],
     "stages": [
       "abstractive-1.png",
@@ -13,10 +13,32 @@
       "abstractive-4.png"
     ],
     "steps": [
-      "reveal the history: five messages and tool results, 60k tokens.",
-      "reveal the summarizer and its 40-token summary. Fade the history.",
-      "reveal the next request: system prompt, summary, and recent messages.",
-      "reveal the omitted order in rose and the source check in navy."
+      "reveal the history: five messages, 60k tokens, and a ghost where the summarizer will stand.",
+      "reveal the summarizer: it reads the messages up to Day 2 and writes a 40-token summary. They fade, and the Day 3 log stays.",
+      "reveal the next request: system prompt and tools, the summary, and the recent messages, with Day 3 kept as written.",
+      "reveal the omission: the summary turns rose, the rose line names the paid order, and the navy line names the check."
+    ]
+  },
+  {
+    "name": "agent-compaction",
+    "source": "src/agent-compaction.tikz",
+    "canvas_cm": [
+      16.5,
+      5.6
+    ],
+    "stages": [
+      "agent-compaction-1.png",
+      "agent-compaction-2.png",
+      "agent-compaction-3.png",
+      "agent-compaction-4.png",
+      "agent-compaction-5.png"
+    ],
+    "steps": [
+      "reveal the history: six turns, each a short action and a wide tool observation; observations are about 84% of a turn's tokens.",
+      "reveal token pruning: words deleted inside every message, as LLMLingua does; inside an agent, AppWorld accuracy falls from 56.0% to 39.3%.",
+      "reveal masking: observations older than the last turns become short placeholders, by a fixed rule; SWE-bench Verified 54.8%, 52% cheaper than the raw history (53.4% at $1.29 a task against $0.61).",
+      "reveal learned guidelines: a compressor rewrites the old turns into one summary under instructions refined on failed runs; AppWorld 56.5% while the peak context falls 26%, from 9.93K to 7.33K tokens.",
+      "reveal trained folding: the agent, trained with RL, folds a finished subtask into one summary; SWE-bench Verified 58.0% with a 32K context against 57.4% with 327K."
     ]
   },
   {
@@ -24,7 +46,7 @@
     "source": "src/compaction-policy.tikz",
     "canvas_cm": [
       16.5,
-      6.0
+      5.35
     ],
     "stages": [
       "compaction-policy-1.png",
@@ -33,10 +55,10 @@
       "compaction-policy-4.png"
     ],
     "steps": [
-      "reveal specify: the objective the context must serve and the trigger that starts compaction.",
-      "reveal select: what to keep as written, what to summarize, what to leave as a reference.",
-      "reveal generate: the replacement, with its facts, open items and sources stated.",
-      "reveal check: the questions the replacement must answer, and the return path when a check fails."
+      "reveal specify: the objective the context must serve (the next order decision, which needs the paid order) and the trigger that starts compaction.",
+      "reveal select: what to retain as written, what to summarize, and what to leave as a reference that is fetched only when needed.",
+      "reveal generate: the replacement those choices produce, with the ledger line as written, the log summarized and the price list by reference, and its source and open item stated.",
+      "reveal check: the questions the replacement must answer before the request is assembled, the return path when a check fails, and the navy line."
     ]
   },
   {
@@ -52,9 +74,9 @@
       "context-tasks-3.png"
     ],
     "steps": [
-      "reveal the retrieval row: one fact in one line of the log.",
-      "reveal the tracing row: a chain of three lines, each pointing at the next.",
-      "reveal the aggregation row: five lines that all count. Then the note."
+      "reveal the frame and the find row. The kicker and the source note stay on every stage. Line 8 holds the one fact the answer needs: the daily fee is $2.",
+      "reveal the trace row: line 2 points to line 6 through order 17, and line 6 points to line 10 through shipment 5. The answer, due Day 4, comes through two hops.",
+      "reveal the aggregate row: the total of 26 units adds up lines 1, 4, 7, 9 and 12, so all five lines count."
     ]
   },
   {
@@ -62,7 +84,7 @@
     "source": "src/delegation.tikz",
     "canvas_cm": [
       16.5,
-      6.0
+      5.0
     ],
     "stages": [
       "delegation-1.png",
@@ -70,9 +92,9 @@
       "delegation-3.png"
     ],
     "steps": [
-      "reveal the main context and the subtask it hands over: is the order on the way?",
-      "reveal the sub-agent's reads, all inside its own window: the ledger, the supplier notices, the log.",
-      "reveal the one-line result that comes back. The main context grows by one line (navy). What the line"
+      "reveal the main context and the subtask it hands over to the sub-agent (event 1): is the SKU-A order on the way? Ghosts mark the two result slots.",
+      "reveal the sub-agent's reads inside its own context (event 2): the ledger (400 lines), the supplier notices (12 pages) and the log (3,000 lines), about 90k tokens. None of them enter the main context.",
+      "reveal the result that comes back (event 3). The main context grows by one result (navy). The supplier's Day 3 warning is left out and stays in the sub-agent's context (rose)."
     ]
   },
   {
@@ -90,9 +112,9 @@
     ],
     "steps": [
       "reveal Day 1. The agent orders 10 units of SKU-A and pays. The ledger records it: due Day 4.",
-      "reveal Days 2 and 3. The shelf stays empty and the log says so. The window fills, so the history is compacted:",
-      "reveal Day 4 with summary A: \"SKU-A is out of stock.\" The paid order is gone, so the agent orders 10 more and pays twice.",
-      "reveal summary B under it: the paid order, its due date and its source survive. The agent waits and checks the delivery."
+      "reveal Days 2 and 3. The shelf stays empty and the log says so. The window fills, so the history is compacted.",
+      "reveal Day 4, the shelf still empty, with summary A: \"SKU-A is out of stock.\" The agent orders 10 more and pays twice.",
+      "reveal summary B: the paid order, its due date and its source survive. The agent waits and checks the delivery."
     ]
   },
   {
@@ -100,7 +122,7 @@
     "source": "src/evaluation.tikz",
     "canvas_cm": [
       16.5,
-      6.4
+      6.0
     ],
     "stages": [
       "evaluation-1.png",
@@ -111,12 +133,12 @@
       "evaluation-6.png"
     ],
     "steps": [
-      "reveal the run lane (history, compaction, replacement, next decision) and check 1, task success.",
-      "reveal check 2, evidence: the facts, conditions and sources the decision needs.",
+      "reveal the run lane (history, compaction, replacement, next decision) and check 1, task success: did it wait for the delivery?",
+      "reveal check 2, evidence: the order, the payment, the date and the source the decision needs.",
       "reveal check 3, faithfulness: nothing added, nothing changed, nothing settled that was open.",
       "reveal check 4, compression: the token counts, with the ratio convention stated.",
       "reveal check 5, total work: summary calls, fetches, later calls, time and charges.",
-      "reveal the stress tests: the commitments the decisions depend on, under repeated compaction."
+      "reveal the stress tests on the commitments the decisions depend on, then the navy line: compare task quality at a measured total cost."
     ]
   },
   {
@@ -132,9 +154,9 @@
       "evidence-position-3.png"
     ],
     "steps": [
-      "reveal the first row: the answer document is the first of 20. The reported accuracy is high.",
+      "reveal the frame and the first row. The frame is the question, the kicker, the scope note and the source note. The answer document is the first of 20, and the reported accuracy is high.",
       "reveal the second row: the answer document sits in the middle. The reported accuracy is lowest there (rose).",
-      "reveal the third row: the answer document is last. The accuracy is high again. Then the scope note."
+      "reveal the third row: the answer document is last, and the accuracy is high again. The navy caption under the rows names what stays fixed: the same 20 documents, the same question."
     ]
   },
   {
@@ -142,7 +164,7 @@
     "source": "src/extractive.tikz",
     "canvas_cm": [
       16.5,
-      6.6
+      4.6
     ],
     "stages": [
       "extractive-1.png",
@@ -151,10 +173,10 @@
       "extractive-4.png"
     ],
     "steps": [
-      "reveal the source line as eleven tokens.",
-      "reveal the classifier and its label under each token: keep (navy tick) or drop (grey cross).",
+      "reveal the source line as eleven tokens, with a ghost where the classifier will stand.",
+      "reveal the classifier: it reads the line and labels each token keep (navy tick) or drop (grey cross).",
       "reveal the compressed input, the kept tokens in order. The dropped tokens fade in the source row.",
-      "reveal the check: one dropped word flipped the meaning (rose), so test the compressed input on the task (navy)."
+      "reveal the failure: dropping unless flipped the meaning (rose). Test the compressed input on the task (navy)."
     ]
   },
   {
@@ -162,7 +184,7 @@
     "source": "src/four-ways.tikz",
     "canvas_cm": [
       16.5,
-      6.4
+      5.35
     ],
     "stages": [
       "four-ways-1.png",
@@ -171,10 +193,10 @@
       "four-ways-4.png"
     ],
     "steps": [
-      "reveal retain: the line itself, as written.",
-      "reveal retrieve: a reference in the context, the line itself in a store outside, fetched when needed.",
-      "reveal extract: the informative tokens kept, the punctuation dropped (greyed).",
-      "reveal rewrite: a new sentence that says the same thing in fewer words. Then the note."
+      "reveal retain: the ledger line, word for word.",
+      "reveal retrieve: a reference in the context, the line itself in a store, fetched when needed.",
+      "reveal extract: the informative tokens kept, the dropped punctuation in grey.",
+      "reveal rewrite: a new sentence, shorter than the line, with every fact kept."
     ]
   },
   {
@@ -182,7 +204,7 @@
     "source": "src/harness-branches.tikz",
     "canvas_cm": [
       16.5,
-      6.0
+      5.15
     ],
     "stages": [
       "harness-branches-1.png",
@@ -190,9 +212,9 @@
       "harness-branches-3.png"
     ],
     "steps": [
-      "reveal the main trajectory, the compaction point and the summary branch that continues from a summary.",
+      "reveal the main trajectory, the compaction point (event 1) and the summary branch that continues from a summary. The pre-compaction history is faded and labelled under its steps: later steps never see it. The note states the paper's scale.",
       "reveal a sub-agent branch with its own context, started from step 8 and returning one result to step 9.",
-      "reveal a failed path (rose) from step 10 and the retry that leads to step 11. The note states the paper's scale."
+      "reveal a failed path (rose) from step 10, and the label 'retry' on the arrow from step 10 to step 11."
     ]
   },
   {
@@ -200,7 +222,7 @@
     "source": "src/harness-formats.tikz",
     "canvas_cm": [
       16.5,
-      6.6
+      6.8
     ],
     "stages": [
       "harness-formats-1.png",
@@ -211,8 +233,50 @@
     "steps": [
       "reveal Pi: a summary with fixed sections, the recent messages kept, the file lists carried forward.",
       "reveal Claude Code: a structured summary, up to five recent files read again, hooks and skills re-injected.",
-      "reveal Codex: a handoff summary for the next model, with the tool state retained.",
-      "reveal the common core: every column leads with an abstractive, structured summary (navy frames),"
+      "reveal Codex: a handoff summary for the next model on the local path, the user's latest messages kept, resume metadata and an opt-in memories pipeline.",
+      "reveal the common core: every column leads with an abstractive, structured summary (navy frames), and each adds its own second strategy."
+    ]
+  },
+  {
+    "name": "langgraph-compaction",
+    "source": "src/langgraph-compaction.tikz",
+    "canvas_cm": [
+      16.5,
+      5.6
+    ],
+    "stages": [
+      "langgraph-compaction-1.png",
+      "langgraph-compaction-2.png",
+      "langgraph-compaction-3.png",
+      "langgraph-compaction-4.png"
+    ],
+    "steps": [
+      "reveal the thread: LangGraph's checkpointer saves the vending run's 13 messages, about 730 tokens, a checkpoint after every step. The Day 1 order is m04 and m05, and m13 is the Day 4 request.",
+      "reveal one call: trim_messages gives the model m10 to m13, and the thread still holds all 13 messages, so the Day 1 order is missing from that call only.",
+      "reveal the thread: SummarizationMiddleware replaces m01 to m07 with a summary, the model receives the summary and m08 to m13, and the model sees the Day 1 order only in the summary (the step-0 checkpoint still holds all 13 messages, which the notes and the next slide say).",
+      "reveal a file: Deep Agents moves a large tool result into a file and keeps a preview that read_file can expand, and the Day 1 order, a short result, stays."
+    ]
+  },
+  {
+    "name": "literature-map",
+    "source": "src/literature-map.tikz",
+    "canvas_cm": [
+      16.5,
+      5.05
+    ],
+    "stages": [
+      "literature-map-1.png",
+      "literature-map-2.png",
+      "literature-map-3.png",
+      "literature-map-4.png",
+      "literature-map-5.png"
+    ],
+    "steps": [
+      "reveal the frame and the models lane: Transformer-XL 2019, RoPE 2021, FlashAttention 2022, H2O 2023, YaRN 2023, StreamingLLM 2023 and Gemini 1.5 2024. The four lane names show from stage 1, the later ones in grey, and the note stays on every stage.",
+      "reveal the evaluations lane: passkey retrieval 2023, Lost in the Middle 2023, Needle In A Haystack 2023, RULER 2024, HELMET 2024 and NoLiMa 2025. The models lane settles to lilac.",
+      "reveal the harnesses lane: RAG 2020, LLMLingua 2023, MemGPT 2023, LLMLingua-2 2024, SWE-agent 2024, Complexity Trap 2025 and ACON 2025. The evaluations lane settles.",
+      "reveal the agents lane: SWE-bench 2023, Vending-Bench 2025 and METR time horizons 2025. The harnesses lane settles.",
+      "mark the works taught on a slide of their own in Part II: Lost in the Middle, LLMLingua-2, Vending-Bench and METR time horizons turn navy, and a key at the right end of the agents row names them."
     ]
   },
   {
@@ -220,7 +284,7 @@
     "source": "src/one-call.tikz",
     "canvas_cm": [
       16.5,
-      6.0
+      5.75
     ],
     "stages": [
       "one-call-1.png",
@@ -228,9 +292,9 @@
       "one-call-3.png"
     ],
     "steps": [
-      "reveal the records that exist (left band) and the call's context built from a selection of them: instructions and",
-      "reveal the call. The model reads the context and proposes the next action, order more SKU-A or wait. Under the",
-      "reveal the run meter. Every call sends the context again, so tokens, time and charges add up over the run."
+      "reveal the records that exist and the call's context: instructions, history, the selected ledger line, the window meter.",
+      "reveal the call: the model decides the next action, which needs the paid order, its meaning intact and a route to the ledger.",
+      "reveal the run meter: the context is sent again on every call, so the tokens billed add up across the run."
     ]
   },
   {
@@ -238,7 +302,7 @@
     "source": "src/recency.tikz",
     "canvas_cm": [
       16.5,
-      5.6
+      4.2
     ],
     "stages": [
       "recency-1.png",
@@ -246,9 +310,9 @@
       "recency-3.png"
     ],
     "steps": [
-      "reveal eight turns of the run in time order and the window over the first five.",
-      "the window moves on: turns 6 and 7 enter, turns 1 and 2 fade out.",
-      "the window moves again: turn 8 enters, turn 3 fades. The paid order and its due date are gone (rose)."
+      "reveal eight turns of the run in time order and the context over the first five.",
+      "the context moves on: turns 6 and 7 enter, turns 1 and 2 fade out. A grey note: no extra call, no extra tokens.",
+      "the context moves again: turn 8 enters, turn 3 fades. The paid order and its due date are gone (rose)."
     ]
   },
   {
@@ -256,7 +320,7 @@
     "source": "src/retrieval.tikz",
     "canvas_cm": [
       16.5,
-      6.0
+      4.9
     ],
     "stages": [
       "retrieval-1.png",
@@ -264,9 +328,9 @@
       "retrieval-3.png"
     ],
     "steps": [
-      "reveal the context with a reference instead of the line, and the store outside the window.",
-      "reveal the fetch: the reference points at line 17, the line comes back into the context.",
-      "reveal the failure: after a cleanup the store renumbered its lines, so the reference is stale (rose)."
+      "reveal the call's context, with a 15-token reference (store#17) where the line would be, and the store of the run's history outside the context. A ghost marks where the fetched line will go.",
+      "reveal the fetch: the reference names #17, and the line comes back into the context word for word.",
+      "reveal the stale reference (rose): a cleanup dropped the price list line and renumbered the store, so #17 returns the Day 2 shelf line while the paid order sits at #16. Retrieval scales past any window while the reference stays valid (navy)."
     ]
   },
   {
@@ -274,7 +338,7 @@
     "source": "src/state-bridge.tikz",
     "canvas_cm": [
       16.5,
-      5.0
+      4.0
     ],
     "stages": [
       "state-bridge-1.png",
@@ -282,7 +346,7 @@
     ],
     "steps": [
       "reveal the surviving context: facts, decisions and open commitments, with the ghost of where it will live.",
-      "reveal the execution state: a run with checkpoints, a resume and a replay, and the context inside it."
+      "reveal the execution state: a run with checkpoints, a break, a resume and a replay, and the surviving context stored in it."
     ]
   },
   {
@@ -298,9 +362,29 @@
       "structured-notes-3.png"
     ],
     "steps": [
-      "reveal the card with its schema (goal, open orders, observations, next check) and the Day 1 step that",
-      "reveal Days 2 and 3: one writes the observations, the other the next check. The order line stays.",
-      "reveal the compaction boundary and Day 4. The steps fade: the history is gone. The card stays, so the"
+      "reveal the card with its schema (goal, open orders, shelf, next check) and the Day 1 step that writes the open order. The two empty fields are ghosts.",
+      "reveal Days 2 and 3. Day 2 writes the shelf and Day 3 writes the next check. The card has no field for Day 3's supplier warning. The order line stays.",
+      "reveal the compaction boundary (a grey dashed rule) and Day 4, which reads the card. The steps fade, and the warning with no field is lost (rose). The open order survives by design (navy)."
+    ]
+  },
+  {
+    "name": "vending-run",
+    "source": "src/vending-run.tikz",
+    "canvas_cm": [
+      16.5,
+      5.25
+    ],
+    "stages": [
+      "vending-run-1.png",
+      "vending-run-2.png",
+      "vending-run-3.png",
+      "vending-run-4.png"
+    ],
+    "steps": [
+      "reveal the business: the agent's tool calls reach the vending machine and its suppliers. It checks inventory, orders stock, sets prices and pays a daily fee. The three periods wait as ghosts.",
+      "reveal Day 1: the agent orders and pays, and the inventory-ledger records 10 SKU-A, paid 30.00, due Day 4. A navy caption says what a SKU is.",
+      "reveal Days 2 and 3: the ops-log records an empty shelf and no sales, and the history of Days 1 to 3 fills the window.",
+      "reveal Day 4: the question the next call must answer, and the ledger line that answers it, now outlined in navy."
     ]
   }
 ]

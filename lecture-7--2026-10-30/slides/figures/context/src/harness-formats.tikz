@@ -1,58 +1,77 @@
-% harness-formats: what Pi, Claude Code and Codex keep at compaction (Slides 7.5a to 7.5d). Canvas 16.5 x 6.6 cm.
+% harness-formats: what Pi, Claude Code and Codex keep at compaction (Slides 7.5a to 7.5d). Canvas 16.5 x 6.8 cm.
 % Four stages, one column per harness, then the common core.
 % Stage 1: reveal Pi: a summary with fixed sections, the recent messages kept, the file lists carried forward.
 % Stage 2: reveal Claude Code: a structured summary, up to five recent files read again, hooks and skills re-injected.
-% Stage 3: reveal Codex: a handoff summary for the next model, with the tool state retained.
-% Stage 4: reveal the common core: every column leads with an abstractive, structured summary (navy frames),
-%          and each adds its own second move.
-% Sources, read 2026-11-04: Pi docs/compaction.md; Claude Code docs, context-window; openai/codex
-% codex-rs/prompts/templates/compact. Defaults can change; see part-02-harness-compaction.md.
+% Stage 3: reveal Codex: a handoff summary for the next model on the local path, the user's latest messages kept, resume metadata and an opt-in memories pipeline.
+% Stage 4: reveal the common core: every column leads with an abstractive, structured summary (navy frames), and each adds its own second strategy.
+% The rows match the recap table of Slide 7.5d: the summary (core), the second strategy, the rest. Boxes in a row share
+% one height and stack with one 2.2 mm gap. The summaries are set from the top, so the three titles align, and each
+% fills the box's five lines (manual breaks in Pi's and Claude Code's), so no box ends in a blank line. A shorter text
+% in the rows below is centred. No word is hyphenated. Each panel pads its boxes by 3 mm and reaches 2 mm higher, the
+% part of its top edge that the tab covers, so the clear space under the tab matches the other three sides and the
+% stage 4 frames (0.8 mm outside each summary, on every side) keep about 1.9 mm from the tabs. The note sits in its own
+% band above the tabs.
+% Sources, read 2026-11-04: Pi docs/compaction.md; Claude Code docs, context-window.md; openai/codex at commit de6e72a,
+% codex-rs/prompts/templates/compact (prompt.md, summary_prefix.md) and codex-rs/core/src/compact.rs, where
+% COMPACT_USER_MESSAGE_MAX_TOKENS = 20_000 bounds the user's latest messages kept beside the summary. The source lines
+% under the columns shorten the Codex path. The handoff summary is Codex's local compaction path, and the memories
+% pipeline is off by default. Left out on purpose: with the default OpenAI provider Codex compacts on the server, and
+% the tools' state, which summary_prefix.md tells the next model about, persists outside the context, so the figure
+% retains none of it. Defaults can change; see part-02-harness-compaction.md and, for Codex, slides/README.md.
 \begin{tikzpicture}
-  \canvas{16.5}{6.6}
+  \canvas{16.5}{6.8}
+  \frenchspacing
   \tikzset{
     col/.style={mnode, inner sep=3mm},
-    sumbox/.style={okchip, anchor=north west, text width=43mm},
-    second/.style={slot, anchor=north west, text width=43mm},
-    src/.style={font=\sffamily\scriptsize, text=deckGrey, anchor=north west, inner sep=0pt},
+    % the summary box: 3 pt sides, so it is exactly as wide as the boxes under it. Five lines, set from the top, so
+    % the three titles share one baseline. Every summary must fill all five lines, or its box ends in a blank line.
+    sumbox/.style={okchip, anchor=north west, text width=43mm+2pt, inner xsep=3pt, align=flush left, outer sep=0pt,
+                   text height=5.8pt, text depth=40pt},
+    % the boxes under it: the height of three lines, a shorter text centred
+    second/.style={slot, anchor=north west, text width=43mm, align=flush left, outer sep=0pt, minimum height=10.82mm},
+    src/.style={font=\ttfamily\footnotesize, text=deckGrey, anchor=north west, inner sep=0pt, outer sep=0pt,
+                text height=5.5pt, text depth=1.85pt},
   }
-  \def\gap{0.25}
-  % \column{k}{x}{title}{summary}{second}{third}{source}: the boxes stack with one gap, the panel fits them
+  \def\gap{0.22}
+  % \column{k}{x}{title}{summary}{second}{third}{source}: the boxes stack with one gap. The panel fits them with 3 mm
+  % and reaches 2 mm above the summary, so the tab, centred on the panel's top edge, keeps 3 mm of clear space under it.
   \newcommand{\column}[7]{
-    \node[sumbox] (s#1) at (#2,5.75) {#4};
+    \node[sumbox] (s#1) at (#2,5.64) {#4};
     \node[second] (p#1) at ($(s#1.south west)+(0,-\gap)$) {#5};
     \node[second] (q#1) at ($(p#1.south west)+(0,-\gap)$) {#6};
     \node[src] (r#1) at ($(q#1.south west)+(0,-\gap)$) {#7};
     \begin{scope}[on background layer]
-      \node[col, fit={(s#1) (p#1) (q#1) (r#1) (#2,0.75)}] (c#1) {};
+      \node[col, fit={(s#1) (p#1) (q#1) (r#1) ($(s#1.north)+(0,2mm)$)}] (c#1) {};
     \end{scope}
-    \node[tab] at (c#1.north) {#3};
+    \node[tab] (t#1) at (c#1.north) {#3};
   }
   % stage 1: Pi
-  \column{1}{0.45}{Pi}
-    {\textbf{summary, fixed sections}\\ Goal, Constraints and Preferences, Progress (Done, In Progress, Blocked), Key Decisions, Next Steps, Critical Context}
+  \column{1}{0.43}{Pi}
+    {\textbf{summary, fixed sections}\\ Goal, Constraints and Preferences,\\ Progress (Done, In Progress,\\ Blocked), Key Decisions,\\ Next Steps, Critical Context}
     {\textbf{plus} the recent messages, kept verbatim (\texttt{keepRecentTokens}, 20k by default)}
     {\textbf{plus} file lists carried forward: \texttt{readFiles}, \texttt{modifiedFiles}}
     {docs/compaction.md}
   % stage 2: Claude Code
   \atstage{2}{
-    \column{2}{5.9}{Claude Code}
-      {\textbf{structured summary}\\ of the conversation, written by the model, on \texttt{/compact} or as the window fills}
+    \column{2}{5.965}{Claude Code}
+      {\textbf{structured summary}\\ of the conversation,\\ written by the model,\\ on \texttt{/compact} or as\\ the window fills}
       {\textbf{plus} up to five recently touched files, read again (over 5000 tokens: a path only)}
       {\textbf{plus} hook output and skill text re-injected, large reads left to subagents}
-      {docs: context-window}
+      {context-window.md}
   }
-  % stage 3: Codex
+  % stage 3: Codex, its local compaction path. The second box is what compact.rs keeps beside the summary.
   \atstage{3}{
-    \column{3}{11.35}{Codex}
-      {\textbf{context checkpoint compaction}\\ a handoff for the next model: progress and key decisions, context and preferences, next steps, critical data and references}
-      {\textbf{plus} the state of the tools the previous model used, retained}
-      {\textbf{plus} checkpoints and resume metadata, a separate memories pipeline}
-      {codex-rs/prompts/templates/compact}
+    \column{3}{11.5}{Codex}
+      {\textbf{handoff summary, local path}\\ for the next model: progress and key decisions, context and preferences, next steps, critical data and references}
+      {\textbf{plus} the user's latest messages, kept verbatim (up to 20k tokens)}
+      {\textbf{plus} resume metadata and an \mbox{opt-in} memories pipeline}
+      {prompts/templates/compact}
   }
   % stage 4: the common core
   \atstage{4}{
     \foreach \k in {1,2,3}{ \draw[hl] ($(s\k.south west)+(-0.08,-0.08)$) rectangle ($(s\k.north east)+(0.08,0.08)$); }
-    \node[capt, inner sep=0pt] at (8.25,0.2) {one core in all three: an abstractive, structured summary. each adds its own second move.};
+    \node[capt, anchor=south] (cap) at (8.25,0.03) {one core in all three: an abstractive, structured summary. each adds its own second strategy.};
   }
-  \node[note, anchor=north east, inner sep=0pt] at (16.4,6.55) {sources read 2026-11-04, defaults can change};
+  % the note, in its own band above the tabs
+  \node[note, anchor=north east, inner sep=0pt] (srcnote) at (16.38,6.77) {sources read 2026-11-04, defaults can change};
 \end{tikzpicture}

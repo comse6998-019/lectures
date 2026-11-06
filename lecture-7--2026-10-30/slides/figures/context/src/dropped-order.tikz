@@ -2,15 +2,30 @@
 % orders again (Segments 8 and 9: Vending-Bench, the teaching case). Canvas 16.5 x 6.4 cm. Four stages, in the manner of
 % lecture 5's context-poisoning figure: a timeline from left to right, one band per period.
 % Stage 1: reveal Day 1. The agent orders 10 units of SKU-A and pays. The ledger records it: due Day 4.
-% Stage 2: reveal Days 2 and 3. The shelf stays empty and the log says so. The window fills, so the history is compacted:
-%          a summary replaces it. The question the summary must still answer: is more SKU-A already on the way?
-% Stage 3: reveal Day 4 with summary A: "SKU-A is out of stock." The paid order is gone, so the agent orders 10 more and pays twice.
-% Stage 4: reveal summary B under it: the paid order, its due date and its source survive. The agent waits and checks the delivery.
-% Illustrative, not from a source: the records, the prices and the days. Vending-Bench (Andon Labs, 2025) supplies the
-% task and reports losses of long-term coherence over long runs; this case is the course's instance of that failure class.
+% Stage 2: reveal Days 2 and 3. The shelf stays empty and the log says so. The window fills, so the history is compacted.
+%          A summary replaces it. The question the summary must still answer: is more SKU-A already on the way?
+% Stage 3: reveal Day 4, the shelf still empty, with summary A: "SKU-A is out of stock." The agent orders 10 more and pays twice.
+% Stage 4: reveal summary B: the paid order, its due date and its source survive. The agent waits and checks the delivery.
+%          Summary A settles to an outline. Both summaries carry circle 4: they are two outcomes of the same step.
+% Layout: the first box of every period starts at the same height, each band keeps 2 mm of padding on every side, and the two
+% paths out of compaction leave its east side separately, so the failure path and the kept path share no segment.
+% Illustrative, not from a source: the whole run, with its records, price, days, compaction and both summaries. The note
+% says so. Vending-Bench (Backlund and Petersson, Andon Labs, arXiv:2502.15840, 2025, a preprint) supplies the task and
+% the failure class. Its agent kept the last 30,000 tokens of history and wrote no summary, so the compaction here is
+% the course's illustration of that class.
+% Left out on purpose: any word on the Day 4 log line that expects a delivery, such as "yet". The line sits in the context
+% beside summary A, whose verdict says the context holds no order.
 \begin{tikzpicture}
   \canvas{16.5}{6.4}
   \def\sx{7.85}      % centre of the middle period
+  \def\yt{6.2}       % top of the first box in every period
+  \def\yc{2.85}      % centre line of compaction
+  \def\dy{0.3675}    % offset of the two exits from compaction's centre line
+  \def\xv{10.28}     % the vertical of the path to summary A, midway between compaction and the Day 4 band
+  \tikzset{
+    rec/.style={rnode, align=left, font=\sffamily\footnotesize\frenchspacing},
+    compsize/.style={minimum width=36mm, minimum height=14mm},
+  }
   % ---- the time axis and the three periods
   \draw[-{Stealth[length=2mm]}, thick, ibmfg!30] (0.05,0.5) -- (16.45,0.5);
   \draw[line width=2.4pt, deckNavy] (0.15,0.5) -- (4.65,0.5);
@@ -28,47 +43,50 @@
   \atstage{3}{
     \draw[line width=2.4pt, deckNavy] (11.1,0.5) -- (16.15,0.5);
     \node[axlab] at (13.7,0.42) {Day 4};}
-  \node[note, anchor=north east, inner sep=0pt] at (4.7,6.33) {illustrative records};
+  \node[note, anchor=south west, inner sep=0pt] (scope) at (0.2,0.95) {illustrative run:\\ the course's teaching case};
 
   % ---- stage 1: the order and the ledger
-  \node[mnode, minimum width=18mm, minimum height=8mm] (agent) at (1.35,5.5) {agent};
-  \node[rnode, anchor=north west, text width=40mm, align=left, font=\sffamily\footnotesize] (ledger) at (0.2,4.55)
+  \node[mnode, minimum width=18mm, minimum height=8mm, anchor=north west] (agent) at (0.2,\yt) {agent};
+  \node[rec, anchor=north, text width=41.05mm] (ledger) at (2.4,4.15)
     {\texttt{inventory-ledger}\\ Day 1: ordered 10 SKU-A\\ paid 30.00, due Day 4};
   \draw[flow] (agent.south) -- (agent.south |- ledger.north);
   \node[evnum] at ($(agent.south)!0.5!(agent.south |- ledger.north)$) {1};
-  \node[lab, fill=none, anchor=west] at ($(agent.south)!0.5!(agent.south |- ledger.north)+(0.3,0)$) {orders and pays};
-  \node[capt, align=center] at (2.4,2.6) {a commitment whose effect\\ lands three days later};
+  \node[lab, fill=none, anchor=west] at ($(agent.south)!0.5!(agent.south |- ledger.north)+(0.33,0)$) {orders and pays};
+  \node[capt, align=center, anchor=north] (capt1) at (2.4,2.56) {a commitment whose effect\\ lands three days later};
 
   % ---- stage 2: the shelf stays empty, the window fills, the history is compacted
+  % the ghost and the node share one size, so the outline stays where it is when compaction appears
   \onlystage{1}{
-    \node[ghostbox, minimum width=34mm, minimum height=14mm, text=ibmfg!50, font=\sffamily\small] at (\sx,3.1) {compaction};
+    \node[ghostbox, compsize, text=ibmfg!50, font=\sffamily\small] (comp) at (\sx,\yc) {compaction};
   }
   \atstage{2}{
-    \node[rnode, anchor=north, text width=40mm, align=left, font=\sffamily\footnotesize] (log) at (\sx,5.95)
+    \node[rec, anchor=north, text width=41.05mm] (log) at (\sx,\yt)
       {\texttt{ops-log}\\ Day 2: shelf empty, no sales\\ Day 3: shelf empty, no sales};
-    \node[evnum] at (5.45,5.7) {2};
-    \node[mnode, minimum width=34mm, align=center] (comp) at (\sx,3.1) {\textbf{compaction}\\ summarize the history,\\ drop the rest};
+    \node[evnum] at ($(log.north west)+(-0.38,-0.27)$) {2};
+    \node[mnode, compsize, align=center] (comp) at (\sx,\yc) {\textbf{compaction}\\ summarize the history,\\ drop the rest};
     \draw[flow] (log.south) -- (comp.north);
     \node[evnum] at ($(log.south)!0.5!(comp.north)$) {3};
-    \node[lab, fill=none, anchor=west] at ($(log.south)!0.5!(comp.north)+(0.3,0)$) {the window fills};
-    \draw[flow] (ledger.east) -- ++(0.9,0) |- (comp.west);
-    \node[verd, align=center, text width=56mm] at (\sx,1.5) {what must survive to answer\\ ``is more SKU-A already on the way?''};
+    \node[lab, fill=none, anchor=east] at ($(log.south)!0.5!(comp.north)+(-0.33,0)$) {the window fills};
+    \draw[flow] (ledger.east) -- ++(0.8,0) |- (comp.west);
+    \node[verd, align=center, anchor=north, inner sep=0pt] (q) at (\sx,1.79) {what must survive to answer\\ ``is more SKU-A already on the way?''};
   }
 
   % ---- stage 3: Day 4 with summary A, the paid order gone
+  % summary A arrives tinted rose and settles to an outline on stage 4, when summary B is the newest element
+  \ifnum\stage>3 \tikzset{settled/.style={fill=white}}\else \tikzset{settled/.style={}}\fi
   \atstage{3}{
-    \node[rnode, anchor=north, text width=50mm, align=left, font=\sffamily\footnotesize] (day4) at (13.7,6.25)
-      {\texttt{ops-log} Day 4: shelf empty,\\ nothing delivered yet};
-    \node[chip, anchor=west, text width=48mm] (sumA) at (11.2,4.825) {\textbf{summary A}\\ ``SKU-A is out of stock.''};
-    \draw[badflow] (comp.east) -- ++(0.4,0) |- (sumA.west);
-    \node[badnum] at (10.45,4.825) {4};
-    \node[badverd, align=center, text width=52mm] at (13.7,3.95) {no order in the context,\\ so it orders 10 more and pays twice};
+    \node[rec, anchor=north, text width=49.05mm] (day4) at (13.7,\yt) {\texttt{ops-log}\\ Day 4: shelf empty, no delivery};
+    \node[chip, settled, text width=49.54mm] (sumA) at (13.7,4.703) {\textbf{summary A}\\ ``SKU-A is out of stock.''};
+    \draw[badflow] ($(comp.east)+(0,\dy)$) -- (\xv,\yc+\dy) |- (sumA.west);
+    \node[badnum] at (\xv,3.96) {4};
+    \node[badverd, align=center, anchor=north, inner sep=0pt] (vA) at (13.7,4.163) {no order in the context,\\ so it orders 10 more and pays twice};
   }
-  % ---- stage 4: Day 4 with summary B, the commitment kept
+  % ---- stage 4: Day 4 with summary B, the paid order kept
   \atstage{4}{
-    \node[okchip, anchor=west, text width=48mm] (sumB) at (11.2,2.775) {\textbf{summary B}\\ 10 SKU-A paid Day 1, due Day 4\\ source \texttt{inventory-ledger}, confirm on Day 4};
-    \draw[flow] (comp.east) -- ++(0.4,0) |- (sumB.west);
-    \node[evnum] at (10.45,2.775) {5};
-    \node[verd, align=center, text width=52mm] at (13.7,1.6) {the paid order is still there,\\ so it waits and checks the delivery};
+    \node[okchip, line width=1.6pt, text width=49.54mm] (sumB) at (13.7,\yc-\dy)
+      {\textbf{summary B}\\ 10 SKU-A paid Day 1, due Day 4\\ source \texttt{inventory-ledger}\\ confirm on Day 4};
+    \draw[flow] ($(comp.east)+(0,-\dy)$) -- (sumB.west);
+    \node[evnum] at (\xv,\yc-\dy) {4};
+    \node[verd, align=center, anchor=north, inner sep=0pt] (vB) at (13.7,1.572) {the paid order is still there,\\ so it waits and checks the delivery};
   }
-\end{tikzpicture}
+\end{tikzpicture}%

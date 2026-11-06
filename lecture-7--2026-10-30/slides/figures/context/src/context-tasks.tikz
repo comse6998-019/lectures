@@ -1,53 +1,65 @@
-% context-tasks: three demands on the same long log, after RULER's task families (Hsieh et al., COLM 2024): retrieval,
+% context-tasks: three operations on the same long log, after RULER's task categories (Hsieh et al., COLM 2024): retrieval,
 % multi-hop tracing and aggregation. Canvas 16.5 x 5.6 cm. Three stages. The log lines are the course's vending example.
-% Stage 1: reveal the retrieval row: one fact in one line of the log.
-% Stage 2: reveal the tracing row: a chain of three lines, each pointing at the next.
-% Stage 3: reveal the aggregation row: five lines that all count. Then the note.
-% Illustrative, not from a source: the twelve log lines and the answers. RULER's tests are synthetic; the figure borrows
-% its three families and makes no claim about any score.
+% The first row is named "find": segment 7 keeps "retrieve" for fetching material from a store outside the context.
+% Stage 1: reveal the frame and the find row. The kicker and the source note stay on every stage. Line 8 holds the one fact the answer needs: the daily fee is $2.
+% Stage 2: reveal the trace row: line 2 points to line 6 through order 17, and line 6 points to line 10 through shipment 5. The answer, due Day 4, comes through two hops.
+% Stage 3: reveal the aggregate row: the total of 26 units adds up lines 1, 4, 7, 9 and 12, so all five lines count.
+% Illustrative, not from a source: the twelve log lines, which lines are highlighted, order 17, shipment 5, the $2 fee
+% and the three answers. RULER's tests are synthetic. Its variable tracking asks for every variable bound to one value,
+% and its aggregation tasks count word frequencies. The rows adapt those tasks to a vending log. Left out on purpose:
+% RULER's question-answering category and every score.
 \begin{tikzpicture}
   \canvas{16.5}{5.6}
   \tikzset{
-    line/.style={draw=ibmfg!40, fill=black!6, rounded corners=1pt, minimum width=6mm, minimum height=5mm, inner sep=0pt},
-    hitline/.style={line, draw=deckNavy, fill=deckNavy, text=white, font=\sffamily\scriptsize\bfseries},
-    rowlab/.style={font=\sffamily\small\bfseries, text=deckNavy, anchor=east},
-    ans/.style={gnode, draw=deckNavy, line width=0.8pt, font=\sffamily\footnotesize, align=center, text width=24mm, inner ysep=2pt},
+    line/.style={draw=ibmfg!40, fill=black!6, rounded corners=1pt, minimum width=5.75mm, minimum height=5mm, inner sep=0pt},
+    hitline/.style={line, draw=deckNavy, fill=deckNavy, text=white, font=\sffamily\footnotesize\bfseries},
+    rowlab/.style={font=\sffamily\small\bfseries, text=deckNavy, anchor=base east, inner sep=0pt},
+    ans/.style={gnode, draw=deckNavy, line width=0.8pt, font=\sffamily\footnotesize, align=center, text width=23mm,
+                inner ysep=2pt, minimum height=9mm, anchor=west},
+    rowverd/.style={verd, anchor=base west, inner sep=0pt},
   }
-  \node[kick, anchor=west] at (2.3,5.3) {one log of twelve lines, the same window every time};
-  % \logrow{y}{hits}: twelve lines at height y; \hits lists the positions that matter
-  \newcommand{\logrow}[2]{
-    \foreach \i in {1,...,12}{
-      \pgfmathsetmacro{\x}{2.65+(\i-1)*0.72}
-      \node[line] (l\i) at (\x,#1) {};
-    }
-    \foreach \i in {#2}{
-      \pgfmathsetmacro{\x}{2.65+(\i-1)*0.72}
-      \node[hitline] (h\i) at (\x,#1) {\i};
-    }
-    \draw[flow] (11.0,#1) -- (11.4,#1);
+  % the columns: row labels end at 1.7, the lines run from 2.0 to 10.22, the answers from 10.92 to 13.53,
+  % the verdicts from 13.88 to at most 16.3
+  \def\xS{2.2875}%  centre of line 1
+  \def\dx{0.695}%   pitch of the lines
+  \def\xA{10.92}%   left edge of the answer boxes
+  \def\xV{13.88}%   left edge of the verdicts
+  \node[kick, anchor=base west] at (2.0,5.275) {one log of twelve lines, the same log for every operation};
+  % \logrow{y}{hits}: twelve lines centred at height y; the hits are the lines that matter
+  \newcommand{\logrow}[2]{%
+    \foreach \i in {1,...,12}{%
+      \pgfmathsetmacro{\x}{\xS+(\i-1)*\dx}%
+      \node[line] (l\i) at (\x,#1) {};%
+    }%
+    \foreach \i in {#2}{%
+      \pgfmathsetmacro{\x}{\xS+(\i-1)*\dx}%
+      \node[hitline] (h\i) at (\x,#1) {\i};%
+    }%
+    \draw[flow] (10.42,#1) -- (10.82,#1);%
   }
-  % stage 1: retrieve
-  \node[rowlab] at (2.1,4.4) {retrieve};
+  % stage 1: find
+  \node[rowlab] at (1.7,4.32) {find};
   \logrow{4.4}{8}
-  \node[ans, anchor=west] (a1) at (11.5,4.4) {due Day 4};
-  \node[verd, anchor=west] at (14.2,4.4) {one fact, one line};
-  % stage 2: trace
+  \node[ans] at (\xA,4.4) {the daily fee\\ is \$2};
+  \node[rowverd] at (\xV,4.32) {one fact, one line};
+  % stage 2: trace. Each hop leaves its line right of centre and enters the next left of centre,
+  % so the two hops are separate brackets and line 6 is the link between them.
   \atstage{2}{
-    \node[rowlab] at (2.1,2.9) {trace};
+    \node[rowlab] at (1.7,2.82) {trace};
     \logrow{2.9}{2,6,10}
-    \draw[flow] (3.37,3.15) -- ++(0,0.3) -| (6.25,3.15);
-    \draw[flow] (6.25,3.15) -- ++(0,0.3) -| (9.13,3.15);
-    \node[lab, fill=white, anchor=south] at (4.8,3.47) {order 17};
-    \node[lab, fill=white, anchor=south] at (7.7,3.47) {shipment 5};
-    \node[ans, anchor=west] (a2) at (11.5,2.9) {due Day 4,\\ through two hops};
-    \node[verd, anchor=west] at (14.2,2.9) {a chain of lines};
+    \draw[flow] ([xshift=1.7mm]h2.north) -- ++(0,0.3) -| ([xshift=-1.7mm]h6.north);
+    \draw[flow] ([xshift=1.7mm]h6.north) -- ++(0,0.3) -| ([xshift=-1.7mm]h10.north);
+    \node[lab, fill=none, anchor=base] at ($(h2.north)!0.5!(h6.north)+(0,0.47)$) {order 17};
+    \node[lab, fill=none, anchor=base] at ($(h6.north)!0.5!(h10.north)+(0,0.47)$) {shipment 5};
+    \node[ans] at (\xA,2.9) {due Day 4,\\ through two hops};
+    \node[rowverd] at (\xV,2.82) {a chain of lines};
   }
   % stage 3: aggregate
   \atstage{3}{
-    \node[rowlab] at (2.1,1.4) {aggregate};
+    \node[rowlab] at (1.7,1.32) {aggregate};
     \logrow{1.4}{1,4,7,9,12}
-    \node[ans, anchor=west] (a3) at (11.5,1.4) {26 units ordered\\ in all};
-    \node[verd, anchor=west] at (14.2,1.4) {every line counts};
+    \node[ans] at (\xA,1.4) {26 units ordered\\ in all};
+    \node[rowverd] at (\xV,1.32) {all five lines count};
   }
-  \node[note, anchor=south west, inner sep=0pt] at (0.2,0.1) {RULER (Hsieh et al. 2024) tests these families on synthetic inputs. The log and the answers are the course's example.};
+  \node[note, anchor=south west, inner sep=0pt] at (0.2,0.1) {RULER (Hsieh et al. 2024) tests such operations on synthetic inputs. The log and the answers are the course's example.};
 \end{tikzpicture}

@@ -1,37 +1,76 @@
-% compaction-policy: a compaction policy as four choices, on the vending case (Slide 9.1). Canvas 16.5 x 6.0 cm.
-% Four stages, one choice per stage, then the return path.
-% Stage 1: reveal specify: the objective the context must serve and the trigger that starts compaction.
-% Stage 2: reveal select: what to keep as written, what to summarize, what to leave as a reference.
-% Stage 3: reveal generate: the replacement, with its facts, open items and sources stated.
-% Stage 4: reveal check: the questions the replacement must answer, and the return path when a check fails.
-% The procedure is the course's synthesis of the objectives and mechanisms of Segments 5 to 7; the entries are the
-% teaching case.
+% compaction-policy: a compaction policy as four choices, on the vending case (Slide 9.1). Canvas 16.5 x 5.35 cm.
+% Four stages, one choice per stage. The last stage also adds the return path and the navy verdict line.
+% Stage 1: reveal specify: the objective the context must serve (the next order decision, which needs the paid order) and the trigger that starts compaction.
+% Stage 2: reveal select: what to retain as written, what to summarize, and what to leave as a reference that is fetched only when needed.
+% Stage 3: reveal generate: the replacement those choices produce, with the ledger line as written, the log summarized and the price list by reference, and its source and open item stated.
+% Stage 4: reveal check: the questions the replacement must answer before the request is assembled, the return path when a check fails, and the navy line.
+% Review 6: every name is white on a navy head, on every stage. The newest body has a navy outline on its own stage and
+% a grey one after, as in four-ways. Its outer sep is fixed, so the heavier outline thickens in place and moves no anchor.
+% Layout: heads and bodies share one width. Every body holds five lines, so the four bodies share one height and each has
+% 1.4 mm of padding, measured on the image from the frame's line to the ink: to the left edge of the text, to the
+% ascenders of its first line and to the descenders of its last line. Every last line has a descender, so the gap under
+% the text is measured to the same kind of letter in every body. Every first baseline sits 3.67 mm under \yb, the top
+% anchor of the bodies, so the lines of the four bodies align. generate's first line has no ascender above its capitals, so its gap
+% above the text is 0.1 mm larger. Every line is broken by hand so that no word is split, and the row sits 2 mm from
+% every edge of the canvas.
+% generate follows from select: the ledger line kept as written, under its record name, one line that summarizes the log,
+% a reference to the record that holds the price list, and the open item. check asks for each of those facts.
+% Strings: the ledger line is the teaching case as Slide 9.2 and one-call (Slide 5.1) quote it: "inventory-ledger, Day 1:
+% 10 SKU-A paid, due Day 4". The log is ops-log, Days 2 and 3, shelf empty. The price list lives in the record
+% fees-and-prices (one-call). "confirm on Day 4" is the open item of dropped-order's summary B (Slide 9.3). The first four
+% questions are evaluation's evidence check (Slide 10.1). select glosses retain and reference in the words of Slide 7.1.
+% The procedure is the course's synthesis of the objectives and mechanisms of Segments 5 to 7, and the grey note says so.
+% The failed check returns to select, to change what is kept, and to generate, to rewrite the replacement.
+% Illustrative: the whole example. Left out on purpose: the measure of total work, which evaluation (Slide 10.1) carries.
 \begin{tikzpicture}
-  \canvas{16.5}{6.0}
+  \frenchspacing  % one space after a colon, as in one-call and structured-notes
+  \canvas{16.5}{5.35}
+  \def\xa{2.02}\def\xb{6.1733}\def\xc{10.3267}\def\xd{14.48}   % column centres: 36.4 mm boxes, 5 mm gaps
+  \def\yh{4.17}      % centre line of the heads
+  \def\yb{3.57}      % top of the bodies
+  \def\pad{0.14}     % padding inside every body, on every side: 1.4 mm from the frame to the text's left edge
+  % The ink of an ascender stands about 0.1 mm above its TeX height, and a descender's ink ends about 0.1 mm above its
+  % TeX depth. \yt and \bh are set on the rendered image, so the ink of the first and the last line also sits 1.4 mm
+  % from the frame.
+  \def\yt{0.367}     % from the top of a body to its first baseline
+  \def\bh{18.9mm}    % every body: five lines (2.08 mm ascender, four 9.5 pt steps, 0.56 mm descender) and the padding
+  \def\dr{0.45}      % drop of the return path below the bodies
+  \def\ybase{0.265}  % baseline of the verdict line and the note
   \tikzset{
-    head/.style={mnode, minimum width=30mm, minimum height=8mm, font=\sffamily\small\bfseries},
-    body/.style={slot, text width=30mm, anchor=north, align=left, minimum height=20mm},
+    head/.style={gnode, fill=deckNavy, draw=deckNavy, text=white, minimum width=36.4mm, minimum height=8mm,
+                 font=\sffamily\small\bfseries, text height=2.3mm, text depth=0.7mm},
+    frame/.style={gnode, anchor=north, minimum width=36.4mm, minimum height=\bh, outer sep=0.2pt},
+    newest/.style={draw=deckNavy, line width=1pt},
+    % the text of a body: its first baseline is the node's base, \yt under the top edge
+    entry/.style={anchor=base west, inner sep=0pt, outer sep=0pt, text width=33.6mm, align=flush left,
+                  font=\sffamily\footnotesize},
   }
   \newcommand{\choice}[4]{
-    \node[head] (h#1) at (#2,4.9) {#3};
-    \node[body] (b#1) at (#2,4.3) {#4};
+    \node[head] (h#1) at (#2,\yh) {#3};
+    \ifnum\stage=#1 \node[frame, newest] (b#1) at (#2,\yb) {};\else \node[frame] (b#1) at (#2,\yb) {};\fi
+    \node[entry] (e#1) at (#2-1.82+\pad,\yb-\yt) {#4};
     \node[evnum] at ($(h#1.north west)+(0.25,0.35)$) {#1};
   }
-  \choice{1}{2.2}{specify}{\textbf{objective:} the next order decision\\ \textbf{trigger:} the window fills, or the day changes}
+  \choice{1}{\xa}{specify}{\textbf{objective:} the next\\ order decision, which\\ needs the paid order\\
+    \textbf{trigger:} the window fills,\\ or the day changes}
   \atstage{2}{
-    \choice{2}{6.25}{select}{\textbf{keep:} the ledger line\\ \textbf{summarize:} the log\\ \textbf{reference:} the price list}
+    \choice{2}{\xb}{select}{\textbf{retain:} the ledger line,\\ as written\\ \textbf{summarize:} the log\\
+      \textbf{reference:} the price list,\\ fetched only when needed}
     \draw[flow] (h1.east) -- (h2.west);
   }
   \atstage{3}{
-    \choice{3}{10.3}{generate}{\textbf{facts, open items, sources:}\\ 10 SKU-A paid, due Day 4, source ledger \#17}
+    \choice{3}{\xc}{generate}{\texttt{inventory-ledger}, Day 1\\ 10 SKU-A paid, due Day 4\\ shelf empty Days 2 and 3\\
+      \textbf{ref:} \texttt{fees-and-prices}\\ \textbf{open:} confirm on Day 4}
     \draw[flow] (h2.east) -- (h3.west);
   }
   \atstage{4}{
-    \choice{4}{14.35}{check}{\textbf{the order? the payment? the date? the source?}\\ then assemble the request}
+    \choice{4}{\xd}{check}{\textbf{the order? the payment?}\\ \textbf{the date? the source?}\\ \textbf{the open item?}\\
+      if every answer is there,\\ assemble the request}
     \draw[flow] (h3.east) -- (h4.west);
-    \draw[back] (b4.south) -- ++(0,-0.5) -| (b2.south);
-    \node[lab, fill=none, anchor=north] at (10.3,1.75) {a failed check: revise the selection or the summary};
-    \node[verd, anchor=west] at (0.7,0.75) {specify what the replacement must preserve before you compress};
+    \draw[back] (b4.south) -- ++(0,-\dr) -| (b2.south);
+    \draw[back] ($(b3.south)+(0,-\dr)$) -- (b3.south);
+    \node[lab, fill=none, anchor=north] (ret) at ($(b3.south)+(0,-\dr-0.16)$) {a failed check: revise the selection or the replacement};
+    \node[verd, anchor=base west, inner sep=0pt] (vline) at (0.2,\ybase) {specify what the replacement must preserve before compaction runs};
   }
-  \node[note, anchor=south east, inner sep=0pt] at (16.4,0.65) {a proposed procedure, on the teaching case};
-\end{tikzpicture}
+  \node[note, anchor=base east, inner sep=0pt] (scope) at (16.3,\ybase) {a proposed procedure, on the teaching case};
+\end{tikzpicture}%

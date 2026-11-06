@@ -1,58 +1,63 @@
 % harness-branches: a long run as a graph of context paths: a summary branch at compaction, a sub-agent with its own
 % context, a failed path and its retry (Slide 7.5, after QwenGyre's account of harnesses, Wang et al. 2026).
-% Canvas 16.5 x 6.0 cm. Three stages.
-% Stage 1: reveal the main trajectory, the compaction point and the summary branch that continues from a summary.
-%          The pre-compaction history is faded: later steps never see it.
+% Canvas 16.5 x 5.15 cm. Three stages.
+% Stage 1: reveal the main trajectory, the compaction point (event 1) and the summary branch that continues from a summary. The pre-compaction history is faded and labelled under its steps: later steps never see it. The note states the paper's scale.
 % Stage 2: reveal a sub-agent branch with its own context, started from step 8 and returning one result to step 9.
-% Stage 3: reveal a failed path (rose) from step 10 and the retry that leads to step 11. The note states the paper's scale.
+% Stage 3: reveal a failed path (rose) from step 10, and the label 'retry' on the arrow from step 10 to step 11.
+% Layout: the main run in the middle, event 1 above the compaction point and the run that continues from it, the label
+% of the faded history under steps 1 to 5. The sub-agent and the failed path share the tier below. The hand-off from
+% step 8 runs above the sub-agent's zone and drops into step a beside the tab, so the zone keeps 3.5 mm of padding on
+% every side. The long arrows from 8 to 9 and from 10 to 11 reserve clear space from stage 1 for the labels of stages 2
+% and 3. Every box in a row is 8.1 mm tall.
 % From the paper (arXiv:2609.33848): compaction produces a summary branch that replaces the pre-compaction history;
-% sub-agents hold separate contexts; failed branches are retried. Its XLong profile: hours per run, hundreds of
-% model-environment interactions, nearly 1M tokens per rollout. The step counts here are illustrative.
+% sub-agents hold separate contexts; failed branches are retried. Its xLong profile: hours per run, hundreds of
+% model-environment interactions, nearly 1M tokens per rollout (one rollout is one run). Illustrative: the eleven steps,
+% the compaction after step 5, the sub-agent from step 8 to step 9, and the failed path at step 10.
 \begin{tikzpicture}
-  \canvas{16.5}{6.0}
+  \canvas{16.5}{5.15}
+  \frenchspacing
   \tikzset{
-    stp/.style={mnode, minimum width=6.5mm, minimum height=7mm, inner sep=1pt, font=\sffamily\footnotesize},
-    sub/.style={stp, fill=black!6},
+    stp/.style={mnode, minimum width=6.5mm, minimum height=8.1mm, inner sep=1pt, font=\sffamily\footnotesize},
   }
-  \def\ym{4.6}
+  \def\ym{4.035} % the main run
+  \def\ys{1.775} % the tier below it: the sub-agent's steps and the failed path
+  \def\yr{3.2}   % the hand-off's run, between the main run and the sub-agent's tab
+  \def\yn{2.8}   % events 2 and 3, on their arrows
   % the main trajectory before compaction, faded from the start of the summary branch
   \foreach \i in {1,...,5}{
-    \pgfmathsetmacro{\x}{0.7+(\i-1)*1.15}
+    \pgfmathsetmacro{\x}{0.575+(\i-1)*1.05}
     \node[stp, faded] (m\i) at (\x,\ym) {\i};
   }
   \foreach \i in {1,...,4}{ \pgfmathtruncatemacro{\j}{\i+1} \draw[fadedflow] (m\i) -- (m\j); }
-  \node[kick, anchor=south west] at (0.25,5.15) {the history before compaction: dropped from the context};
+  \node[kick, anchor=north west, align=left] at (0.25,\ym-0.605) {the history before compaction:\\ dropped from the context};
   % the compaction point and the summary branch
-  \fill[deckNavy] (6.3,\ym) circle (0.1);
-  \draw[fadedflow] (m5) -- (6.2,\ym);
-  \node[okchip, anchor=west, text width=22mm] (sum) at (6.7,\ym) {summary of steps 1 to 5};
-  \draw[flow] (6.3,\ym) -- (sum.west);
-  \foreach \i in {6,...,11}{
-    \pgfmathsetmacro{\x}{10.1+(\i-6)*1.1}
-    \node[stp] (m\i) at (\x,\ym) {\i};
-  }
+  \fill[deckNavy] (5.7,\ym) circle (0.1);
+  \draw[fadedflow] (m5) -- (5.6,\ym);
+  \node[okchip, anchor=west, align=center, outer sep=0pt, minimum height=8.1mm] (sum) at (6.2,\ym) {summary of\\ steps 1 to 5};
+  \draw[flow] (5.7,\ym) -- (sum.west);
+  \foreach \i/\x in {6/8.75, 7/9.9, 8/11.05, 9/13.05, 10/14.25, 11/15.9}{ \node[stp] (m\i) at (\x,\ym) {\i}; }
   \draw[flow] (sum.east) -- (m6);
   \foreach \i in {6,...,10}{ \pgfmathtruncatemacro{\j}{\i+1} \draw[flow] (m\i) -- (m\j); }
-  \node[evnum] at (6.5,3.6) {1};
-  \node[lab, fill=none, anchor=west] at (6.8,3.6) {compaction: the run continues};
-  % stage 2: a sub-agent branch
+  % event 1 above the compaction point, its label over the run that continues
+  \node[evnum] at (5.7,\ym+0.8) {1};
+  \node[lab, fill=none, anchor=west] at (6.03,\ym+0.8) {compaction: the run continues};
+  % stage 2: a sub-agent branch; its zone keeps 3.5 mm round a, b and c
   \atstage{2}{
-    \draw[zone] (8.1,1.2) rectangle (12.8,3.05);
-    \node[tab] at (10.45,3.05) {sub-agent context};
-    \foreach \k/\x in {a/9.0,b/10.3,c/11.6}{ \node[sub] (s\k) at (\x,2.0) {\k}; }
+    \draw[zone] (6.8,1.02) rectangle (10.75,2.53);
+    \node[tab] at (8.775,2.53) {sub-agent};
+    \foreach \k/\x in {a/7.475,b/8.775,c/10.075}{ \node[stp] (s\k) at (\x,\ys) {\k}; }
     \draw[flow] (sa) -- (sb); \draw[flow] (sb) -- (sc);
-    \draw[flow] (m8.south) -- (12.3,2.7) -| (sa.north);
+    \draw[flow] (m8.south) -- (11.05,\yr) -- (7.475,\yr) -- (sa.north);
     \draw[back] (sc.east) -| (m9.south);
-    \node[evnum] at (13.4,3.2) {2};
-    \node[lab, fill=none, anchor=north] at (12.9,1.0) {one result returns to step 9};
+    \node[evnum] at (13.05,\yn) {2};
+    \node[lab, fill=none, anchor=east, align=center] at (12.70,\yn) {returns\\ one result};
   }
-  % stage 3: a failed path and its retry
+  % stage 3: a failed path; the arrow from 10 to 11 is the retry
   \atstage{3}{
-    \node[evil, anchor=west, text width=16mm, font=\sffamily\footnotesize, align=center] (fail) at (13.95,2.1) {failed path};
-    \draw[badflow] (m10.south) -- (m10.south |- fail.north);
-    \draw[back] (fail.north east) -- ++(0,0.45) -| (m11.south);
-    \node[badnum] at (14.5,3.45) {3};
-    \node[badlab, fill=none, anchor=west] at (15.75,3.2) {retry};
+    \node[evil, minimum height=8.1mm, font=\sffamily\footnotesize] (fail) at (14.25,\ys) {failed path};
+    \draw[badflow] (m10.south) -- (fail.north);
+    \node[badnum] at (14.25,\yn) {3};
+    \node[lab, fill=none, anchor=south] at (15.075,\ym+0.1) {retry};
   }
-  \node[note, anchor=south west, inner sep=0pt, text width=160mm] at (0.25,0.08) {QwenGyre's XLong profile: hours per run, hundreds of model-environment interactions, nearly 1M tokens per rollout. Its contribution is RL training infrastructure. The step counts here are illustrative.};
+  \node[note, anchor=south west, inner sep=0pt, text width=160mm, align=flush left] at (0.25,0.08) {QwenGyre's xLong profile: hours, hundreds of model--environment interactions and nearly 1M tokens per run. Its contribution is RL training infrastructure. The steps and their wiring are illustrative.};
 \end{tikzpicture}

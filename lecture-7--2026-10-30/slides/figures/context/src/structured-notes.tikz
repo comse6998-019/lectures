@@ -1,59 +1,76 @@
-% structured-notes: a running state card keeps commitments by design (Slide 7.4d). Canvas 16.5 x 6.2 cm. Three stages.
-% Stage 1: reveal the card with its schema (goal, open orders, observations, next check) and the Day 1 step that
-%          writes the open order.
-% Stage 2: reveal Days 2 and 3: one writes the observations, the other the next check. The order line stays.
-% Stage 3: reveal the compaction boundary and Day 4. The steps fade: the history is gone. The card stays, so the
-%          open order survives by design (navy). What the schema never asked for is gone with the history (rose).
-% Illustrative, not from a source: the card schema and the entries. Pi's fixed summary sections and Codex's memories
-% are structured notes of this kind (Slides 7.5a and 7.5c).
+% structured-notes: a running state card keeps the open order through compaction (Slide 7.4d). Canvas 16.5 x 6.2 cm. Three stages.
+% Stage 1: reveal the card with its schema (goal, open orders, shelf, next check) and the Day 1 step that writes the open order. The two empty fields are ghosts.
+% Stage 2: reveal Days 2 and 3. Day 2 writes the shelf and Day 3 writes the next check. The card has no field for Day 3's supplier warning. The order line stays.
+% Stage 3: reveal the compaction boundary (a grey dashed rule) and Day 4, which reads the card. The steps fade, and the warning with no field is lost (rose). The open order survives by design (navy).
+% Illustrative, not from a source: the card schema, the entries and the supplier's warning. The paid order (10 SKU-A, paid
+% Day 1, due Day 4) and the empty shelf are the course's teaching case. Pi's fixed summary sections and Codex's memories are
+% structured notes of this kind (Slides 7.5a and 7.5c). Each step sits on the row of the field it writes, so every connector
+% is one straight line. Left out on purpose: the card's own update rule and any decision field.
 \begin{tikzpicture}
+  \frenchspacing  % one space after a colon
   \canvas{16.5}{6.2}
   \tikzset{
-    runstep/.style={mnode, text width=30mm, align=left, font=\sffamily\footnotesize, anchor=west, minimum height=8mm},
-    field/.style={slot, text width=86mm, anchor=west, minimum height=8mm},
+    runstep/.style={mnode, text width=39mm, align=left, font=\sffamily\footnotesize, anchor=west, minimum height=7mm},
+    field/.style={slot, text width=88mm, anchor=west, minimum height=7mm},
+    emptyfield/.style={field, draw=ibmfg!25, dashed, text=ibmfg!35},
+    writes/.style={lab, fill=none, anchor=south},
   }
-  % the card: each field centred on its row, so every connector is one straight line
-  \def\yA{5.3}\def\yB{4.4}\def\yC{3.5}\def\yD{2.6}
-  \node[rnode, anchor=south west, minimum width=96mm, minimum height=38mm] (card) at (6.4,2.05) {};
-  \node[tab] at (card.north) {task state card};
-  \node[field] (f1) at (6.55,\yA) {\textbf{goal:} keep SKU-A stocked at a profit};
-  \node[field] (f2) at (6.55,\yB) {\textbf{open orders:} 10 SKU-A, paid Day 1, due Day 4};
-  \ifnum\stage<2
-    \node[field, text=ibmfg!40] (f3) at (6.55,\yC) {\textbf{observations:} none yet};
-    \node[field, text=ibmfg!40] (f4) at (6.55,\yD) {\textbf{next check:} none yet};
+  % rows: 7 mm fields 1.2 mm apart, and the card fits 3 mm around them on every side
+  \def\yA{5.05}\def\yB{4.23}\def\yC{3.41}\def\yD{2.59}
+  \def\xL{5.49}  % the middle of each connector between a step and the card's edge
+  \node[field] (f1) at (6.8,\yA) {\textbf{goal:} keep SKU-A stocked at a profit};
+  \ifnum\stage<3
+    \node[field] (f2) at (6.8,\yB) {\textbf{open orders:} 10 SKU-A, paid Day 1, due Day 4};
   \else
-    \node[field] (f3) at (6.55,\yC) {\textbf{observations:} shelf empty on Days 2 and 3, no sales};
-    \node[field] (f4) at (6.55,\yD) {\textbf{next check:} did the order arrive on Day 4?};
+    % only the outline changes: outer sep stays at the thin line's, so the field and its text do not move
+    \node[field, draw=deckNavy, line width=0.8pt, outer sep=0.2pt] (f2) at (6.8,\yB) {\textbf{open orders:} 10 SKU-A, paid Day 1, due Day 4};
   \fi
+  \ifnum\stage<2
+    \node[emptyfield] (f3) at (6.8,\yC) {\textbf{shelf:} none yet};
+    \node[emptyfield] (f4) at (6.8,\yD) {\textbf{next check:} none yet};
+  \else
+    \node[field] (f3) at (6.8,\yC) {\textbf{shelf:} empty since Day 2, no sales};
+    \node[field] (f4) at (6.8,\yD) {\textbf{next check:} did the order arrive on Day 4?};
+  \fi
+  \begin{scope}[on background layer]
+    \node[rnode, fit=(f1)(f4), inner sep=3mm] (card) {};
+  \end{scope}
+  \node[tab] at (card.north) {running state card};
   % the steps on the left, one per row, each with one straight connector into its field
   \newcommand{\stepnode}[4]{\node[runstep, #1] (#2) at (0.3,#3) {#4};}
   \beforestage{3}{
     \stepnode{}{s1}{\yB}{\textbf{Day 1} order placed, paid}
     \draw[flow] (s1.east) -- (f2.west);
-    \node[lab, fill=none, anchor=south] at (5.1,\yB+0.08) {writes};
-  }
-  \atstage{3}{\stepnode{faded}{s1}{\yB}{\textbf{Day 1} order placed, paid} \draw[fadedflow] (s1.east) -- (f2.west);}
-  \atstage{2}{
-    \beforestage{3}{
-      \stepnode{}{s2}{\yC}{\textbf{Day 2} shelf empty}
-      \stepnode{}{s3}{\yD}{\textbf{Day 3} shelf empty, no sales}
-      \draw[flow] (s2.east) -- (f3.west);
-      \draw[flow] (s3.east) -- (f4.west);
-      \node[lab, fill=none, anchor=south] at (5.1,\yC+0.08) {writes};
-      \node[lab, fill=none, anchor=south] at (5.1,\yD+0.08) {writes};
-    }
+    \node[writes] at (\xL,\yB+0.08) {writes};
   }
   \atstage{3}{
-    \stepnode{faded}{s2}{\yC}{\textbf{Day 2} shelf empty}
-    \stepnode{faded}{s3}{\yD}{\textbf{Day 3} shelf empty, no sales}
+    \stepnode{faded}{s1}{\yB}{\textbf{Day 1} order placed, paid}
+    \draw[fadedflow] (s1.east) -- (f2.west);
+    \node[writes, fadedtext] at (\xL,\yB+0.08) {writes};
+  }
+  \onlystage{2}{
+    \stepnode{}{s2}{\yC}{\textbf{Day 2} shelf empty, no sales}
+    \stepnode{}{s3}{\yD}{\textbf{Day 3} supplier: may ship late}
+    \draw[flow] (s2.east) -- (f3.west);
+    \draw[flow] (s3.east) -- (f4.west);
+    \node[writes] at (\xL,\yC+0.08) {writes};
+    \node[writes] at (\xL,\yD+0.08) {writes};
+  }
+  \atstage{3}{
+    \stepnode{faded}{s2}{\yC}{\textbf{Day 2} shelf empty, no sales}
+    \stepnode{faded}{s3}{\yD}{\textbf{Day 3} \textcolor{deckRose}{supplier: may ship late}}
     \draw[fadedflow] (s2.east) -- (f3.west);
     \draw[fadedflow] (s3.east) -- (f4.west);
-    \draw[deckRose, dashed, line width=1.2pt] (0.2,1.95) -- (6.2,1.95);
-    \node[badverd, anchor=west] at (0.3,1.7) {compaction: the steps are gone, and so is what the schema never asked for};
-    \stepnode{}{s4}{0.75}{\textbf{Day 4} decide: order more?}
-    \draw[flow] (s4.east) -- (11.2,0.75) -- (card.south);
-    \node[lab, fill=none, anchor=south] at (7.4,0.85) {reads the card};
-    \node[verd, anchor=west] at (11.5,1.3) {the open order survives by design:\\ the schema asked for it};
+    \node[writes, fadedtext] at (\xL,\yC+0.08) {writes};
+    \node[writes, fadedtext] at (\xL,\yD+0.08) {writes};
+    % compaction: the history is gone and the card stays. The boundary is the routine mechanism, so the rule and its
+    % label are grey, as in harness-branches. Rose marks the loss alone: the warning that had no field.
+    \draw[ibmfg!45, dashed, line width=1.2pt] (0.2,2.02) -- (6.2,2.02);
+    \node[badverd, anchor=north west, inner sep=0pt] at (0.3,1.86) {\textcolor{deckGrey}{\mdseries compaction: the steps are gone}\\ the warning that had no field is lost};
+    \stepnode{}{s4}{0.74}{\textbf{Day 4} decide: order more?}
+    \draw[flow] (s4.east) -- (s4.east -| card.south) -- (card.south);
+    \node[lab, fill=none, anchor=south] at (7.8,0.82) {reads the card};
+    \node[verd, anchor=west, inner sep=0pt] at (11.65,1.12) {the open order survives by design:\\ the schema asked for it};
   }
-  \node[note, anchor=north east, inner sep=0pt] at (16.4,6.15) {illustrative card};
+  \node[note, anchor=north east, inner sep=0pt] at (16.4,6.15) {illustrative example};
 \end{tikzpicture}

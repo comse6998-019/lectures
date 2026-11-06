@@ -1,50 +1,86 @@
 % four-ways: one ledger line and the four ways to carry it into a later call: retain, retrieve, extract, rewrite
-% (Segment 7, Slide 7.1). Canvas 16.5 x 6.4 cm. Four stages, one way per stage. The earlier rows stay.
-% Stage 1: reveal retain: the line itself, as written.
-% Stage 2: reveal retrieve: a reference in the context, the line itself in a store outside, fetched when needed.
-% Stage 3: reveal extract: the informative tokens kept, the punctuation dropped (greyed).
-% Stage 4: reveal rewrite: a new sentence that says the same thing in fewer words. Then the note.
-% Illustrative, not from a source: the ledger line and the four outputs.
+% (Segment 7, Slide 7.1). Canvas 16.5 x 5.35 cm. Four stages, one way per stage. The earlier boxes stay.
+% Each box is named on a navy tab. The four boxes share one width, that of the widest line (retain and extract), with
+% 1.41 mm of padding on each side, and their text starts at one left edge (instructor's review of 2026-11-05: "Make sure
+% all the blocks are of equal length"). The four ways are alternatives, so the branches carry no event numbers. The newest box has a navy outline on the stage it arrives and a
+% grey one after.
+% Stage 1: reveal retain: the ledger line, word for word.
+% Stage 2: reveal retrieve: a reference in the context, the line itself in a store, fetched when needed.
+% Stage 3: reveal extract: the informative tokens kept, the dropped punctuation in grey.
+% Stage 4: reveal rewrite: a new sentence, shorter than the line, with every fact kept.
+% Strings: the ledger line is the deck's running line, as the abstractive figure quotes it (Slide 7.3). The extractive
+% figure (Slide 7.2) extends it with "unless cancelled" and names that longer string "the source line", so this box is
+% "the ledger line". The extract row drops the colon and the two commas, as the extractive classifier drops the
+% commas, and keeps every word of this line.
+% Illustrative, not from a source: the ledger line and the four outputs. The four-way split is the course's scheme.
+% Left out on purpose: event numbers on the branches, and the grouping sentence (retain and retrieve choose material,
+% extract and rewrite change its form), which belongs in the speaker notes. Each first baseline sits 5.65 mm under
+% its box's top edge. The reference is centred between the store's two lines.
+\newcommand{\fwdrop}[1]{\textcolor{ibmfg!40}{#1}}%
+% \fwwide: the widest line of the ledger and store boxes at the body size, plus the padding on both sides. It is
+% measured before the picture, because TikZ sets text outside nodes in the null font.
+\newlength{\fwwide}%
+\settowidth{\fwwide}{\sffamily\footnotesize Day 1: ordered 10 SKU-A,}%
+\addtolength{\fwwide}{2.82mm}%
+% \fwrow: the width every output box shares, the widest output line at the body size plus the padding on both sides.
+\newlength{\fwrow}%
+\settowidth{\fwrow}{\sffamily\footnotesize Day 1: ordered 10 SKU-A, paid, due Day 4}%
+\addtolength{\fwrow}{2.82mm}%
 \begin{tikzpicture}
-  \canvas{16.5}{6.4}
+  \canvas{16.5}{5.35}
   \tikzset{
-    way/.style={font=\sffamily\footnotesize\bfseries, text=deckNavy, anchor=south west, inner sep=0pt},
-    outrow/.style={gnode, font=\sffamily\footnotesize, align=left, anchor=west, text width=70mm, inner ysep=3pt},
+    wtab/.style={tab, text height=6.8pt, text depth=0.2pt},
+    % a box drawn empty, with its lines set as separate nodes
+    box/.style={gnode, anchor=north west, inner sep=0pt, outer sep=0.2pt, minimum height=#1},
+    box/.default=7.85mm,
+    % an output box: drawn empty at the shared width, its line set 1.41 mm in and its baseline 5.65 mm under the top edge
+    row/.style={box=#1, minimum width=\fwrow},
+    row/.default=7.85mm,
+    newat/.code={\ifnum\stage=#1\relax\pgfkeysalso{draw=deckNavy, line width=1pt}\fi},
+    txt/.style={anchor=base west, inner sep=0pt, font=\sffamily\footnotesize\frenchspacing},
   }
-  \def\bus{5.1}
-  \node[rnode, anchor=west, text width=36mm, align=left, font=\sffamily\footnotesize] (src) at (0.2,3.3)
-    {\texttt{inventory-ledger} Day 1\\ ordered 10 SKU-A, paid,\\ due Day 4};
-  \node[kick, anchor=south west] at (0.2,4.15) {the source line};
-  \draw[ibmfg!60, thick] (src.east) -- (\bus,3.3);
+  \def\xr{4.45}\def\bus{3.92}
+  \def\yA{5.013}\def\yB{3.757}\def\yC{2.167}\def\yD{0.911}
+  % the ledger line, centred on the bus junction. Its widest line sets its width.
+  \node[box=14.53mm, fill=black!6, minimum width=\fwwide] (src) at (0.20,3.296) {};
+  \node[wtab] at (src.north) {the ledger line};
+  \node[txt] at ($(src.north west)+(0.141,-0.565)$) {\texttt{inventory-ledger}};
+  \node[txt] at ($(src.north west)+(0.141,-0.899)$) {Day 1: ordered 10 SKU-A,};
+  \node[txt] at ($(src.north west)+(0.141,-1.233)$) {paid, due Day 4};
+  \coordinate (j) at (src.east -| \bus,0);  % the junction, level with the box's centre
+  \draw[ibmfg!80, thick] (src.east) -- (j);
+  \node[note, anchor=north east, inner sep=0pt] at (16.30,5.224) {illustrative line and outputs};
   % stage 1: retain
-  \node[way] at (6.3,5.7) {retain: keep the words as they are};
-  \node[outrow] (o1) at (6.3,5.3) {Day 1: ordered 10 SKU-A, paid, due Day 4};
-  \draw[flow] (\bus,3.3) |- (o1.west);
-  \node[evnum] at (5.6,5.3) {1};
-  % stage 2: retrieve
+  \node[row, newat=1] (o1) at (\xr,\yA) {};
+  \node[txt] at ($(o1.north west)+(0.141,-0.565)$) {Day 1: ordered 10 SKU-A, paid, due Day 4};
+  \node[wtab] at (o1.north) {retain};
+  \draw[flow] (j) |- (o1.west);
+  % stage 2: retrieve. The store's right edge lines up with the note's.
   \atstage{2}{
-    \node[way] at (6.3,4.35) {retrieve: a reference now, the line itself when needed};
-    \node[okchip, anchor=west, text width=30mm, inner ysep=4pt] (o2) at (6.3,3.95) {ref: ledger, Day 1};
-    \node[rnode, anchor=west, text width=36mm, align=left, font=\sffamily\footnotesize] (store) at (11.6,3.95) {the store: the line itself};
-    \draw[flow] (\bus,3.3) |- (o2.west);
-    \node[evnum] at (5.6,3.95) {2};
+    \node[row=11.19mm, newat=2] (o2) at (\xr,\yB) {};
+    \node[txt] at ($(o2.north west)+(0.141,-0.732)$) {ref: \texttt{inventory-ledger}, Day 1};
+    \node[wtab] at (o2.north) {retrieve};
+    \node[box=11.19mm, fill=black!6, minimum width=\fwwide, anchor=north east] (store) at (16.30,\yB) {};
+    \node[wtab] at (store.north) {the store};
+    \node[txt] at ($(store.north west)+(0.141,-0.565)$) {Day 1: ordered 10 SKU-A,};
+    \node[txt] at ($(store.north west)+(0.141,-0.899)$) {paid, due Day 4};
+    \draw[flow] (j) |- (o2.west);
     \draw[back] (store.west) -- (o2.east);
-    \node[lab, fill=none, anchor=south] at (10.6,4.05) {fetch};
+    \node[lab, fill=none, anchor=south] at ($(o2.east)!0.5!(store.west)+(0,0.12)$) {fetch when needed};
   }
   % stage 3: extract
   \atstage{3}{
-    \node[way] at (6.3,3.0) {extract: keep the informative tokens, drop the rest};
-    \node[outrow] (o3) at (6.3,2.6) {Day 1\textcolor{ibmfg!35}{:} ordered 10 SKU-A\textcolor{ibmfg!35}{,} paid\textcolor{ibmfg!35}{,} due Day 4};
-    \draw[flow] (\bus,3.3) |- (o3.west);
-    \node[evnum] at (5.6,2.6) {3};
-    \node[kick, anchor=west] at (13.8,2.6) {greyed: dropped};
+    \node[row, newat=3] (o3) at (\xr,\yC) {};
+    \node[txt] (t3) at ($(o3.north west)+(0.141,-0.565)$) {Day 1\fwdrop{:} ordered 10 SKU-A\fwdrop{,} paid\fwdrop{,} due Day 4};
+    \node[wtab] at (o3.north) {extract};
+    \draw[flow] (j) |- (o3.west);
+    \node[kick, anchor=base west] at ($(o3.east |- t3.base)+(0.45,0)$) {grey: dropped};
   }
   % stage 4: rewrite
   \atstage{4}{
-    \node[way] at (6.3,1.65) {rewrite: a new sentence in fewer words};
-    \node[outrow] (o4) at (6.3,1.25) {a paid order for 10 units of SKU-A is due on Day 4};
-    \draw[flow] (\bus,3.3) |- (o4.west);
-    \node[evnum] at (5.6,1.25) {4};
-    \node[note, anchor=south west, inner sep=0pt] at (0.2,0.1) {retain and retrieve choose material. extract and rewrite change its form. a later call can combine them.};
+    \node[row, newat=4] (o4) at (\xr,\yD) {};
+    \node[txt] at ($(o4.north west)+(0.141,-0.565)$) {10 SKU-A prepaid Day 1, due Day 4};
+    \node[wtab] at (o4.north) {rewrite};
+    \draw[flow] (j) |- (o4.west);
   }
-\end{tikzpicture}
+\end{tikzpicture}%

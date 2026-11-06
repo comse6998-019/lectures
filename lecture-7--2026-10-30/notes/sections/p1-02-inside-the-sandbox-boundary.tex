@@ -1,0 +1,99 @@
+\section{Inside the sandbox boundary}
+\label{sec:row-p1-1}
+
+Next, the boundary itself: which side decides, and what the side next to the agent provides.
+
+\subsection{Only the supervisor makes policy decisions}
+\label{sec:it-os-2-1}
+
+\bi
+\item \textbf{The sandbox} shares the boundary with the untrusted agent, so it reports what the agent tries to do.
+\item \textbf{The supervisor} sits on the trusted side and makes every policy decision.
+\item \textbf{In the Linux backend,} the workload runs as one non-root identity with no Linux capabilities, under Landlock and seccomp.
+\ei
+
+The supervisor and the sandbox sit on opposite sides of the boundary. The supervisor is trusted and makes the decisions. The sandbox shares the boundary with the untrusted agent, so it never makes policy decisions. It reports what the agent is trying to do and lets the supervisor decide.
+
+The sandbox launches the agent as an owned child and provides exec, terminal streams, signals, process status and loopback forwarding. In the current Linux backend, the workload uses one non-root identity and no Linux capabilities. Landlock limits filesystem access, and seccomp user notification stages network operations. The sandbox identifies the calling executable from trusted process observations.
+
+The figure is NVIDIA's own, from the same page, under the Apache-2.0 license. Its text is unchanged, and the slide reveals it one part per click. Source: NVIDIA, OpenShell Developer Guide, ``Architecture'', documentation version v0.1.7, read on November 6, 2026 (\url{https://docs.nvidia.com/openshell/v0.1.7/about/architecture}).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{openshell/os-enforcement-4.png}
+\caption{Only the supervisor makes policy decisions. The figure as it stands after the build's last click.}
+\label{fig:os-enforcement-4}
+\end{figure}
+
+\paragraph{The figure, stage by stage.}
+\be
+\item The sandbox side. The agent, a process, sends a TCP or DNS request to the OpenShell Sandbox (arrow 1), which owns the process and identifies the program. All other egress from the container or VM is denied.
+\item The request crosses the Sandbox Protocol, the ``only allowed egress'', over a Unix socket, TCP or vsock (arrow 2), to the supervisor's isolation backend, which verifies the boundary and ``receives request with trusted process identity''.
+\item Policy enforcement ``checks destination, binary, L7 rules, and credentials'' (arrow 3), and an approved connection reaches the upstream service (arrow 4).
+\item policy.local carries proposed policy changes from the sandbox to the supervisor, and approved ones reload, asynchronously.
+\ee
+
+\begin{takeaway}Policy decisions stay on the trusted side of the boundary, out of the agent's reach.\end{takeaway}
+
+\subsection{One authenticated link carries all streams}
+\label{sec:it-os-2-2}
+
+\bi
+\item \textbf{The Sandbox Protocol} is one mutually authenticated HTTP/2 connection.
+\item \textbf{Each TCP connection} gets its own stream with its own backpressure.
+\ei
+
+The supervisor and the sandbox talk over the OpenShell Sandbox Protocol: one mutually authenticated HTTP/2 connection that carries many independent streams. The compute driver picks the transport: a Unix socket for Docker and Podman, TCP for Kubernetes, or vsock for MicroVM. Authentication and protocol behavior are the same on all of them. The supervisor presents a sandbox-specific credential, which the section on authentication describes.
+
+Each TCP connection gets its own stream with its own backpressure, so a slow download can't block DNS, exec, or process control.
+
+The figure is NVIDIA's own, from the same page, under the Apache-2.0 license. Its text is unchanged, and the slide reveals it one part per click. Source: NVIDIA, OpenShell Developer Guide, ``Architecture'', documentation version v0.1.7, read on November 6, 2026 (\url{https://docs.nvidia.com/openshell/v0.1.7/about/architecture}).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{openshell/os-protocol-3.png}
+\caption{One authenticated link carries all streams. The figure as it stands after the build's last click.}
+\label{fig:os-protocol-3}
+\end{figure}
+
+\paragraph{The figure, stage by stage.}
+\be
+\item The two ends. The trusted supervisor does policy evaluation, credential injection, DNS resolution and upstream connections, and holds the gateway session. The network-isolated sandbox owns the agent process, identifies each program, intercepts TCP and DNS, and freezes the agent on disconnect.
+\item One mutually authenticated HTTP/2 connection joins them. Its control stream carries ``attach, confirm, start, exec, signals, health''. The transport is a Unix socket for Docker and Podman, TCP for Kubernetes, or vsock for MicroVM, and authentication and protocol behavior stay the same.
+\item DNS gets its own stream (``query and mediated response''), and so does each TCP connection (``destination, program identity, bytes''), each with ``independent connection and backpressure''.
+\ee
+
+\begin{takeaway}A slow download on one stream can't block DNS, exec or process control on the others.\end{takeaway}
+
+\subsection{What the sandbox guarantees the supervisor}
+\label{sec:it-os-2-3}
+
+\textbf{Each row pairs what the sandbox does with what the supervisor gets.}
+
+This is the page's table of guarantees, one row per click. The program identity row reads ``The real program behind each request, not a path the agent claims'' on the page. The slide says it without the contrast.
+
+Together these mean the agent can't run before its controls are confirmed, signals and exec reach only this sandbox's processes, and the agent can't get around TCP or DNS mediation.
+
+Source: NVIDIA, OpenShell Developer Guide, ``Architecture'', documentation version v0.1.7, read on November 6, 2026 (\url{https://docs.nvidia.com/openshell/v0.1.7/about/architecture}).
+
+\begin{center}\footnotesize
+\begin{tabularx}{\linewidth}{L{0.22\linewidth}XX}
+\toprule
+\textbf{Guarantee} & \textbf{How the sandbox provides it} & \textbf{What the supervisor gets} \\
+\midrule
+Process ownership & Runs the agent as an owned child and keeps its process and terminal state. & Handles to wait on, attach to, signal, exec in, and stop the agent. \\
+Program identity & Identifies the calling program from trusted /proc data. & The real program behind each request, whatever path the agent claims. \\
+Network mediation & Intercepts TCP opens and DNS queries with seccomp and hands them over. & Requests that wait for a policy decision before going anywhere. \\
+Fail closed & Holds launch until the supervisor confirms, and freezes the agent if the connection drops. & A short window to reconnect, or a stopped workload. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{takeaway}The agent can't run before its controls are confirmed or get around TCP and DNS mediation.\end{takeaway}
+
+\subsection*{Key points}
+\bi
+\item Policy decisions stay on the trusted side of the boundary, out of the agent's reach.
+\item A slow download on one stream can't block DNS, exec or process control on the others.
+\item The agent can't run before its controls are confirmed or get around TCP and DNS mediation.
+\ei

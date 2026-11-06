@@ -1,40 +1,46 @@
-% Abstractive compaction: a summary replaces the history (Slides 7.3 and 7.4c).
-% Canvas: 16.5 x 6.2 cm. Four stages.
+% Abstractive compaction: a summary of the older messages replaces them, and the recent ones are kept (Slides 7.3 and 7.4c).
+% Canvas: 16.5 x 4.85 cm. Four stages.
 
-% Stage 1: reveal the history: five messages and tool results, 60k tokens.
-% Stage 2: reveal the summarizer and its 40-token summary. Fade the history.
-% Stage 3: reveal the next request: system prompt, summary, and recent messages.
-% Stage 4: reveal the omitted order in rose and the source check in navy.
+% Stage 1: reveal the history: five messages, 60k tokens, and a ghost where the summarizer will stand.
+% Stage 2: reveal the summarizer: it reads the messages up to Day 2 and writes a 40-token summary. They fade, and the Day 3 log stays.
+% Stage 3: reveal the next request: system prompt and tools, the summary, and the recent messages, with Day 3 kept as written.
+% Stage 4: reveal the omission: the summary turns rose, the rose line names the paid order, and the navy line names the check.
 
-% The messages and token counts are illustrative. The pattern follows Anthropic's 2025 context engineering article.
+% The messages and token counts are illustrative. The five messages stand for a longer history.
+% The pattern follows Anthropic's 2025 context engineering article. The split into older messages, which the summary
+% replaces, and recent messages, which stay as written, follows Pi's compaction (system prompt, summary, recent messages).
+% Layout: the history on the left, the summarizer in the middle, the next request on the right. Every connector is
+% straight, and the request's recent-messages slot shares its row with the Day 3 log, so arrow 3 is straight too.
 % The narrow exceptions below preserve TikZ command syntax.
 
 % <!-- ste-disable-next-line dictionary-not-approved-word -->
 \begin{tikzpicture}
 
-  \canvas{16.5}{6.2}
+  \canvas{16.5}{4.85}
 
-  \tikzset{msg/.style={slot, text width=40mm, anchor=north west}}
+  \frenchspacing
 
   % <!-- ste-disable-next-line semicolon -->
-  \node[capt, anchor=south west] at (0.2,5.85) {the history: 60k tokens};
+  \tikzset{msg/.style={slot, text width=45mm, align=flush left, anchor=north west}, brk/.style={draw=ibmfg!45, line width=0.6pt}}
+
+  % <!-- ste-disable-next-line semicolon -->
+  \node[kick, anchor=south west] at (0.2,4.52) {the history: 60k tokens};
+
+  % The history. From stage 2 on, the messages up to Day 2 fade, and the Day 3 log stays.
 
   \newcommand{\history}[1]{
 
     % <!-- ste-disable-next-line semicolon -->
-    \node[msg, #1] (m1) at (0.2,5.75) {user: keep SKU-A stocked};
+    \node[msg, #1] (m1) at (0.2,4.42) {user: keep SKU-A stocked};
 
     % <!-- ste-disable-next-line semicolon -->
-    \node[msg, #1] (m2) at ([yshift=-1.2mm]m1.south west) {tool, ledger Day 1: 10 SKU-A\\ ordered, paid, due Day 4};
+    \node[msg, #1, minimum height=7.6mm] (m2) at ([yshift=-1.2mm]m1.south west) {tool, \texttt{inventory-ledger} Day 1:\\ ordered 10 SKU-A, paid, due Day 4};
 
     % <!-- ste-disable-next-line semicolon -->
     \node[msg, #1] (m3) at ([yshift=-1.2mm]m2.south west) {assistant: wait for delivery};
 
     % <!-- ste-disable-next-line semicolon -->
-    \node[msg, #1] (m4) at ([yshift=-1.2mm]m3.south west) {tool, log Day 2: shelf empty};
-
-    % <!-- ste-disable-next-line semicolon -->
-    \node[msg, #1] (m5) at ([yshift=-1.2mm]m4.south west) {tool, log Day 3: shelf empty};
+    \node[msg, #1] (m4) at ([yshift=-1.2mm]m3.south west) {tool, \texttt{ops-log} Day 2: shelf empty};
 
   }
 
@@ -42,57 +48,73 @@
 
   \atstage{2}{\history{faded}}
 
-  % Stage 2: the summarizer writes the summary.
+  % <!-- ste-disable-next-line semicolon -->
+  \node[msg] (m5) at ([yshift=-1.2mm]m4.south west) {tool, \texttt{ops-log} Day 3: shelf empty};
+
+  % The summary's row: 1.2 mm above the Day 3 row, plus the 0.5 pt outer sep and half the summary's 11.5 mm height.
 
   % <!-- ste-disable-next-line semicolon -->
-  \onlystage{1}{\node[ghostbox, minimum width=36mm, minimum height=10mm, text=ibmfg!50, font=\sffamily\small] (sm) at (7.6,4.5) {summarizer};}
+  \coordinate (qmid) at ($(m5.north)+(0,1.2mm+0.5pt+5.75mm)$);
+
+  % Stage 1: a ghost with the summarizer's exact size, 18 mm + 8 pt by 9.5 mm.
+
+  % <!-- ste-disable-next-line semicolon -->
+  \onlystage{1}{\node[ghostbox, minimum width=18mm+8pt, minimum height=9.5mm, text=ibmfg!50, font=\sffamily\small] at (qmid -| 8.9,0) {summarizer};}
+
+  % Stage 2: the summarizer reads the messages up to Day 2 and writes the summary.
 
   \atstage{2}{
 
     % <!-- ste-disable-next-line semicolon -->
-    \node[mnode, text width=32mm, align=center] (sm) at (7.6,4.5) {\textbf{summarizer}\\ an LLM writes a shorter account};
+    \draw[brk] let \p1=(m1.north), \p2=(m4.south) in (5.05,\y1) -- (5.13,\y1) -- (5.13,\y2) -- (5.05,\y2);
 
     % <!-- ste-disable-next-line semicolon -->
-    \draw[flow] (4.55,4.5) -- (sm.west);
+    \node[mnode, text width=18mm, minimum height=9.5mm, align=flush center] (sm) at (qmid -| 8.9,0) {\textbf{summarizer}\\ one LLM call};
 
     % <!-- ste-disable-next-line semicolon -->
-    \node[evnum] at (5.2,4.5) {1};
+    \draw[flow] (qmid -| 5.13,0) -- (sm.west);
 
     % <!-- ste-disable-next-line semicolon -->
-    \node[lab, fill=none, anchor=south] at (5.2,4.78) {reads 60k};
+    \node[evnum] at (qmid -| 6.5,0) {1};
 
     % <!-- ste-disable-next-line semicolon -->
-    \node[okchip, anchor=west, text width=46mm] (sum) at (10.7,4.5) {\textbf{summary, 40 tokens}\\ SKU-A is out of stock and the agent waits for stock.};
+    \node[lab, fill=none, anchor=south] at ($(qmid -| 6.5,0)+(0,0.3)$) {reads up to Day 2};
+
+    % The summary turns rose on stage 4. Both styles draw a 1 pt outline, so its size stays the same.
 
     % <!-- ste-disable-next-line semicolon -->
-    \draw[flow] (sm.east) -- (sum.west);
+    \ifnum\stage<4 \tikzset{sumbox/.style={okchip}}\else\tikzset{sumbox/.style={chip}}\fi
 
     % <!-- ste-disable-next-line semicolon -->
-    \node[evnum] at (10.05,4.5) {2};
+    \node[sumbox, anchor=west, text width=41mm, align=flush left, inner xsep=4pt, inner ysep=2pt, minimum height=11.5mm] (q2) at ($(qmid -| 11.618,0)+(-0.3pt,0)$) {\textbf{summary, 40 tokens}\\ SKU-A is out of stock and the agent waits for stock.};
 
     % <!-- ste-disable-next-line semicolon -->
-    \node[lab, fill=none, anchor=south] at (10.05,4.78) {writes};
+    \draw[flow] (sm.east) -- (q2.west);
+
+    % <!-- ste-disable-next-line semicolon -->
+    \node[evnum] at (qmid -| 10.6,0) {2};
+
+    % <!-- ste-disable-next-line semicolon -->
+    \node[lab, fill=none, anchor=south] at ($(qmid -| 10.6,0)+(0,0.3)$) {writes};
 
   }
 
-  % Stage 3: stack the request slots by their actual edges, then fit the panel.
+  % Stage 3: the next request. Its recent-messages slot shares the Day 3 row. The panel fits its slots with a 3 mm
+  % inset, and 2.3 mm more at the top for half the name tab, so the inset under the tab is 3 mm too.
 
   \atstage{3}{
 
     % <!-- ste-disable-next-line semicolon -->
-    \node[slot, anchor=north west, text width=46mm] (q1) at (10.85,2.75) {system prompt and tools};
+    \node[slot, anchor=north west, text width=41mm, align=flush left] (q3) at (m5.north -| 11.618,0) {recent messages: Day 3 onward};
 
     % <!-- ste-disable-next-line semicolon -->
-    \node[slot, anchor=north west, text width=46mm, draw=deckNavy, line width=0.8pt] (q2) at ([yshift=-1.2mm]q1.south west) {the summary};
-
-    % <!-- ste-disable-next-line semicolon -->
-    \node[slot, anchor=north west, text width=46mm] (q3) at ([yshift=-1.2mm]q2.south west) {recent messages: Day 3 onward};
+    \node[slot, anchor=south west, text width=41mm, align=flush left] (q1) at ($(q2.north -| 11.618,0)+(0,1.2mm)$) {system prompt and tools};
 
     % <!-- ste-disable-next-line dictionary-not-approved-word -->
     \begin{scope}[on background layer]
 
       % <!-- ste-disable-next-line semicolon -->
-      \node[mnode, inner sep=3mm, fit={(q1) (q2) (q3)}] (req) {};
+      \node[mnode, inner sep=3mm, fit={(q1) (q2) (q3) ($(q1.north)+(0,2.3mm)$)}] (req) {};
 
     \end{scope}
 
@@ -100,32 +122,29 @@
     \node[tab] (reqtab) at (req.north) {the next request};
 
     % <!-- ste-disable-next-line semicolon -->
-    \draw[flow] (sum.south) -- (sum.south |- reqtab.north);
+    \draw[flow] (m5.east) -- (q3.west);
 
     % <!-- ste-disable-next-line semicolon -->
-    \node[evnum] at ($(sum.south)!0.5!(sum.south |- reqtab.north)$) {3};
+    \node[evnum] at (m5.east -| 6.5,0) {3};
 
     % <!-- ste-disable-next-line semicolon -->
-    \node[lab, fill=none, anchor=west] at ($(sum.south)!0.5!(sum.south |- reqtab.north)+(0.3,0)$) {replaces the history};
+    \node[lab, fill=none, anchor=north] at ($(m5.east -| 6.5,0)+(0,-0.3)$) {kept as written};
 
   }
 
-  % Stage 4: check the summary against its source.
+  % Stage 4: the omission in rose and the check in navy.
 
   \atstage{4}{
 
     % <!-- ste-disable-next-line semicolon -->
-    \node[badverd, text width=44mm, align=center] at (7.6,2.55) {omitted: the paid order\\ and its due date};
+    \node[badverd] at (8.22,4.25) {omitted: the paid order and its due date};
 
     % <!-- ste-disable-next-line semicolon -->
-    \pic[color=deckRose] at ($(sum.east)+(-0.25,0.42)$) {xmark};
-
-    % <!-- ste-disable-next-line semicolon -->
-    \node[verd, text width=44mm, align=center] at (7.6,1.45) {a summary is a new claim:\\ check it against the source};
+    \node[verd, align=flush center] at (8.22,3.52) {a summary is a new claim:\\ check it against the source};
 
   }
 
   % <!-- ste-disable-next-line semicolon -->
-  \node[note, anchor=south west, inner sep=0pt] (citation) at (0.2,0.1) {messages and token counts illustrative. The pattern follows Anthropic's 2025 article on context engineering.};
+  \node[note, anchor=south west, inner sep=0pt] (citation) at (0.2,0.1) {Messages and counts are illustrative. The pattern follows Anthropic (2025) and Pi.};
 
 \end{tikzpicture}

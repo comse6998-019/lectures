@@ -1,43 +1,66 @@
-% delegation: a subtask runs in a sub-agent's own context and returns one line (Slide 7.4e). Canvas 16.5 x 6.0 cm.
+% delegation: a subtask runs in a sub-agent's own context and returns one result (Slide 7.4e). Canvas 16.5 x 5.0 cm.
 % Three stages, after lecture 6's two-agents figure: a dashed zone marks the separate context.
-% Stage 1: reveal the main context and the subtask it hands over: is the order on the way?
-% Stage 2: reveal the sub-agent's reads, all inside its own window: the ledger, the supplier notices, the log.
-% Stage 3: reveal the one-line result that comes back. The main context grows by one line (navy). What the line
-%          left out stays in the sub-agent's window (rose).
-% Illustrative, not from a source: the token counts and the records. Claude Code's subagents and the sub-agents in
-% QwenGyre's account of harnesses work this way (Slides 7.5 and 7.5b).
+% Stage 1: reveal the main context and the subtask it hands over to the sub-agent (event 1): is the SKU-A order on the way? Ghosts mark the two result slots.
+% Stage 2: reveal the sub-agent's reads inside its own context (event 2): the ledger (400 lines), the supplier notices (12 pages) and the log (3,000 lines), about 90k tokens. None of them enter the main context.
+% Stage 3: reveal the result that comes back (event 3). The main context grows by one result (navy). The supplier's Day 3 warning is left out and stays in the sub-agent's context (rose).
+% Illustrative, not from a source: the token counts, the record sizes, the line number 17 and the supplier's warning. At
+% usual rates (about 20 tokens a ledger line, 600 a page, 25 a log line) 400 lines, 12 pages and 3,000 lines come to 8k,
+% 7k and 75k tokens, about 90k in all, so the log carries most of the reads. The ledger's size is this figure's own. The
+% retrieval figure's store (Slide 7.4f, 60k tokens) is the run's history, a different record with no line count. The
+% returned facts (paid Day 1, due Day 4) are the course's teaching case. Claude Code's subagents and the sub-agents in
+% QwenGyre's account of harnesses work this way (Slides 7.5 and 7.5b). Neither source gives a token count or the size of a
+% result. Left out on purpose: the sub-agent's own tool calls.
 \begin{tikzpicture}
-  \canvas{16.5}{6.0}
-  % the main context
-  \node[mnode, anchor=south west, minimum width=52mm, minimum height=46mm] (main) at (0.2,0.9) {};
+  \frenchspacing  % one space after a colon
+  \canvas{16.5}{5.0}
+  \tikzset{
+    box/.style={inner xsep=3pt, text width=39mm, anchor=north west},
+    one/.style={slot, box, minimum height=5.5mm},
+    two/.style={okchip, box, minimum height=8.5mm},
+    slotghost/.style={gnode, box, minimum height=8.5mm, draw=ibmfg!25, dashed, text=ibmfg!35,
+                      font=\sffamily\footnotesize, align=center, outer sep=0.5pt},  % outer sep as the chip's, so the panel never moves
+    rec/.style={rnode, text width=25mm, align=left, font=\sffamily\footnotesize, inner sep=3pt, minimum height=8.5mm},
+  }
+  \def\Yt{4.55}  % the top edge of the main context
+  \def\xz{6.6}   % the left edge of the sub-agent's zone, whose right edge is at 16.3
+  % ---- the main context: four boxes 1.2 mm apart, 3 mm inside the panel on every side
+  \node[one] (g) at (0.5,\Yt-0.3) {goal: keep SKU-A stocked};
+  \node[one] (h) at ([yshift=-1.2mm]g.south west) {history: 30k tokens so far};
+  \node[two] (task) at ([yshift=-1.2mm]h.south west) {subtask: is the SKU-A order\\ on the way?};
+  \beforestage{3}{\node[slotghost] (mres) at ([yshift=-1.2mm]task.south west) {result};}
+  \atstage{3}{\node[two] (mres) at ([yshift=-1.2mm]task.south west) {result: paid Day 1, due Day 4,\\ source ledger line 17};}
+  \begin{scope}[on background layer]
+    \node[mnode, fit=(g)(mres), inner sep=3mm] (main) {};
+  \end{scope}
   \node[tab] at (main.north) {main context};
-  \node[slot, anchor=north west, text width=46mm] (g) at (0.35,5.15) {goal: keep SKU-A stocked};
-  \node[slot, anchor=north west, text width=46mm] (h) at (0.35,4.5) {history: 30k tokens so far};
-  \node[okchip, anchor=north west, text width=46mm] (task) at (0.35,3.8) {subtask: is the SKU-A order on the way?};
-  % the sub-agent zone
-  \draw[zone] (7.0,0.9) rectangle (16.3,5.5);
-  \node[tab] at (11.65,5.5) {sub-agent: its own context};
-  \node[okchip, anchor=north west, text width=46mm] (ztask) at (7.2,3.8) {subtask: is the SKU-A order on the way?};
+  \coordinate (gap) at ($(main.east)!0.5!(\xz,0 |- main.east)$);  % events 1 and 3: numbers and labels sit here
+  % ---- the sub-agent's zone: its subtask and result rows line up with the main context's
+  \node[two] (ztask) at ({\xz+0.3},0 |- task.north) {subtask: is the SKU-A order\\ on the way?};
+  \beforestage{3}{\node[slotghost] (zres) at ({\xz+0.3},0 |- mres.north) {result};}
+  \coordinate (rtop) at ($(ztask.north west)+(0,0.97)$);  % the records' top edge, 1.2 mm above the subtask
+  \draw[zone] (\xz,0 |- main.south) rectangle ($(16.3,0 |- rtop)+(0,0.3)$);
+  \node[tab] at ($({(\xz+16.3)/2},0 |- rtop)+(0,0.3)$) {sub-agent: its own context};
   \draw[flow] (task.east) -- (ztask.west);
-  \node[evnum] at (6.2,3.36) {1};
-  \node[lab, fill=none, anchor=south] at (6.2,3.66) {hands over};
-  % stage 2: the reads
+  \node[evnum] at (gap |- task.east) {1};
+  \node[lab, fill=none, anchor=south] at ($(gap |- task.east)+(0,0.3)$) {hands over};
+  % ---- stage 2: the reads stay in the sub-agent's context
   \atstage{2}{
-    \node[rnode, anchor=north west, text width=24mm, align=left, font=\sffamily\footnotesize] (r1) at (7.75,5.0) {\texttt{inventory-ledger}\\ 40 lines};
-    \node[rnode, anchor=north west, text width=24mm, align=left, font=\sffamily\footnotesize] (r2) at (10.6,5.0) {\texttt{supplier-notices}\\ 12 pages};
-    \node[rnode, anchor=north west, text width=24mm, align=left, font=\sffamily\footnotesize] (r3) at (13.45,5.0) {\texttt{ops-log}\\ 300 lines};
-    \node[evnum] at (7.35,4.6) {2};
-    \node[kick, anchor=west] at (7.2,2.65) {it reads 90k tokens here, and none of them enter the main context};
+    % \vphantom{g}: every record's second line has the same depth, so the names share one baseline
+    \node[rec, anchor=north west] (r1) at (rtop) {\texttt{inventory-ledger}\\ 400 lines\vphantom{g}};
+    \node[rec, anchor=north east] (r3) at (16.0,0 |- rtop) {\texttt{ops-log}\\ 3,000 lines\vphantom{g}};
+    \node[rec, anchor=north] (r2) at ($(r1.north east)!0.5!(r3.north west)$) {\texttt{supplier-notices}\\ 12 pages\vphantom{g}};
+    \node[evnum, anchor=west] (n2) at ($(ztask.east)+(0.35,0)$) {2};
+    \node[lab, fill=none, anchor=west, align=left, inner sep=0pt] at ($(n2.east)+(0.12,0)$) {it reads 90k tokens here, and\\ none enter the main context};
   }
-  % stage 3: the one-line result
+  % ---- stage 3: one result comes back, and what it leaves out stays behind
   \atstage{3}{
-    \node[okchip, anchor=north west, text width=46mm] (zres) at (7.2,1.95) {result: paid Day 1, due Day 4, source ledger line 17};
-    \node[okchip, anchor=north west, text width=46mm] (mres) at (0.35,1.95) {result: paid Day 1, due Day 4, source ledger line 17};
+    \node[two] (zres) at ({\xz+0.3},0 |- mres.north) {result: paid Day 1, due Day 4,\\ source ledger line 17};
+    \node[chip, anchor=north west, text width=38.5mm, minimum height=8.5mm] (lost) at ($(zres.north east)+(0.35,0)$) {left out of the result:\\ Day 3 supplier: may ship late};
     \draw[back] (zres.west) -- (mres.east);
-    \node[evnum] at (6.2,1.51) {3};
-    \node[lab, fill=none, anchor=north] at (6.2,1.22) {returns};
-    \node[verd, anchor=west] at (0.35,0.5) {the main context grows by one line};
-    \node[badverd, anchor=west] at (7.2,0.5) {what the line left out stays in the sub-agent's window};
+    \node[evnum] at (gap |- mres.east) {3};
+    \node[lab, fill=none, anchor=north] at ($(gap |- mres.east)+(0,-0.3)$) {returns};
+    \node[verd, anchor=north west, inner sep=0pt] at ($(main.south west)+(0.3,-0.22)$) {the main context grows by one result};
+    \node[badverd, anchor=north west, inner sep=0pt] at ($(\xz,0 |- main.south)+(0.3,-0.22)$) {what the result left out stays in the sub-agent's context};
   }
-  \node[note, anchor=north east, inner sep=0pt] at (16.4,5.95) {token counts illustrative};
+  \node[note, anchor=north east, inner sep=0pt] at (16.4,4.95) {token counts and records illustrative};
 \end{tikzpicture}

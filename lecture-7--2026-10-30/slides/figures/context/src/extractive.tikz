@@ -1,19 +1,29 @@
-% extractive: a token classifier keeps or drops each token of the source (LLMLingua-2, Pan et al., Findings of ACL 2024;
-% Slides 7.2 and 7.4b). Canvas 16.5 x 6.6 cm. Four stages.
-% Stage 1: reveal the source line as eleven tokens.
-% Stage 2: reveal the classifier and its label under each token: keep (navy tick) or drop (grey cross).
+% extractive: a token classifier keeps or drops each token of the source (LLMLingua-2, Pan et al., Findings of ACL 2024,
+% Slides 7.2 and 7.4b). Canvas 16.5 x 4.6 cm. Four stages.
+% Stage 1: reveal the source line as eleven tokens, with a ghost where the classifier will stand.
+% Stage 2: reveal the classifier: it reads the line and labels each token keep (navy tick) or drop (grey cross).
 % Stage 3: reveal the compressed input, the kept tokens in order. The dropped tokens fade in the source row.
-% Stage 4: reveal the check: one dropped word flipped the meaning (rose), so test the compressed input on the task (navy).
-% Illustrative, not from a source: the line, the labels and the dropped word. LLMLingua-2 trains its classifier on data
-% distilled from GPT-4 and reads both sides of each token; it reports task scores with the compression ratio and latency.
+% Stage 4: reveal the failure: dropping unless flipped the meaning (rose). Test the compressed input on the task (navy).
+% Illustrative, not from a source: the line, the labels and the dropped word. The line extends the running ledger line
+% with "unless cancelled". LLMLingua-2 trains its classifier on data distilled from GPT-4 and reads both sides of each
+% token. It reports task scores with the compression ratio and latency ("as the paper does").
+% Layout: the source row and its labels on top, the bracket under the labels, the classifier at the lower left, the
+% compressed input at the lower right. Every connector is straight, and every number circle sits on its connector.
 \begin{tikzpicture}
-  \canvas{16.5}{6.6}
-  \def\yt{5.85}      % the source tokens
-  \def\ym{5.25}      % the labels under them
-  \def\yo{2.35}     % the compressed input
-  \node[kick, anchor=south west] at (0.3,6.2) {the source line, eleven tokens};
-  \node[note, anchor=north east, inner sep=0pt] at (16.4,6.52) {illustrative labels};
-  % the source tokens: drop tokens fade from stage 3 on
+  \canvas{16.5}{4.6}
+  \frenchspacing
+  \tikzset{
+    tok/.append style={text height=6.2pt, text depth=2pt},  % one baseline for every token, the comma included
+    brk/.style={draw=ibmfg!45, line width=0.6pt},
+  }
+  \def\yt{3.88}   % centre of the source tokens
+  \def\yb{3.08}   % the bracket under the labels
+  \def\yc{2.13}   % top edge of the classifier
+  \def\yk{1.85}   % centre of the kept tokens
+  \def\xr{1.7}    % the reads arrow
+  \def\xl{2.7}    % arrow 1
+  \node[kick, anchor=north west] at (0.3,4.52) {the source line, eleven tokens};
+  % the source tokens: the dropped ones fade from stage 3 on, and unless turns rose on stage 4
   \newcommand{\droptok}[3]{\beforestage{3}{\node[tok, #1] (#2) {#3};}\atstage{3}{\node[drop, #1] (#2) {#3};}}
   \node[tok, anchor=west] (t1) at (0.3,\yt) {ordered};
   \node[tok, right=1.5mm of t1] (t2) {10};
@@ -24,20 +34,30 @@
   \node[tok, right=1.5mm of t6] (t7) {due};
   \node[tok, right=1.5mm of t7] (t8) {Day};
   \node[tok, right=1.5mm of t8] (t9) {4};
-  \droptok{right=1.5mm of t9}{t10}{unless}
+  \ifnum\stage<3 \node[tok, right=1.5mm of t9] (t10) {unless};
+  \else\ifnum\stage<4 \node[drop, right=1.5mm of t9] (t10) {unless};
+  \else \node[drop, text=deckRose, right=1.5mm of t9] (t10) {unless};\fi\fi
   \node[tok, right=1.5mm of t10] (t11) {cancelled};
-  % stage 2: the classifier labels each token
+  % the classifier: a ghost on stage 1, the box from stage 2, both 47 mm + 8 pt wide and 14 mm tall
+  \onlystage{1}{\node[ghostbox, anchor=north west, minimum width=47mm+8pt, minimum height=14mm, font=\sffamily\small,
+    text=ibmfg!50] at (0.3,\yc) {token classifier};}
+  % stage 2: the classifier reads the line and labels each token
   \atstage{2}{
     \foreach \t in {t1,t2,t3,t5,t7,t8,t9,t11}{ \pic[color=deckNavy] at ($(\t.south)+(0,-0.3)$) {tick}; }
-    \foreach \t in {t4,t6,t10}{ \pic[color=ibmfg!45] at ($(\t.south)+(0,-0.3)$) {xmark}; }
-    \node[mnode, text width=58mm, align=center] (cls) at (8.25,3.85) {\textbf{token classifier} (LLMLingua-2)\\ keep or drop each token, reading the words on both sides};
-    \draw[flow] (cls.north) -- (8.25,\ym-0.2);
-    \node[evnum] at (8.25,4.82) {1};
-    \node[lab, fill=none, anchor=west] at (8.55,4.82) {labels each token};
+    \foreach \t in {t4,t6}{ \pic[color=ibmfg!45] at ($(\t.south)+(0,-0.3)$) {xmark}; }
+    \ifnum\stage<4 \pic[color=ibmfg!45] at ($(t10.south)+(0,-0.3)$) {xmark};\fi
+    \draw[brk] let \p1=(t11.east) in (0.3,\yb+0.1) -- (0.3,\yb) -- (\x1,\yb) -- (\x1,\yb+0.1);
+    \node[mnode, anchor=north west, text width=47mm, minimum height=14mm, align=flush center] (cls) at (0.3,\yc)
+      {\textbf{token classifier} (LLMLingua-2)\\ keep or drop each token, reading\\ the words on both sides};
+    \draw[flow] (\xr,\yb) -- (\xr,\yc);
+    \node[lab, fill=none, anchor=east] at (\xr-0.15,\yc+0.35) {reads};
+    \draw[flow] (\xl,\yc) -- (\xl,\yb);
+    \node[evnum] at (\xl,\yc+0.35) {1};
+    \node[lab, fill=none, anchor=west] at (\xl+0.35,\yc+0.35) {labels each token};
   }
-  % stage 3: the compressed input
+  % stage 3: the compressed input, the kept tokens in their order
   \atstage{3}{
-    \node[keep, anchor=west] (k1) at (4.1,\yo) {ordered};
+    \node[keep, anchor=west] (k1) at (8.22,\yk) {ordered};
     \node[keep, right=1.5mm of k1] (k2) {10};
     \node[keep, right=1.5mm of k2] (k3) {SKU-A};
     \node[keep, right=1.5mm of k3] (k4) {paid};
@@ -45,16 +65,17 @@
     \node[keep, right=1.5mm of k5] (k6) {Day};
     \node[keep, right=1.5mm of k6] (k7) {4};
     \node[keep, right=1.5mm of k7] (k8) {cancelled};
-    \draw[flow] (cls.south) -- (8.25,\yo+0.3);
-    \node[evnum] at (8.25,2.87) {2};
-    \node[lab, fill=none, anchor=east] at (7.95,2.87) {compressed: eight tokens};
-    \node[kick, anchor=east] at (3.9,\yo) {kept, in order};
+    \node[kick, anchor=south west] at (8.22,\yk+0.32) {kept, in order};
+    \draw[flow] (cls.east |- k1.west) -- (k1.west);
+    \node[evnum] at (6.75,\yk) {2};
+    \node[lab, fill=none, anchor=south, align=flush center] at (6.75,\yk+0.3) {compressed:\\ eight tokens};
   }
-  % stage 4: the check
+  % stage 4: the failure on the dropped word, and the check
   \atstage{4}{
-    \pic[color=deckRose] at ($(k8.north east)+(0.05,0.05)$) {xmark};
-    \node[badverd, anchor=west] at (4.1,1.5) {one dropped word flipped the meaning: the order now reads as cancelled};
-    \node[verd, anchor=west] at (4.1,1.0) {test the compressed input on the task it must serve, as the paper does};
+    \node[draw=deckRose, line width=1pt, rounded corners=2pt, inner sep=0pt, fit=(t10)] {};
+    \pic[color=deckRose] at ($(t10.south)+(0,-0.3)$) {xmark};
+    \node[badverd, anchor=west] at (5.9,1.25) {dropping ``unless'' flipped the meaning: the order now reads as cancelled};
+    \node[verd, anchor=west] at (5.9,0.82) {test the compressed input on the task it must serve, as the paper does};
   }
-  \node[note, anchor=south west, inner sep=0pt] at (0.3,0.1) {Pan et al. 2024 report task scores with compression and latency. The line is the course's example.};
+  \node[note, anchor=south west, inner sep=0pt] at (0.3,0.1) {The line and its labels are illustrative. Pan et al. 2024 report task scores with compression and latency.};
 \end{tikzpicture}

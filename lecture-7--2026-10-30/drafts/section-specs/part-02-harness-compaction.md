@@ -10,8 +10,12 @@ The primary sources are Pi's docs, Claude Code's docs, and the Codex source repo
 
 - **Trigger.** Automatic compaction starts when `contextTokens > contextWindow - reserveTokens`.
   The default reserve is 16384 tokens. The user can also enter `/compact [instructions]`.
-- **Mechanism.** Pi uses `keepRecentTokens` to select recent messages. The default is 20k tokens.
-  It summarizes older messages with one LLM call. It appends a `CompactionEntry` with the summary and `firstKeptEntryId`.
+- **Mechanism.** Pi keeps recent messages up to about `keepRecentTokens`, 20k estimated tokens by default. The
+  setting is a target rather than a cap, because Pi cuts at the nearest valid message.
+  It summarizes the older messages with an LLM. When the cut falls inside one user message's span, Pi also summarizes
+  the start of that span (Original Request, Progress So Far, Context Needed to Continue) and appends it as a Turn
+  Context section. With earlier messages to summarize as well, that takes a second call, and Pi merges the two summaries.
+  It appends a `CompactionEntry` with the summary and `firstKeptEntryId`.
   It rebuilds context from the system prompt, summary, and recent messages.
 - **Summary format.** Pi uses fixed sections: Goal, Constraints and Preferences, Progress, Key Decisions,
   Next Steps, and Critical Context. Progress contains Done, In Progress, and Blocked.
@@ -41,17 +45,31 @@ The primary sources are Pi's docs, Claude Code's docs, and the Codex source repo
 **Source.** The `openai/codex` repository. See `codex-rs/prompts/templates/compact/prompt.md` and
 `summary_prefix.md`, plus `codex-rs/core/src/compact*` and `compact_retained_tool_outputs.rs`.
 
-- **Trigger.** Automatic compaction starts near a token limit (`auto_compact_window`).
-  The user can also enter `/compact`.
+- **Trigger.** Automatic compaction starts when token use reaches the auto-compact limit
+  (`model_auto_compact_token_limit`, or the model's default). The user can also enter `/compact`.
 - **Mechanism.** The prompt calls this "context checkpoint compaction".
   It requests a handoff summary for another LLM that will resume the task.
-  The next model also receives the state of tools the previous model used.
+  Codex rebuilds the history from that summary and the user's most recent messages, up to 20,000 tokens
+  (`core/src/compact.rs`). `summary_prefix.md` tells the next model that it "also has access to the state of the
+  tools", which persists outside the context.
+- **Local and remote.** The handoff summary is the local path. With the default OpenAI provider (and Azure Responses
+  providers) Codex uses the Responses API's remote compaction instead (`model-provider/src/capabilities.rs`).
 - **Summary format.** The template asks for progress and key decisions, important context and user preferences,
   next steps, and critical data or references.
-- **Beyond compaction.** Codex keeps compaction checkpoints and resume metadata.
-  Its separate memories pipeline extracts structured memory across sessions.
-- **Strategies used.** Codex combines an abstractive handoff summary with retained tool outputs and
-  structured cross-session notes.
+- **Beyond compaction.** Codex keeps resume metadata for its sessions. Its memories pipeline, off by default,
+  extracts structured memory across sessions when it is enabled.
+- **Strategies used.** Codex combines an abstractive handoff summary with the user's retained recent messages and,
+  when enabled, structured cross-session notes.
+
+*Correction, 2026-11-04, while building the slides: the earlier version of this section said that the next model
+"receives the state of tools the previous model used" and grouped Codex under "retain tool outputs". The code at
+commit de6e72a shows neither: `compact_retained_tool_outputs.rs` keeps only explicitly marked, client-authored
+function outputs, and the tools' state stays outside the context. The trigger identifier was also wrong.*
+
+*Correction, 2026-11-04, from the deck review: the Pi section said that Pi summarizes older messages "with one LLM
+call" and keeps 20k tokens. Pi 1.2.0's docs/compaction.md ("Split user-message spans": "Pi generates two summaries and
+merges them") and `dist/core/compaction/compaction.js` (`findProjectedCutPoint`, "keeps approximately
+keepRecentTokens") show a second call for a split span and a target rather than a cap.*
 
 ## Grouping (for Slide 7.5)
 
@@ -59,12 +77,12 @@ The primary sources are Pi's docs, Claude Code's docs, and the Codex source repo
 | --- | --- | --- | --- |
 | Pi | Abstractive structured summary | Recency window (keepRecentTokens) | File lists |
 | Claude Code | Abstractive structured summary | Read recent files again (retrieve) | Hook output, skill text, subagents |
-| Codex | Abstractive handoff summary | Retain tool outputs | Resume metadata, memories |
+| Codex | Abstractive handoff summary (local path) | Retain the user's recent messages | Resume metadata, opt-in memories |
 
 **Takeaway for the slide.** All three use an abstractive, structured summary. They combine it with
 other context strategies.
 
-Pi keeps a recent window. Claude Code reads recent files again. Codex retains tool state.
+Pi keeps a recent window. Claude Code reads recent files again. Codex keeps the user's recent messages.
 These examples connect the strategies in Slides 7.4a–f to actual harness formats.
 
 *Dates: Pi docs as installed 2026-11. Claude Code docs retrieved 2026-11-04. Codex `main` retrieved

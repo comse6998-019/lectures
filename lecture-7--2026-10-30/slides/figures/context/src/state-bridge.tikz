@@ -1,32 +1,58 @@
 % state-bridge: the surviving context becomes part of the execution state (Slide 11.1, the bridge to next week).
-% Canvas 16.5 x 5.0 cm. Two stages.
+% Canvas 16.5 x 4.0 cm. Two stages.
 % Stage 1: reveal the surviving context: facts, decisions and open commitments, with the ghost of where it will live.
-% Stage 2: reveal the execution state: a run with checkpoints, a resume and a replay, and the context inside it.
-% Next week's subject: state ownership, run-local and durable state, checkpoint boundaries, resumption and replay.
+% Stage 2: reveal the execution state: a run with checkpoints, a break, a resume and a replay, and the surviving context stored in it.
+% The run is schematic and previews next week: two steps, two checkpoints, a break where the run stops, the resume after it,
+% and a replay from the second checkpoint back to the first. On stage 2 a thin navy bracket gathers all three chips, from the
+% top of the facts chip to the bottom of the open-commitments chip, and the arrow leaves the bracket. So the facts, the
+% decisions and the open commitments all reach the stored chip, which names all three. Circle 1 sits midway between the
+% bracket and the zone's left edge. The three chips restate the vending teaching case as dropped-order and structured-notes
+% do: shelf empty on Days 2 and 3, the decision to wait, 10 SKU-A paid and due Day 4. Next week's subject: state ownership,
+% run-local and durable state, checkpoint boundaries, resumption and replay. The zone has 3.5 mm of padding on every side
+% (measured under the tab at the top), and its rows, like the chips on the left, are 2.5 mm apart. The open-commitments chip
+% and the stored chip share one centre line.
 \begin{tikzpicture}
-  \canvas{16.5}{5.0}
-  \node[capt, anchor=south west] at (0.2,4.45) {the surviving context};
-  \node[okchip, anchor=north west, text width=46mm] (f) at (0.2,4.35) {\textbf{facts} shelf empty on Days 2 and 3};
-  \node[okchip, anchor=north west, text width=46mm] (d) at (0.2,3.5) {\textbf{decisions} wait for the delivery};
-  \node[okchip, anchor=north west, text width=46mm] (o) at (0.2,2.65) {\textbf{open commitments} 10 SKU-A paid, due Day 4};
+  \frenchspacing  % one space after a colon
+  \canvas{16.5}{4.0}
+  \def\zL{6.25}\def\zR{16.35}\def\zT{3.745}\def\zB{0.0435}  % the zone, centred on x = 11.3
+  \def\xA{6.6}\def\xB{16.0}                                  % its inner edges, 3.5 mm inside
+  \def\yLane{2.6965}  % 3.5 mm under the tab to the tops of the lane labels, then 2.6 mm from their baseline to the lane
+  \def\yRep{2.1465}   % the lower segment of the replay arrow
+  \def\yCtx{1.20385}  % centre line of the open-commitments chip and of the stored chip
+  \tikzset{chip3/.style={okchip, text width=44mm, align=flush left, minimum height=5.5mm}}
+  % ---- stage 1: the surviving context, its last chip level with the stored chip of stage 2
+  \node[chip3, anchor=west] (o) at (0.15,\yCtx) {\textbf{open commitments:}\\ 10 SKU-A paid, due Day 4};
+  \node[chip3, anchor=south west] (d) at ([yshift=2.5mm]o.north west) {\textbf{decisions:} wait for the delivery};
+  \node[chip3, anchor=south west] (f) at ([yshift=2.5mm]d.north west) {\textbf{facts:} shelf empty on Days 2 and 3};
+  \node[capt, anchor=base west] at ($(f.north west)+(0,0.16)$) {the surviving context};
   \onlystage{1}{
-    \draw[ghostband] (7.0,0.6) rectangle (16.3,4.6);
-    \node[ghosttab] at (11.65,4.6) {execution state, next week};
+    \draw[ghostband] (\zL,\zB) rectangle (\zR,\zT);
+    \node[ghosttab] at (11.3,\zT) {execution state, next week};
   }
+  % ---- stage 2: the execution state
   \atstage{2}{
-    \draw[zone] (7.0,0.6) rectangle (16.3,4.6);
-    \node[tab] at (11.65,4.6) {execution state, next week};
-    \draw[ibmfg!60, thick] (7.6,3.6) -- (15.9,3.6);
-    \foreach \x/\lab in {8.4/step,10.0/checkpoint,11.6/step,13.2/checkpoint,14.8/resume}{
-      \fill[deckNavy] (\x,3.6) circle (0.09);
-      \node[kick, anchor=south, font=\sffamily\scriptsize] at (\x,3.75) {\lab};
+    \draw[zone] (\zL,\zB) rectangle (\zR,\zT);
+    \node[tab] at (11.3,\zT) {execution state, next week};
+    % the run: two steps and two checkpoints, a break where the run stops, and the resume after it
+    \draw[ibmfg!60, thick] (\xA,\yLane) -- (14.15,\yLane) (14.3,\yLane) -- (\xB,\yLane);
+    \draw[ibmfg!60, thick] (14.1,\yLane-0.11) -- (14.2,\yLane+0.11) (14.25,\yLane-0.11) -- (14.35,\yLane+0.11);
+    \foreach \x/\lab in {7.4/step, 9.35/checkpoint, 11.3/step, 13.25/checkpoint, 15.2/resume}{
+      \fill[deckNavy] (\x,\yLane) circle (0.09);
+      \node[kick, anchor=base] at (\x,\yLane+0.26) {\lab};
     }
-    \draw[back] (13.2,3.6) -- ++(0,-0.6) -| (10.0,3.6);
-    \node[lab, fill=none, anchor=north] at (11.6,2.95) {replay from a checkpoint};
-    \node[okchip, anchor=north west, text width=70mm] (ctx) at (7.6,2.5) {the context at each checkpoint: facts, decisions, open commitments};
-    \draw[flow] (o.east) -- ++(0.6,0) |- (ctx.west);
-    \node[evnum] at (6.0,2.0) {1};
-    \node[lab, fill=none, anchor=north] at (6.0,1.7) {stored};
-    \node[verd, anchor=north west, text width=84mm] at (7.6,1.45) {the context we build becomes part of the execution we must preserve};
+    \draw[back] (13.25,\yLane-0.09) -- (13.25,\yRep) -- (9.35,\yRep) -- (9.35,\yLane-0.13);
+    \node[lab, fill=none, anchor=north] at (11.3,\yRep-0.1) {replay from a checkpoint};
+    % the context at each checkpoint, reached from all three chips. The bracket stands 0.8 mm right of the chips, with
+    % ticks 1.2 mm long, from the top of facts to the bottom of open commitments. The arrow leaves its spine on the centre line.
+    \node[okchip, anchor=west, text width=91.54mm, align=flush left, minimum height=5.5mm] (ctx) at (\xA,\yCtx)
+      {the context at each checkpoint: facts, decisions, open commitments};
+    \path (o.east) ++(0.08,0) coordinate (bkIn) ++(0.12,0) coordinate (bkSp);
+    \draw[flow] (bkSp) -- (ctx.west);
+    \draw[deckNavy, line width=0.8pt] ($(bkIn |- f.north)+(0,-0.4pt)$) -| ($(bkSp |- o.south)+(0,0.4pt)$)
+      -- ($(bkIn |- o.south)+(0,0.4pt)$);
+    \node[evnum] (e1) at ($(bkSp)!0.5!(\zL,\yCtx)$) {1};
+    \node[lab, fill=none, anchor=south] at ($(e1.north)+(0,0.04)$) {stored};
+    \node[verd, anchor=north west, inner sep=0pt] at ([yshift=-2.5mm]ctx.south west)
+      {the context we build becomes part of the execution we must preserve};
   }
 \end{tikzpicture}

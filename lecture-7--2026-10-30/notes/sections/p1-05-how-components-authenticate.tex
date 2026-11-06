@@ -1,0 +1,105 @@
+\section{How components authenticate}
+\label{sec:row-p1-4}
+
+Last, the credentials that tie a sandbox together, and what the agent can see of them.
+
+\subsection{The gateway signs every credential}
+\label{sec:it-os-5-1}
+
+\bi
+\item \textbf{The gateway} is the only component that signs credentials, and every credential names exactly one sandbox.
+\item \textbf{The first credential} comes from the compute driver, in files only the supervisor can read, or on Kubernetes as the pod's ServiceAccount token.
+\ei
+
+Three connections tie a sandbox together. The gateway is the only component that signs credentials, and every credential names exactly one sandbox.
+
+The supervisor needs a starting credential to prove which sandbox it belongs to, and how it gets one depends on the runtime. With Docker, Podman and MicroVM, the driver hands the supervisor its initial tokens directly, in files only the supervisor can read. On Kubernetes, the supervisor presents its pod's ServiceAccount token, and the gateway asks the Kubernetes driver to verify the token and confirm that the pod belongs to the expected sandbox before it issues any JWTs. Either way, the gateway checks the claim against its own record of the sandbox before returning credentials.
+
+The figure is NVIDIA's own, from the same page, under the Apache-2.0 license. Its text is unchanged, and the slide reveals it one part per click. Source: NVIDIA, OpenShell Developer Guide, ``Architecture'', documentation version v0.1.7, read on November 6, 2026 (\url{https://docs.nvidia.com/openshell/v0.1.7/about/architecture}).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{openshell/os-authentication-4.png}
+\caption{The gateway signs every credential. The figure as it stands after the build's last click.}
+\label{fig:os-authentication-4}
+\end{figure}
+
+\paragraph{The figure, stage by stage.}
+\be
+\item The parties. The gateway's API server ``signs every JWT'' and ``checks the sandbox record''. Its compute driver ``delivers or verifies the bootstrap credential''. The supervisor ``holds tokens in memory''. The sandbox ``verifies, never signs'', and the agent ``sees no credentials''.
+\item 1, bootstrap: the compute driver gives the supervisor its starting credential.
+\item 2 and 3: the supervisor authenticates to the API server, which issues the JWT pair, a gateway JWT for the gateway and a sandbox JWT for the sandbox.
+\item 4: the supervisor presents the sandbox JWT to the sandbox over mutual TLS. The line under the figure: every JWT names one sandbox and one run of it, and restarting a sandbox issues new tokens and TLS certificates.
+\ee
+
+\begin{takeaway}A credential works for exactly one sandbox, and only the gateway can sign one.\end{takeaway}
+
+\subsection{Each connection has its own protection}
+\label{sec:it-os-5-2}
+
+\textbf{The agent never connects to the supervisor itself.}
+
+This is the page's table of connections, one row per click. In the last row the page says the sandbox relays the agent's traffic over the connection above, the supervisor-to-sandbox channel.
+
+The supervisor verifies the gateway's TLS certificate with its CA. User client certificates and private keys stay outside both the supervisor and the workload, and the gateway JWT authenticates supervisor RPCs.
+
+Source: NVIDIA, OpenShell Developer Guide, ``Architecture'', documentation version v0.1.7, read on November 6, 2026 (\url{https://docs.nvidia.com/openshell/v0.1.7/about/architecture}).
+
+\begin{center}\footnotesize
+\begin{tabularx}{\linewidth}{L{0.22\linewidth}XX}
+\toprule
+\textbf{Connection} & \textbf{Who connects} & \textbf{How it's protected} \\
+\midrule
+Supervisor to gateway & The supervisor dials out to the gateway. & A gateway JWT, over TLS when the gateway has TLS enabled. \\
+Supervisor to sandbox & The supervisor dials into the workload over the driver's private channel. & Mutual TLS, plus a sandbox JWT. \\
+Agent to supervisor & The agent never connects directly. The sandbox relays its traffic. & Covered by the supervisor-to-sandbox channel. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{takeaway}The sandbox relays the agent's traffic over the supervisor's authenticated channel.\end{takeaway}
+
+\subsection{Each token is bound to one sandbox run}
+\label{sec:it-os-5-3}
+
+\bi
+\item \textbf{The gateway JWT} goes with every supervisor call to the gateway and allows only the calls a supervisor needs.
+\item \textbf{The sandbox JWT} goes with every supervisor call to the sandbox, which holds only the gateway's public key, so it can verify the token and never create one.
+\item \textbf{A restart} starts a new generation with fresh tokens and TLS certificates, and the old ones stop working.
+\item \textbf{Renewal} happens in memory and only while the sandbox exists, so deleting a sandbox cuts off its supervisor.
+\ei
+
+The gateway issues a pair of JWTs for each run of a sandbox. The gateway JWT is sent with every supervisor call to the gateway. It allows only the calls a supervisor needs, such as fetching policy, pushing logs and relaying sessions. It is not a user credential and can't manage other sandboxes. The sandbox JWT is sent with every supervisor call to the sandbox. The sandbox holds only the gateway's public key, so it can verify the token but can never create one.
+
+Each token works only on its own connection. Both are bound to one sandbox and one run of that sandbox, called a generation. Restarting a sandbox starts a new generation with fresh tokens and fresh TLS certificates, and the old ones stop working.
+
+Renewing and revoking: the supervisor keeps its tokens in memory and renews both together before they expire. Renewal works only while the sandbox still exists, so deleting a sandbox cuts off its supervisor. Shared deployments, such as Kubernetes, should set gateway\_jwt.ttl\_secs so tokens expire. Local single-user gateways can leave it unset, which issues tokens that last for the life of the sandbox run.
+
+Source: NVIDIA, OpenShell Developer Guide, ``Architecture'', documentation version v0.1.7, read on November 6, 2026 (\url{https://docs.nvidia.com/openshell/v0.1.7/about/architecture}).
+
+\begin{takeaway}A token is bound to one connection, one sandbox and one generation.\end{takeaway}
+
+\subsection{The sandbox holds nothing worth stealing}
+\label{sec:it-os-5-4}
+
+\bi
+\item \textbf{No secrets:} the sandbox holds no gateway signing key, no gateway JWT and no provider credentials.
+\item \textbf{No impersonation:} the sandbox can verify that it talks to the right supervisor and can't pose as one.
+\item \textbf{A disconnect} freezes the agent, and only the same supervisor process can reconnect and resume it.
+\ei
+
+The agent shares its side of the boundary with the sandbox, so the sandbox holds nothing worth stealing: no gateway signing key, no gateway JWT, and no provider credentials. It can verify that it's talking to the right supervisor, but it can't impersonate one.
+
+If the supervisor disconnects, the sandbox freezes the agent. Only the same supervisor process can reconnect and resume it. A new supervisor can't take over a running sandbox, even with valid credentials.
+
+Source: NVIDIA, OpenShell Developer Guide, ``Architecture'', documentation version v0.1.7, read on November 6, 2026 (\url{https://docs.nvidia.com/openshell/v0.1.7/about/architecture}).
+
+\begin{takeaway}A new supervisor can't take over a running sandbox, even with valid credentials.\end{takeaway}
+
+\subsection*{Key points}
+\bi
+\item A credential works for exactly one sandbox, and only the gateway can sign one.
+\item The sandbox relays the agent's traffic over the supervisor's authenticated channel.
+\item A token is bound to one connection, one sandbox and one generation.
+\item A new supervisor can't take over a running sandbox, even with valid credentials.
+\ei

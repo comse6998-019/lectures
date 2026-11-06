@@ -1,42 +1,47 @@
-% recency: keep the last turns, drop the older ones (Slide 7.4a). Canvas 16.5 x 5.6 cm. Three stages.
-% Stage 1: reveal eight turns of the run in time order and the window over the first five.
-% Stage 2: the window moves on: turns 6 and 7 enter, turns 1 and 2 fade out.
-% Stage 3: the window moves again: turn 8 enters, turn 3 fades. The paid order and its due date are gone (rose).
+% recency: keep the last turns, drop the older ones (Slide 7.4a). Canvas 16.5 x 4.2 cm. Three stages.
+% The navy frame is the next call's context, named on a navy tab that moves with it. Turn boxes 1.7 cm wide,
+% 0.35 cm apart. The frame keeps 1.5 mm of padding on every side. Its tab rests on the frame's top edge, centred,
+% with its bottom on the inner edge of the stroke.
+% Three inks: a turn in the context is solid and black. A turn still to come is dashed, with mid-grey text.
+% A dropped turn is solid and faded, so the key's "faded" names the dropped turns only.
+% Stage 1: reveal eight turns of the run in time order and the context over the first five.
+% Stage 2: the context moves on: turns 6 and 7 enter, turns 1 and 2 fade out. A grey note: no extra call, no extra tokens.
+% Stage 3: the context moves again: turn 8 enters, turn 3 fades. The paid order and its due date are gone (rose).
 %          The cheapest strategy forgets the oldest commitment first (navy).
-% Illustrative, not from a source: the turns and the window of five.
+% Illustrative, not from a source: the turns and the context of five.
 \begin{tikzpicture}
-  \canvas{16.5}{5.6}
-  \tikzset{turn/.style={slot, text width=16mm, align=center, minimum height=9mm}}
-  \def\yt{3.6}
-  % the eight turns, with the ones outside the window faded
-  \foreach \i/\txt in {1/{Day 1\\ order 10},2/{Day 1\\ paid},3/{Day 1\\ due Day 4},4/{Day 2\\ shelf empty},5/{Day 2\\ wait},6/{Day 3\\ shelf empty},7/{Day 3\\ no sales},8/{Day 3\\ next?}}{
-    \pgfmathsetmacro{\x}{1.1+(\i-1)*1.95}
-    % stages 1, 2, 3: the window starts at turn 1, 3, 4
-    \ifnum\stage=1 \def\first{1}\fi
-    \ifnum\stage=2 \def\first{3}\fi
-    \ifnum\stage=3 \def\first{4}\fi
-    \pgfmathtruncatemacro{\last}{\first+4}
-    \ifnum\i<\first
-      \node[turn, faded] (t\i) at (\x,\yt) {\txt};
-    \else
-      \ifnum\i>\last
-        \node[ghost, text width=16mm, align=center, minimum height=9mm, font=\sffamily\footnotesize] (t\i) at (\x,\yt) {\txt};
-      \else
-        \node[turn] (t\i) at (\x,\yt) {\txt};
-      \fi
-    \fi
-    \node[kick, font=\sffamily\scriptsize] at (\x,\yt-0.88) {turn \i};
+  \canvas{16.5}{4.2}
+  \tikzset{
+    wtab/.style={tab, text height=6.8pt, text depth=0.2pt},
+    tbox/.style={rounded corners=2pt, fill=white, font=\sffamily\footnotesize, align=flush center, text width=15mm,
+                 inner xsep=1mm, inner ysep=2pt, minimum height=8.6mm, outer sep=0pt},
+    % solid in the context, dashed while still to come, faded once dropped: one geometry, three inks
+    tstate/.code={\ifnum#1<\first\relax\pgfkeysalso{draw=ibmfg!25, text=ibmfg!40}%
+      \else\ifnum#1>\last\relax\pgfkeysalso{draw=ibmfg!50, text=ibmfg!70, dashed}%
+      \else\pgfkeysalso{draw=ibmfg!60}\fi\fi},
   }
-  % the window
-  \ifnum\stage=1 \draw[hl] (0.1,2.95) rectangle (9.9,4.25); \node[capt, anchor=south west] at (0.15,4.4) {the window: the last five turns};\fi
-  \ifnum\stage=2 \draw[hl] (4.0,2.95) rectangle (13.8,4.25); \node[capt, anchor=south west] at (4.05,4.4) {the window moved on: turns 6 and 7 came in};\fi
-  \ifnum\stage=3 \draw[hl] (5.95,2.95) rectangle (15.75,4.25); \node[capt, anchor=south west] at (6.0,4.4) {the window moved again: turn 8 came in};\fi
-  \draw[-{Stealth[length=2mm]}, thick, ibmfg!30] (0.1,2.2) -- (16.4,2.2);
-  \node[kick, anchor=north east] at (16.3,2.15) {time};
-  \node[kick, anchor=north west] at (0.2,5.5) {eight turns of the run, newest on the right};
-  \atstage{2}{\node[note, anchor=west] at (0.15,1.6) {no extra call, no extra tokens: the window just moves};}
+  % stages 1, 2, 3: the context starts at turn 1, 3, 4
+  \ifnum\stage=1 \def\first{1}\fi
+  \ifnum\stage=2 \def\first{3}\fi
+  \ifnum\stage=3 \def\first{4}\fi
+  \pgfmathtruncatemacro{\last}{\first+4}
+  \foreach \i/\d/\e in {1/Day 1/order 10,2/Day 1/paid,3/Day 1/due Day 4,4/Day 2/shelf empty,5/Day 2/wait,
+                        6/Day 3/shelf empty,7/Day 3/no sales,8/Day 3/next?}{
+    \pgfmathsetmacro{\x}{1.075+(\i-1)*2.05}
+    \node[tbox, tstate=\i] (t\i) at (\x,2.64) {\strut\d\\\strut\e};
+    \node[kick, anchor=base] at (\x,1.702) {turn \i};
+  }
+  % the context: the last five turns, 1.5 mm of padding on every side, the tab resting on the top edge
+  \draw[hl] ($(t\first.south west)+(-0.15,-0.15)$) rectangle ($(t\last.north east)+(0.15,0.15)$);
+  \node[wtab, anchor=south, outer sep=0pt] at ($(t\first.north west)!0.5!(t\last.north east)+(0,0.15)-(0,0.8pt)$)
+    {the context: the last five turns};
+  \draw[-{Stealth[length=2mm]}, thick, ibmfg!30] (0.225,1.51) -- (16.40,1.51);
+  \node[kick, anchor=base east] at (16.40,1.122) {time};
+  \node[kick, anchor=base west] at (0.225,3.892) {eight turns of the run, newest on the right. dashed: still to come. faded: dropped};
+  \node[note, anchor=base east, inner sep=0pt] at (16.275,3.892) {illustrative turns};
+  \atstage{2}{\node[note, anchor=base west, inner sep=0pt] at (0.225,1.122) {no extra call, no extra tokens: the context moves on};}
   \atstage{3}{
-    \node[badverd, anchor=west] at (0.15,1.1) {the paid order and its due date fell out of the window};
-    \node[verd, anchor=west] at (0.15,0.55) {the cheapest strategy forgets the oldest commitment first};
+    \node[badverd, anchor=base west, inner sep=0pt] at (0.225,0.692) {the paid order and its due date dropped out of the context};
+    \node[verd, anchor=base west, inner sep=0pt] at (0.225,0.262) {the cheapest strategy forgets the oldest commitment first};
   }
 \end{tikzpicture}

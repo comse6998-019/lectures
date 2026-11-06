@@ -1,84 +1,110 @@
-% one-call: what one model call receives, what its decision needs, and what the whole run costs (Segment 5, one slide).
-% Canvas 16.5 x 6.0 cm. Three stages, in the manner of lecture 5's context-poisoning and cost-harvesting figures.
-% Stage 1: reveal the records that exist (left band) and the call's context built from a selection of them: instructions and
-%          tool definitions, the history so far, the selected ledger line. The window meter shows the input and the room
-%          left for the output. Older sessions stay outside.
-% Stage 2: reveal the call. The model reads the context and proposes the next action, order more SKU-A or wait. Under the
-%          action, what that decision needs from the context: the paid order, its meaning intact, a route back to the ledger.
-% Stage 3: reveal the run meter. Every call sends the context again, so tokens, time and charges add up over the run.
-% Illustrative, not from a source: the records, the token numbers and the number of calls. The task is the Vending-Bench
-% vending business (Andon Labs, 2025); the ledger and log lines are the course's teaching case.
+% one-call: what one model call receives, what its decision needs, and what the whole run costs (Slide 5.1).
+% Canvas 16.5 x 5.75 cm. Three stages, in the manner of lecture 5's context-poisoning and cost-harvesting figures.
+% Stage 1: reveal the records that exist and the call's context: instructions, history, the selected ledger line, the window meter.
+% Stage 2: reveal the call: the model decides the next action, which needs the paid order, its meaning intact and a route to the ledger.
+% Stage 3: reveal the run meter: the context is sent again on every call, so the tokens billed add up across the run.
+% Ghosts reserve the model and the run meter on stages 1 and 2. The selected chip is navy on stage 1 and grey from stage 2 on,
+% when the three needs arrive in navy. The band and the panel share their top and bottom edges, their rows share one height and
+% a 2 mm gap, and each frame has 2 mm of padding on every side (measured under the tab at the top). The run meter starts under
+% the panel's left edge, so the gap between its label box and the bar matches the gap between the band and the panel.
+% Illustrative, not from a source: the records, the token numbers and the number of calls. The window meter is drawn to scale
+% (80k of 128k). The run meter has equal steps because the same context goes out on every call. The task is the Vending-Bench
+% vending business (Andon Labs, 2025); the ledger and log lines are the course's teaching case, with the empty shelf on Days 2
+% and 3 as in dropped-order and structured-notes. Left out on purpose: time and charges, which the speaker notes carry, and a
+% label on connector 1, whose target already opens with "selected:".
 \begin{tikzpicture}
-  \canvas{16.5}{6.0}
-  \def\Xa{3.6}\def\Xb{16.25}       % the run meter
-  \def\yBlo{0.45}\def\yBhi{0.95}
-  \tikzset{rec/.style={rnode, anchor=north west, text width=40mm, align=left, font=\sffamily\footnotesize}}
-  % ---- the records that exist: the left band
+  \frenchspacing  % one space after a colon
+  \canvas{16.5}{5.75}
+  \def\yT{5.5}                    % top edge of the band and the panel; both tabs sit on it
+  \def\xP{4.796}                  % left edge of the panel and of the run meter, 8 mm right of the band
+  \def\xV{4.396}                  % connector 1 runs down the middle of that gap
+  \def\yMlo{0.45}\def\yMhi{0.95}  % the run meter
+  \def\xMe{12.73}                 % its right end, 3 mm left of the verdict
+  \tikzset{
+    row/.style={anchor=north west, align=flush left, font=\sffamily\footnotesize, inner ysep=2pt, minimum height=7.6mm},
+    rec/.style={rnode, row, text width=33mm},
+    cslot/.style={gnode, row, text width=39.2mm},
+    call/.style={minimum width=12mm, minimum height=9.5mm},
+    need/.style={gnode, anchor=north, text width=27.5mm, align=flush center, font=\sffamily\footnotesize, inner ysep=2pt,
+                 minimum height=5.5mm, draw=deckNavy, line width=1pt, outer sep=0.2pt},
+    bold/.style={font=\sffamily\footnotesize\bfseries, inner sep=0pt},
+    tick lab/.style={font=\sffamily\footnotesize, inner sep=0pt, anchor=base},
+    meter box/.style={gnode, font=\sffamily\footnotesize, text width=37mm, align=flush center, inner ysep=2pt,
+                      minimum height=5mm, anchor=west},
+  }
+  % ---- the records that exist: the left band, four rows 2 mm apart
+  \node[rec] (ledger) at (0.2,\yT-0.41) {\texttt{inventory-ledger}, Day 1\\ 10 SKU-A paid, due Day 4};
+  \node[rec] (log) at ([yshift=-2mm]ledger.south west) {\texttt{ops-log}, Days 2 and 3\\ shelf empty, no sales};
+  \node[rec] (fees) at ([yshift=-2mm]log.south west) {\texttt{fees-and-prices}\\ the daily fee, the price list};
+  \node[ghost, row, text width=33mm] (old) at ([yshift=-2mm]fees.south west) {older sessions: outside};
+  \path (ledger.east) ++(0.2,0) coordinate (bandE) (old.south) ++(0,-0.2) coordinate (bandS);
   \begin{scope}[on background layer]
-    \fill[band] (0,1.28) rectangle (4.7,5.75);
+    \fill[band] (0,0 |- bandS) rectangle (bandE |- 0,\yT);
   \end{scope}
-  \node[tab] at (2.35,5.75) {the records that exist};
-  \node[rec] (ledger) at (0.2,5.3) {\texttt{inventory-ledger}, Day 1\\ 10 SKU-A paid, due Day 4};
-  \node[rec] (log) at (0.2,4.22) {\texttt{ops-log}, Days 1 to 3\\ shelf empty, no sales};
-  \node[rec] (fees) at (0.2,3.14) {\texttt{fees-and-prices}\\ the daily fee, the price list};
-  \node[ghost, anchor=north west, text width=40mm, align=left, font=\sffamily\footnotesize] (old) at (0.2,2.06) {older sessions: outside};
-  % ---- the call's context: the blue panel in the middle
-  \node[mnode, anchor=south west, minimum width=48mm, minimum height=41mm] (ctx) at (5.2,1.65) {};
-  \node[tab] at (ctx.north) {the call's context};
-  \node[slot, anchor=north west, text width=42mm] (r1) at (5.35,5.3) {\textbf{instructions:} the system prompt and the tool definitions};
-  \node[slot, anchor=north west, text width=42mm] (r2) at (5.35,4.37) {\textbf{history:} the messages and tool results so far};
-  \node[okchip, anchor=north west, text width=42mm] (r3) at (5.35,3.44) {\textbf{selected:} the ledger line\\ 10 SKU-A paid, due Day 4};
-  \node[kick, anchor=west] at (5.35,2.38) {window: 128k tokens (illustrative)};
-  \draw[lane, fill=white] (5.35,1.8) rectangle (9.85,2.15);
+  \node[tab] at ($(0,\yT)!0.5!(bandE |- 0,\yT)$) {the records that exist};
+  % ---- the call's context: the blue panel, its rows level with the records
+  \node[cslot] (r1) at (\xP+0.2,\yT-0.41) {\textbf{instructions:} the system\\ prompt and the tool definitions};
+  \node[cslot] (r2) at ([yshift=-2mm]r1.south west) {\textbf{history:} the messages and\\ tool results so far};
+  \ifnum\stage<2 \def\chipink{deckNavy}\else\def\chipink{ibmfg!60}\fi  % the selection settles once the call arrives
+  \node[cslot, draw=\chipink, line width=1pt, outer sep=0.2pt] (r3) at ([yshift=-2mm]r2.south west)
+    {\textbf{selected:} the ledger line\\ 10 SKU-A paid, due Day 4};
+  \node[kick, anchor=north west] (win) at ([yshift=-2mm]r3.south west) {window: 128k tokens};
+  % the window meter: the input fill is 80/128 of the bar, and the bar ends level with the ghost row of the band
+  \path (win.south -| r1.west) ++(0,-0.1) coordinate (mNW) (old.south -| r1.east) coordinate (mSE);
+  \path ($(mNW)!0.625!(mNW -| mSE)$) coordinate (mSplit) ($(mNW)!0.5!(mSE)$) coordinate (winC);
+  \draw[lane, fill=white] (mNW) rectangle (mSE);
   \begin{scope}
-    \clip[rounded corners=2pt] (5.35,1.8) rectangle (9.85,2.15);
-    \fill[deckNavy] (5.35,1.8) rectangle (8.2,2.15);
+    \clip[rounded corners=2pt] (mNW) rectangle (mSE);
+    \fill[deckNavy] (mNW) rectangle (mSplit |- mSE);
   \end{scope}
-  \draw[lane] (5.35,1.8) rectangle (9.85,2.15);
-  \node[font=\sffamily\footnotesize\bfseries, text=white, anchor=east, inner sep=0pt] at (8.1,1.975) {input 80k};
-  \node[kick, anchor=west, font=\sffamily\scriptsize] at (8.3,1.975) {output};
-  % ---- stage 1: the selection
-  \draw[flow] (ledger.east) -- ++(0.35,0) |- (r3.west);
-  \node[evnum] at (4.83,3.9) {1};
-  % ---- stage 2: the call and the decision
-  \onlystage{1}{
-    \node[ghostbox, minimum width=18mm, minimum height=8mm, text=ibmfg!50, font=\sffamily\small] (model) at (12.1,5.15) {model};
-  }
+  \draw[lane] (mNW) rectangle (mSE);
+  \node[bold, text=white, anchor=base east] at ($(mSplit |- winC)+(-0.12,-0.1)$) {input 80k};
+  \node[kick, anchor=base west] at ($(mSplit |- winC)+(0.12,-0.1)$) {output};
+  \path (r1.east) ++(0.2,0) coordinate (ctxE);
+  \begin{scope}[on background layer]
+    \node[mnode, inner sep=0pt, fit={(\xP,0 |- bandS) (ctxE |- 0,\yT)}] (ctx) {};
+  \end{scope}
+  \node[tab] at (ctx.center |- 0,\yT) {the call's context};
+  % ---- connector 1: the ledger line is selected into the context
+  \draw[flow] (ledger.east) -| (\xV,0 |- r3.west) -- (r3.west);
+  \node[evnum] at ($(\xV,0 |- ledger.east)!0.5!(\xV,0 |- r3.west)$) {1};
+  % ---- stage 2: the call and the decision. The decision is placed on every stage and drawn from stage 2,
+  % so the ghost model of stage 1 stands where the model will stand.
+  \path (ctx.east |- r1.east) coordinate (ctxR);
+  \ifnum\stage<2 \def\decop{0}\else\def\decop{1}\fi
+  \node[gnode, call, anchor=east, text width=27.5mm, align=flush center, opacity=\decop] (dec) at (16.45,0 |- ctxR)
+    {next action\\ order more SKU-A?};
+  \path ($(ctxR)!0.5!(dec.west)$) coordinate (mC);
+  \onlystage{1}{\node[gnode, ghostbox, call, text=ibmfg!50] (model) at (mC) {model};}
   \atstage{2}{
-    \node[mnode, minimum width=18mm, minimum height=8mm] (model) at (12.1,5.15) {model};
-    \draw[flow] (ctx.east |- model) -- (model.west);
-    \node[evnum] at ($(ctx.east |- model)!0.5!(model.west)$) {2};
-    \node[lab, fill=none, anchor=south] at ($(ctx.east |- model)!0.5!(model.west)+(0,0.28)$) {one call};
-    \node[gnode, minimum width=26mm, align=center] (dec) at (12.1,3.6) {next action\\ order more SKU-A?};
-    \draw[flow] (model.south) -- (dec.north);
-    \node[evnum] at ($(model.south)!0.5!(dec.north)$) {3};
-    \node[lab, fill=none, anchor=west] at ($(model.south)!0.5!(dec.north)+(0.3,0)$) {decides};
-    \node[slot, anchor=north, text width=30mm, align=center, inner ysep=1.5pt, minimum height=4.5mm] (n1) at (12.1,2.75) {the paid order};
-    \node[slot, anchor=north, text width=30mm, align=center, inner ysep=1.5pt, minimum height=4.5mm] (n2) at (12.1,2.17) {meaning intact};
-    \node[slot, anchor=north, text width=30mm, align=center, inner ysep=1.5pt, minimum height=4.5mm] (n3) at (12.1,1.59) {a route to the ledger};
+    \node[mnode, call] (model) at (mC) {model};
+    \draw[flow] (ctxR) -- (model.west);
+    \node[evnum] (e2) at ($(ctxR)!0.5!(model.west)$) {2};
+    \node[lab, fill=none, anchor=south] at ($(e2.north)+(0,0.04)$) {one call};
+    \draw[flow] (model.east) -- (dec.west);
+    \node[evnum] (e3) at ($(model.east)!0.5!(dec.west)$) {3};
+    \node[lab, fill=none, anchor=south] at ($(e3.north)+(0,0.04)$) {decides};
+    \node[need] (n1) at ([yshift=-6mm]dec.south) {the paid order};
+    \node[need] (n2) at ([yshift=-2mm]n1.south) {meaning intact};
+    \node[need] (n3) at ([yshift=-2mm]n2.south) {a route to the ledger};
     \draw[flow] (dec.south) -- (n1.north);
-    \node[lab, fill=none, anchor=west] at (12.45,2.9) {it needs};
+    \node[lab, fill=none, anchor=west] at ($(dec.south)!0.5!(n1.north)+(0.25,0)$) {it needs};
   }
-  % ---- stage 3: across the run
-  \node[gnode, minimum width=29mm, minimum height=10mm, anchor=east, align=center, font=\sffamily\footnotesize] at (3.4,0.7) {tokens billed\\ across the run};
+  % ---- stage 3: the run meter, reserved as ghosts on stages 1 and 2
   \ifnum\stage<3
-    \draw[ghostbox] (\Xa,\yBlo) rectangle (\Xb,\yBhi);
-    \node[kick, anchor=west] at (\Xa+0.15,0.7) {across the run};
-  \fi
-  \atstage{3}{
-    \draw[lane, fill=white] (\Xa,\yBlo) rectangle (\Xb,\yBhi);
-    \begin{scope}
-      \clip[rounded corners=2pt] (\Xa,\yBlo) rectangle (\Xb,\yBhi);
-      \fill[deckNavy] (\Xa,\yBlo) rectangle (12.4,\yBhi);
-    \end{scope}
-    \draw[lane] (\Xa,\yBlo) rectangle (\Xb,\yBhi);
-    \foreach \x/\k in {4.0/1, 5.0/2, 6.2/3, 7.6/4, 9.2/5}{
-      \fill[ibmblue] (\x,\yBhi) circle (0.065);
-      \node[small lab, anchor=south, font=\sffamily\scriptsize] at (\x,\yBhi+0.08) {call \k};
+    \node[meter box, ghostbox, text=ibmfg!50] (billed) at (0,\yMlo/2+\yMhi/2) {tokens billed across the run};
+    \draw[ghostbox] (\xP,\yMlo) rectangle (\xMe,\yMhi);
+  \else
+    \node[meter box] (billed) at (0,\yMlo/2+\yMhi/2) {tokens billed across the run};
+    \fill[deckNavy, rounded corners=2pt] (\xP,\yMlo) rectangle (\xMe,\yMhi);
+    \node[bold, text=white] at ($(\xP,\yMlo)!0.5!(\xMe,\yMhi)$) {the context is sent again on every call};
+    \foreach \k in {1,...,5}{
+      \pgfmathsetmacro\xk{\xP+\k*(\xMe-\xP)/6}
+      \fill[ibmblue] (\xk,\yMlo) circle (0.065);
+      \node[tick lab] at (\xk,0.1) {call \k};
     }
-    \node[small lab, anchor=south, font=\sffamily\scriptsize, text=deckGrey] at (10.1,\yBhi+0.08) {\dots};
-    \node[font=\sffamily\footnotesize\bfseries, text=white, anchor=east, inner sep=0pt] at (12.25,0.7) {the context is sent again on every call};
-    \node[verd, anchor=east] at (\Xb-0.1,0.7) {the run is what we pay for};
-  }
-  \node[note, anchor=north east, inner sep=0pt] at (16.4,5.93) {token counts illustrative, not to scale};
+    \node[tick lab, text=deckGrey] at ({\xP+5.5*(\xMe-\xP)/6},0.1) {\dots};
+    \node[verd, anchor=east, inner sep=0pt] at (16.45,\yMlo/2+\yMhi/2) {the run is what we pay for};
+  \fi
+  \node[note, anchor=north east, inner sep=0pt] at (16.45,\yT+0.208) {token counts illustrative};
 \end{tikzpicture}

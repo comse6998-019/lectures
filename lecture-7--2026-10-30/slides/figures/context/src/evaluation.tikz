@@ -1,46 +1,63 @@
 % evaluation: judge a context policy across the run, on five checks, then stress it (Slides 10.1 and 10.2).
-% Canvas 16.5 x 6.4 cm. Six stages: one check per stage, then the stress tests.
-% Stage 1: reveal the run lane (history, compaction, replacement, next decision) and check 1, task success.
-% Stage 2: reveal check 2, evidence: the facts, conditions and sources the decision needs.
+% Canvas 16.5 x 6.0 cm. Six stages: one check per stage, then the stress tests.
+% Stage 1: reveal the run lane (history, compaction, replacement, next decision) and check 1, task success: did it wait for the delivery?
+% Stage 2: reveal check 2, evidence: the order, the payment, the date and the source the decision needs.
 % Stage 3: reveal check 3, faithfulness: nothing added, nothing changed, nothing settled that was open.
 % Stage 4: reveal check 4, compression: the token counts, with the ratio convention stated.
 % Stage 5: reveal check 5, total work: summary calls, fetches, later calls, time and charges.
-% Stage 6: reveal the stress tests: the commitments the decisions depend on, under repeated compaction.
+% Stage 6: reveal the stress tests on the commitments the decisions depend on, then the navy line: compare task quality at a measured total cost.
+% The newest box has a 1.6 pt outline on its own stage and 0.8 pt after. Every row shares one column, 0.2 to 16.3 cm.
 % The rubric is the course's. LLMLingua-2 reports task scores with compression and latency, the precedent for
-% reporting them together. The entries are the teaching case.
+% reporting them together. The entries are the teaching case: the paid order due Day 4 (dropped-order), and the
+% 60k and 40 tokens of the abstractive summary.
 \begin{tikzpicture}
-  \canvas{16.5}{6.4}
+  \canvas{16.5}{6.0}
+  \def\yLane{5.55}  % centre of the run lane
+  \def\yBr{4.77}    % the bracket of checks
+  \def\yChk{4.37}   % top edge of the checks
+  \def\yCap{1.82}   % baseline of the stress-test caption
+  \def\yStr{1.65}   % top edge of the stress tests
+  \def\yEnd{0.17}   % baseline of the navy line and the note
   \tikzset{
-    chk/.style={gnode, draw=deckNavy, line width=0.8pt, text width=22mm, align=left, anchor=north, font=\sffamily\footnotesize, inner ysep=3pt, minimum height=20mm},
-    stress/.style={okchip, text width=32mm, anchor=north west, minimum height=10mm},
+    % one text box for every lane label (the height of h, the depth of y), so the four share one baseline
+    lanebox/.style={minimum width=28mm, minimum height=7mm, font=\sffamily\small, inner sep=4pt, align=center,
+                    text height=6.66pt, text depth=1.8pt},
+    chkframe/.style={draw=deckNavy, rounded corners=2pt, fill=white, anchor=north, inner sep=0pt, outer sep=0pt,
+                     minimum width=27.8mm, minimum height=19.9mm},
+    chktext/.style={anchor=north, text width=24.6mm, inner sep=1.6mm, outer sep=0pt, align=flush left,
+                    font=\sffamily\footnotesize},
+    stress/.style={gnode, draw=deckNavy, line width=1.6pt, anchor=north west, text width=32.925mm, inner sep=1.6mm,
+                   outer sep=0pt, minimum height=9.9mm, align=flush left, font=\sffamily\footnotesize},
   }
-  % the run lane
-  \node[rnode, minimum width=26mm] (hist) at (1.9,5.9) {the history};
-  \node[mnode, minimum width=26mm] (comp) at (6.0,5.9) {compaction};
-  \node[okchip, minimum width=26mm, align=center] (rep) at (10.1,5.9) {the replacement};
-  \node[gnode, minimum width=26mm, align=center] (dec) at (14.2,5.9) {the next decision};
+  % the run lane: four boxes of one width, three arrows of one length
+  \node[rnode, lanebox] (hist) at (1.6,\yLane) {the history};
+  \node[mnode, lanebox] (comp) at (6.0333,\yLane) {compaction};
+  \node[okchip, lanebox] (rep) at (10.4667,\yLane) {the replacement};
+  \node[gnode, lanebox] (dec) at (14.9,\yLane) {the next decision};
   \draw[flow] (hist) -- (comp); \draw[flow] (comp) -- (rep); \draw[flow] (rep) -- (dec);
-  % the bracket of checks
-  \draw[ibmfg!45, line width=0.6pt] (1.9,5.0) -- (14.5,5.0);
-  \node[kick, anchor=east] at (1.6,5.0) {inspect};
+  % the bracket of checks: five checks 27.8 mm wide, 5.5 mm apart
+  \draw[ibmfg!45, line width=0.6pt] (1.59,\yBr) -- (14.91,\yBr);
+  \node[kick, anchor=east] at (1.21,\yBr) {check};
   \newcommand{\checkbox}[4]{
-    \draw[ibmfg!45, line width=0.6pt] (#2,5.0) -- (#2,4.6);
-    \node[chk] (c#1) at (#2,4.6) {\textbf{#3}\\ #4};
-    \node[evnum] at (#2,5.0) {#1};
+    \draw[ibmfg!45, line width=0.6pt] (#2,\yBr) -- (#2,\yChk);
+    \ifnum\stage=#1 \def\chkline{1.6pt}\else\def\chkline{0.8pt}\fi
+    \node[chkframe, line width=\chkline] (c#1) at (#2,\yChk) {};
+    \node[chktext] (t#1) at (#2,\yChk) {\strut\textbf{#3}\\ #4\strut};
+    \node[evnum] at (#2,\yBr) {#1};
   }
-  \checkbox{1}{1.9}{task success}{did it wait for Day 4?}
-  \atstage{2}{\checkbox{2}{5.05}{evidence}{the order, the payment, the date, the source?}}
-  \atstage{3}{\checkbox{3}{8.2}{faithfulness}{nothing added, nothing changed, nothing settled that was open?}}
-  \atstage{4}{\checkbox{4}{11.35}{compression}{60k to 40 tokens, ratio convention stated}}
-  \atstage{5}{\checkbox{5}{14.5}{total work}{summary calls, fetches, later calls, time, charges}}
-  % stage 6: the stress tests
+  \checkbox{1}{1.59}{task success}{did it wait for the delivery?}
+  \atstage{2}{\checkbox{2}{4.92}{evidence}{the order, the payment, the date, the source?}}
+  \atstage{3}{\checkbox{3}{8.25}{faithfulness}{nothing added, nothing changed, nothing settled that was open?}}
+  \atstage{4}{\checkbox{4}{11.58}{compression}{60k to 40 tokens, ratio convention stated}}
+  \atstage{5}{\checkbox{5}{14.91}{total work}{summary calls, fetches, later calls, time, charges}}
+  % stage 6: the stress tests, four boxes 36.1 mm wide, 5.5 mm apart
   \atstage{6}{
-    \node[capt, anchor=south west] at (0.6,2.25) {stress tests: the commitments the decisions depend on};
-    \node[stress] at (0.6,2.1) {a delivery that lands after the next compaction};
-    \node[stress] at (4.55,2.1) {the daily fee, every day};
-    \node[stress] at (8.5,2.1) {a revised date, with its source};
-    \node[stress] at (12.45,2.1) {the same order through two compactions};
-    \node[verd, anchor=west] at (0.6,0.55) {compare task quality at a measured total cost};
+    \node[capt, anchor=base west] (cap) at (0.2,\yCap) {stress tests: the commitments the decisions depend on};
+    \node[stress] (s1) at (0.2,\yStr) {\strut a delivery that lands after the next compaction\strut};
+    \node[stress] (s2) at (4.3625,\yStr) {\strut the daily fee, every day\strut};
+    \node[stress] (s3) at (8.525,\yStr) {\strut a revised date, with its source\strut};
+    \node[stress] (s4) at (12.6875,\yStr) {\strut the same order through two compactions\strut};
+    \node[verd, anchor=base west, inner sep=0pt] (navy) at (0.2,\yEnd) {compare task quality at a measured total cost};
   }
-  \node[note, anchor=south east, inner sep=0pt] at (16.4,0.45) {rubric and entries: the course's};
+  \node[note, anchor=base east, inner sep=0pt] (scope) at (16.3,\yEnd) {the course's rubric, on the teaching case};
 \end{tikzpicture}

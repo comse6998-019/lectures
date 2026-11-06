@@ -1,49 +1,65 @@
 % retrieval: keep a reference in the context and fetch the line from a store outside when needed (Slide 7.4f).
-% Canvas 16.5 x 6.0 cm. Three stages.
-% Stage 1: reveal the context with a reference instead of the line, and the store outside the window.
-% Stage 2: reveal the fetch: the reference points at line 17, the line comes back into the context.
-% Stage 3: reveal the failure: after a cleanup the store renumbered its lines, so the reference is stale (rose).
-%          Retrieval scales past any window while the reference stays valid (navy).
-% Illustrative, not from a source: the store, the line numbers and the cleanup. Retrieval in general is the RAG line
-% (Lewis et al., NeurIPS 2020); Claude Code's re-read of recent files is a bounded form (Slide 7.5b).
+% Canvas 16.5 x 4.9 cm. Three stages.
+% Stage 1: reveal the call's context, with a 15-token reference (store#17) where the line would be, and the store of the run's history outside the context. A ghost marks where the fetched line will go.
+% Stage 2: reveal the fetch: the reference names #17, and the line comes back into the context word for word.
+% Stage 3: reveal the stale reference (rose): a cleanup dropped the price list line and renumbered the store, so #17 returns the Day 2 shelf line while the paid order sits at #16. Retrieval scales past any window while the reference stays valid (navy).
+% Both panels have 3.5 mm padding on every side and the same stack: four one-line boxes, one grey line, 1.5 mm gaps.
+% The reference and row #17 share one centre line, so the fetch is one straight arrow.
+% The store is the run's history (order and shelf lines alike), so the reference names the store (store#17) and the
+% store gives no line count. Delegation's 400-line inventory-ledger is a different record.
+% Illustrative, not from a source: the store, its lines and their numbers, the cleanup, and the counts. Retrieval in
+% general is the RAG line (Lewis et al., NeurIPS 2020). Claude Code's re-read of recent files is a bounded form (Slide 7.5b).
 \begin{tikzpicture}
-  \canvas{16.5}{6.0}
-  \tikzset{row/.style={slot, text width=64mm, anchor=north west, font=\ttfamily\scriptsize}}
-  % the context
-  \node[mnode, anchor=south west, minimum width=52mm, minimum height=42mm] (ctx) at (0.2,1.2) {};
-  \node[tab] at (ctx.north) {the call's context};
-  \node[slot, anchor=north west, text width=46mm] at (0.35,5.05) {history: 30k tokens so far};
-  \node[okchip, anchor=north west, text width=46mm] (ref) at (0.35,4.38) {ref: the SKU-A order, \texttt{ledger\#17}};
-  \node[kick, anchor=north west, text width=46mm] at (0.35,3.58) {15 tokens stand in for the line};
-  % the store
-  \node[rnode, anchor=south west, minimum width=72mm, minimum height=42mm] (store) at (8.8,1.2) {};
-  \node[tab] at (store.north) {the store, outside the window};
-  \node[row] (l16) at (8.95,5.05) {\#16 Day 1 price list posted};
-  \beforestage{3}{\node[row, draw=deckNavy, line width=0.8pt] (l17) at (8.95,4.43) {\#17 Day 1 10 SKU-A paid, due Day 4};}
-  \atstage{3}{\node[row, chip, font=\ttfamily\scriptsize, minimum height=5.5mm] (l17) at (8.95,4.43) {\#17 Day 2 shelf empty, no sales};}
-  \node[row] (l18) at (8.95,3.81) {\#18 Day 2 shelf empty, no sales};
-  \node[row] (l19) at (8.95,3.19) {\#19 Day 3 shelf empty, no sales};
-  \node[kick, anchor=north west] at (8.95,2.55) {400 lines, 60k tokens};
-  % stage 2: fetch and return
+  \canvas{16.5}{4.9}
+  \tikzset{
+    cbox/.style={anchor=north west, text width=51mm, inner xsep=4pt, inner ysep=2pt, minimum height=5.5mm,
+                 outer sep=0pt, align=flush left, font=\sffamily\footnotesize},
+    row/.style={slot, cbox, font=\ttfamily\footnotesize},
+    panel/.style={anchor=south west, minimum width=60.822mm, minimum height=38.34mm, outer sep=0pt},
+    ptab/.style={tab, text height=6.8pt, text depth=1.6pt},
+  }
+  % the call's context: four boxes and the reference's cost
+  \node[mnode, panel] (ctx) at (0.2,0.72) {};
+  \node[ptab] at (ctx.north) {the call's context};
+  \node[slot, cbox] (sys) at (0.55,4.204) {\strut system prompt and tools};
+  \node[okchip, cbox] (ref) at (0.55,3.504) {\strut ref: the SKU-A order, \texttt{store\#17}};
+  \node[kick, anchor=north west] at (0.55,2.854) {\strut 15 tokens in the context, 60k in the store};
+  \node[slot, cbox] (recent) at (0.55,2.32) {\strut recent messages: 30k tokens};
+  \onlystage{1}{\node[ghostbox, cbox, text=ibmfg!50] (gotghost) at (0.55,1.62) {\strut the fetched line};}
+  % the store: four numbered lines. On stage 3 a cleanup drops the price list line and renumbers the rest.
+  \node[rnode, panel] (store) at (10.2178,0.72) {};
+  \node[ptab] at (store.north) {the store, outside the context};
+  \ifnum\stage<3
+    \node[row] (l16) at (10.5678,4.204) {\strut\#16 Day 1 price list posted};
+    \node[row, draw=deckNavy, line width=0.8pt] (l17) at (10.5678,3.504) {\strut\#17 Day 1 10 SKU-A paid, due Day 4};
+    \node[row] (l18) at (10.5678,2.804) {\strut\#18 Day 2 shelf empty, no sales};
+    \node[row] (l19) at (10.5678,2.104) {\strut\#19 Day 3 shelf empty, no sales};
+  \else
+    \node[row, draw=deckNavy, line width=0.8pt] (l16) at (10.5678,4.204) {\strut\#16 Day 1 10 SKU-A paid, due Day 4};
+    \node[row, draw=deckRose, fill=deckRose!10, line width=1pt] (l17) at (10.5678,3.504) {\strut\#17 Day 2 shelf empty, no sales};
+    \node[row] (l18) at (10.5678,2.804) {\strut\#18 Day 3 shelf empty, no sales};
+    \node[row] (l19) at (10.5678,2.104) {\strut\#19 Day 4 shelf empty, no sales};
+  \fi
+  \node[kick, anchor=north west] at (10.5678,1.404) {\strut illustrative store: the history, 60k tokens};
+  % stage 2: the fetch and the line that comes back
   \atstage{2}{
-    \draw[flow] (ref.east) -- ++(0.6,0) |- ([yshift=1.2mm]l17.west);
-    \node[evnum] at (6.2,4.275) {1};
-    \node[lab, fill=none, anchor=south] at (7.3,4.42) {fetch \#17};
+    \draw[flow] ([yshift=1.2mm]ref.east) -- ([yshift=1.2mm]l17.west);
+    \node[evnum] at (6.85,3.349) {1};
+    \node[lab, fill=none, anchor=south] at (8.55,3.43) {fetch \texttt{\#17}};
     \beforestage{3}{
-      \node[okchip, anchor=north west, text width=46mm] (got) at (0.35,3.1) {fetched: ordered 10 SKU-A, paid, due Day 4};
-      \draw[back] ([yshift=-1.2mm]l17.west) -- ++(-0.6,0) |- (got.east);
-      \node[evnum] at (6.2,2.66) {2};
-      \node[lab, fill=none, anchor=north] at (7.3,2.38) {the line comes back};
+      \node[okchip, cbox] (got) at (0.55,1.62) {\strut fetched: Day 1 10 SKU-A paid, due Day 4};
+      \draw[back] ([yshift=-1.2mm]l17.west) -| (9.95,1.345) -- (got.east);
+      \node[evnum] at (6.85,1.345) {2};
+      \node[lab, fill=none, anchor=north] at (8.55,1.245) {the line comes back};
     }
   }
   % stage 3: the stale reference
   \atstage{3}{
-    \node[chip, anchor=north west, text width=46mm] (got) at (0.35,3.1) {fetched: Day 2 shelf empty, no sales};
-    \draw[badflow, dashed] ([yshift=-1.2mm]l17.west) -- ++(-0.6,0) |- (got.east);
-    \node[badnum] at (6.2,2.66) {2};
-    \node[badlab, fill=none, anchor=north] at (7.3,2.38) {the wrong line};
-    \node[badverd, anchor=west] at (8.95,1.9) {a cleanup renumbered the store: \texttt{\#17} is stale};
-    \node[verd, anchor=west] at (0.35,0.75) {it scales past any window while the reference stays valid};
+    \node[chip, cbox] (got) at (0.55,1.62) {\strut fetched: Day 2 shelf empty, no sales};
+    \draw[badflow, dashed] ([yshift=-1.2mm]l17.west) -| (9.95,1.345) -- (got.east);
+    \node[badnum] at (6.85,1.345) {2};
+    \node[badlab, fill=none, anchor=north] at (8.55,1.245) {the wrong line};
+    \node[verd, anchor=base west, inner sep=0pt] at (0.2,0.2) {it scales past any window while the reference stays valid};
+    \node[badverd, anchor=base west, inner sep=0pt] at (10.2178,0.2) {a cleanup renumbered the store: \texttt{\#17} is stale};
   }
-  \node[note, anchor=north east, inner sep=0pt] at (16.4,5.95) {illustrative store};
 \end{tikzpicture}
