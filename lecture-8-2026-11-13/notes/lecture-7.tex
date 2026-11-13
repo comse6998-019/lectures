@@ -1,0 +1,63 @@
+%% Lecture 7 lecture notes: COMS E6998-019, Designing Production Agentic Systems.
+%% Written by slides/tools/notes-doc.py from the speaker notes of lecture7.pptx (slides/slides.primer.json and
+%% slides/slides.part2.json); edit the speaker notes in slides/content-primer.py or slides/content-part2.py and run the
+%% script again. Build: make (tectonic).
+
+\documentclass[10pt]{extarticle}
+\usepackage[margin=2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,etoolbox,ragged2e,parskip}
+\usepackage{graphicx,caption,booktabs,amsmath,amssymb}
+\usepackage[most]{tcolorbox}
+\usepackage[colorlinks,linkcolor=violet,citecolor=violet,urlcolor=violet]{hyperref}
+\usepackage[noabbrev,nameinlink,capitalise]{cleveref}
+\usepackage{tabularx,array,enumitem}
+\usepackage[section]{placeins}   % floats never cross into the next section
+\makeatletter\g@addto@macro{\UrlBreaks}{\do\-}\makeatother
+\captionsetup{font=footnotesize}
+\graphicspath{{../slides/figures/}}
+\renewcommand\tabularxcolumn[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\setlength{\tabcolsep}{3pt}
+\setlist{nosep, leftmargin=*}
+\setlength{\emergencystretch}{3em}
+\setlist[enumerate]{label=\arabic*.}
+\newcommand{\bi}{\begin{itemize}}
+\newcommand{\ei}{\end{itemize}}
+\newcommand{\be}{\begin{enumerate}}
+\newcommand{\ee}{\end{enumerate}}
+\definecolor{deckRose}{HTML}{C73561}
+%% the closing box of a slide, in the deck's magenta tint
+\newtcolorbox{takeaway}{enhanced, colback=deckRose!8, colframe=deckRose, boxrule=0.5pt, arc=2pt, left=6pt, right=6pt,
+  top=3pt, bottom=3pt, fontupper=\bfseries\color{deckRose}, before skip=6pt, after skip=10pt}
+
+\title{Designing Production Agentic Systems\\Lecture 7: OpenShell architecture, and context and compaction}
+\author{Rahul Krishna\\Columbia University, COMS E6998-019, Fall 2026}
+\date{Draft of November 6, 2026, from the speaker notes of the lecture of November 6, 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+These notes collect the speaker notes of Lecture 7, one part for each half of the lecture: OpenShell architecture, then Context and compaction. Each part opens with the note of its route slide.
+\end{abstract}
+\tableofcontents
+
+\part{OpenShell architecture}
+Introduce the OpenShell refresher. Lecture 6 worked with OpenShell 0.1.4, and some students missed it. This part follows NVIDIA's architecture page for the current release, documentation version v0.1.7, in its five sections: what each piece does, the sandbox boundary, the path of a network request, how each runtime builds the boundary, and how the components authenticate. The slides condense the page's text and reveal its four figures one part per click. The notes keep the page's own wording. Source: NVIDIA, OpenShell Developer Guide, ``Architecture'', documentation version v0.1.7, read on November 6, 2026 (\url{https://docs.nvidia.com/openshell/v0.1.7/about/architecture}).
+
+\input{sections/p1-01-what-each-piece-does.tex}
+\input{sections/p1-02-inside-the-sandbox-boundary.tex}
+\input{sections/p1-03-how-a-network-request-travels.tex}
+\input{sections/p1-04-how-each-runtime-builds-the-boundary.tex}
+\input{sections/p1-05-how-components-authenticate.tex}
+
+\part{Context and compaction}
+Part II follows one question: what information must survive so that the agent can take its next useful step? Its first slide introduces the running example, the course's teaching case, in which an agent runs a vending-machine business and pays on Day 1 for 10 units of SKU-A due on Day 4, and most of its figures follow that run. We first define what the context of one model call must do, map the research on long context and look at one experiment on how models use long inputs. We then survey the strategies that manage context, the formats of three real harnesses and the tools LangGraph supplies, measure how long agents' tasks have grown, follow the long run, design a compaction policy for it, and evaluate the policy.
+
+\input{sections/01-what-context-must-do-and-the-evidence.tex}
+\input{sections/02-strategies-and-harness-formats.tex}
+\input{sections/03-what-a-long-horizon-demands.tex}
+\input{sections/04-compaction-as-a-design-procedure.tex}
+\input{sections/05-evaluating-a-context-policy.tex}
+\input{sections/90-backup-ruler.tex}
+\input{sections/91-reading-list.tex}
+\end{document}
