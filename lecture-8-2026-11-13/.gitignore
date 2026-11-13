@@ -2,6 +2,3 @@ drafts
 slides
 *.MD
 *.md
-
-# Reference book (Kubernetes in Action): keep out of the public repo
-Kubernetes in Action*.pdf

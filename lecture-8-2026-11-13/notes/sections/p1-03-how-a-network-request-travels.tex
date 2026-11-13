@@ -1,0 +1,51 @@
+\section{How a network request travels}
+\label{sec:row-p1-2}
+
+Now one request, from the agent's connect call to the upstream service.
+
+\subsection{Every request leaves through the supervisor}
+\label{sec:it-os-3-1}
+
+\bi
+\item \textbf{1.} The agent opens a TCP connection or makes a DNS lookup.
+\item \textbf{2.} The sandbox identifies the calling program.
+\item \textbf{3.} The request travels over the Sandbox Protocol to the supervisor.
+\item \textbf{4.} The supervisor checks it against policy and adds allowed credentials.
+\item \textbf{5.} If allowed, the supervisor opens the real connection and relays traffic.
+\ei
+
+These are the page's five steps of a network request, one per click.
+
+The mediated channel to the supervisor is the workload's only allowed egress path. The outer fence denies everything else, so the agent can't reach a service, the gateway, DNS, or another private address directly.
+
+The figure is NVIDIA's own, from the same page, under the Apache-2.0 license. Its text is unchanged, and the slide reveals it one part per click. Source: NVIDIA, OpenShell Developer Guide, ``Architecture'', documentation version v0.1.7, read on November 6, 2026 (\url{https://docs.nvidia.com/openshell/v0.1.7/about/architecture}).
+
+The figure is \cref{fig:os-enforcement-4} of \cref{sec:it-os-2-1}.
+
+\paragraph{The figure, stage by stage.}
+\be
+\item The enforcement figure of the section ``Inside the sandbox boundary'', complete. Its arrows follow the request: arrow 1 is steps 1 and 2 (the agent's request, and the sandbox identifying the program), arrow 2 is step 3 (the Sandbox Protocol), arrow 3 is step 4 (policy enforcement adds credentials), and arrow 4 is step 5 (the real connection to the upstream service).
+\ee
+
+\begin{takeaway}The outer fence denies every other path, so the agent can't reach any address directly.\end{takeaway}
+
+\subsection{The supervisor relays the agent's traces itself}
+\label{sec:it-os-3-2}
+
+\bi
+\item \textbf{The trace relay:} when an operator enables it, the sandbox points the agent's OpenTelemetry SDK at the reserved address \texttt{192.0.0.8:4318}.
+\item \textbf{The supervisor} answers those connections itself, tags each trace batch with the sandbox ID and forwards it to the operator's collector.
+\item \textbf{The agent} never learns the collector's address and needs no egress rule to reach it.
+\ei
+
+When an operator enables the agent trace relay, the sandbox points the agent's OpenTelemetry SDK at the reserved address 192.0.0.8:4318. Connections to it take the same mediated channel, but the supervisor answers them itself instead of opening an upstream connection. It tags each trace batch with the sandbox ID and forwards it to the operator's collector. The agent never learns the collector's address and needs no egress rule to reach it.
+
+Source: NVIDIA, OpenShell Developer Guide, ``Architecture'', documentation version v0.1.7, read on November 6, 2026 (\url{https://docs.nvidia.com/openshell/v0.1.7/about/architecture}).
+
+\begin{takeaway}Traces travel the mediated channel and open no new path out of the sandbox.\end{takeaway}
+
+\subsection*{Key points}
+\bi
+\item The outer fence denies every other path, so the agent can't reach any address directly.
+\item Traces travel the mediated channel and open no new path out of the sandbox.
+\ei

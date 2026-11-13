@@ -1,0 +1,227 @@
+\section{Reading list}
+\label{sec:reading}
+
+The reading list maps the research the lecture draws on, in the seven groups of the deck's backup tables. Rows run by first public release, and the full references follow each table.
+
+\subsection{Reading on long-context evaluation}
+\label{sec:it-R-eval}
+
+\begin{center}\footnotesize
+\begin{tabularx}{\linewidth}{L{0.26\linewidth}L{0.2\linewidth}X}
+\toprule
+\textbf{Work} & \textbf{Venue} & \textbf{Contribution} \\
+\midrule
+Shi et al. & ICML 2023 & Irrelevant sentences cut math accuracy \\
+Passkey retrieval & NeurIPS 2023 & A passkey hidden in long filler text \\
+Lost in the Middle & TACL 2024 & Accuracy is often lowest with mid-input evidence \\
+LongBench & ACL 2024 & 21 datasets in six task types, English and Chinese \\
+Needle In A Haystack & GitHub, 2023 & One fact hidden at set depths in filler \\
+Same Task, More Tokens & ACL 2024 & Accuracy falls on inputs padded to 3,000 tokens \\
+RULER & COLM 2024 & Effective length below the claimed length \\
+HELMET & ICLR 2025 & Needle scores predict application scores poorly \\
+An et al. & ICLR 2025 & Rarely trained positions shorten effective length \\
+NoLiMa & ICML 2025 & Scores fall without literal overlap \\
+Context Rot & Chroma report, 2025 & Accuracy falls unevenly as input grows \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}[leftmargin=*]
+\item Shi et al.: Freda Shi et al., Large Language Models Can Be Easily Distracted by Irrelevant Context. ICML 2023. arXiv:2302.00093.
+\item Passkey retrieval: Amirkeivan Mohtashami and Martin Jaggi, Random-Access Infinite Context Length for Transformers. NeurIPS 2023 (arXiv title begins 'Landmark Attention:'). arXiv:2305.16300.
+\item Lost in the Middle: Nelson F. Liu et al., Lost in the Middle: How Language Models Use Long Contexts. TACL 2024 (vol. 12). arXiv:2307.03172.
+\item LongBench: Yushi Bai et al., LongBench: A Bilingual, Multitask Benchmark for Long Context Understanding. ACL 2024. arXiv:2308.14508.
+\item Needle In A Haystack: Greg Kamradt, Needle In A Haystack. Not a paper: GitHub test and posted runs, November 2023. \url{https://github.com/gkamradt/needle-in-a-haystack}
+\item Same Task, More Tokens: Mosh Levy, Alon Jacoby and Yoav Goldberg, Same Task, More Tokens: the Impact of Input Length on the Reasoning Performance of Large Language Models. ACL 2024. arXiv:2402.14848.
+\item RULER: Cheng-Ping Hsieh et al., RULER: What's the Real Context Size of Your Long-Context Language Models? COLM 2024. arXiv:2404.06654.
+\item HELMET: Howard Yen et al., HELMET: How to Evaluate Long-Context Language Models Effectively and Thoroughly. ICLR 2025. arXiv:2410.02694.
+\item An et al.: Chenxin An et al., Why Does the Effective Context Length of LLMs Fall Short? ICLR 2025. arXiv:2410.18745.
+\item NoLiMa: Ali Modarressi et al., NoLiMa: Long-Context Evaluation Beyond Literal Matching. ICML 2025. arXiv:2502.05167.
+\item Context Rot: Kelly Hong, Anton Troynikov and Jeff Huber, Context Rot: How Increasing Input Tokens Impacts LLM Performance. Chroma technical report, July 2025 (not peer-reviewed). \url{https://www.trychroma.com/research/context-rot}
+\end{itemize}
+
+\subsection{Reading on models and context extension}
+\label{sec:it-R-models}
+
+\begin{center}\footnotesize
+\begin{tabularx}{\linewidth}{L{0.26\linewidth}L{0.2\linewidth}X}
+\toprule
+\textbf{Work} & \textbf{Venue} & \textbf{Contribution} \\
+\midrule
+Transformer-XL & ACL 2019 & Recurrence across segments, relative positions \\
+Compressive Transformers & ICLR 2020 & Old memories compressed rather than dropped \\
+Longformer & Preprint, 2020 & Local and global attention at linear cost \\
+RoPE (RoFormer) & Neurocomputing 2024 & Rotary positions, used by most open models \\
+ALiBi & ICLR 2022 & Trained short, extrapolates to longer inputs \\
+FlashAttention & NeurIPS 2022 & Exact attention, memory linear in length \\
+Position Interpolation & Preprint, 2023 & Rescaled RoPE extends LLaMA to 32K tokens \\
+YaRN & ICLR 2024 & RoPE extension with 10x fewer training tokens \\
+Mamba & COLM 2024 & Selective state spaces in linear time \\
+Gemini 1.5 & Google report, 2024 & Windows of a million tokens and more \\
+Native Sparse Attention & ACL 2025 & Trainable sparse attention for long inputs \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}[leftmargin=*]
+\item Transformer-XL: Zihang Dai et al., Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context. ACL 2019. arXiv:1901.02860.
+\item Compressive Transformers: Jack W. Rae et al., Compressive Transformers for Long-Range Sequence Modelling. ICLR 2020. arXiv:1911.05507.
+\item Longformer: Iz Beltagy, Matthew E. Peters and Arman Cohan, Longformer: The Long-Document Transformer. Preprint, 2020. arXiv:2004.05150.
+\item RoPE (RoFormer): Jianlin Su et al., RoFormer: Enhanced Transformer with Rotary Position Embedding. Neurocomputing 2024 (vol. 568); arXiv 2021. arXiv:2104.09864.
+\item ALiBi: Ofir Press, Noah A. Smith and Mike Lewis, Train Short, Test Long: Attention with Linear Biases Enables Input Length Extrapolation. ICLR 2022. arXiv:2108.12409.
+\item FlashAttention: Tri Dao et al., FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness. NeurIPS 2022. arXiv:2205.14135.
+\item Position Interpolation: Shouyuan Chen et al., Extending Context Window of Large Language Models via Positional Interpolation. Preprint, 2023. arXiv:2306.15595.
+\item YaRN: Bowen Peng et al., YaRN: Efficient Context Window Extension of Large Language Models. ICLR 2024. arXiv:2309.00071.
+\item Mamba: Albert Gu and Tri Dao, Mamba: Linear-Time Sequence Modeling with Selective State Spaces. COLM 2024. arXiv:2312.00752.
+\item Gemini 1.5: Gemini Team, Google, Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context. Technical report, 2024. arXiv:2403.05530.
+\item Native Sparse Attention: Jingyang Yuan et al., Native Sparse Attention: Hardware-Aligned and Natively Trainable Sparse Attention. ACL 2025 (Best Paper). arXiv:2502.11089.
+\end{itemize}
+
+\subsection{Reading on the KV cache}
+\label{sec:it-R-kv}
+
+\begin{center}\footnotesize
+\begin{tabularx}{\linewidth}{L{0.26\linewidth}L{0.2\linewidth}X}
+\toprule
+\textbf{Work} & \textbf{Venue} & \textbf{Contribution} \\
+\midrule
+GQA & EMNLP 2023 & Shared key-value heads shrink the cache \\
+H2O & NeurIPS 2023 & Evicts entries by accumulated attention \\
+PagedAttention (vLLM) & SOSP 2023 & Paged cache, 2 to 4x serving throughput \\
+StreamingLLM & ICLR 2024 & Attention sinks plus a recent window \\
+SGLang & NeurIPS 2024 & Reuses cached prefixes across calls \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}[leftmargin=*]
+\item GQA: Joshua Ainslie et al., GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints. EMNLP 2023. arXiv:2305.13245.
+\item H2O: Zhenyu Zhang et al., H2O: Heavy-Hitter Oracle for Efficient Generative Inference of Large Language Models. NeurIPS 2023. arXiv:2306.14048.
+\item PagedAttention (vLLM): Woosuk Kwon et al., Efficient Memory Management for Large Language Model Serving with PagedAttention. SOSP 2023. arXiv:2309.06180.
+\item StreamingLLM: Guangxuan Xiao et al., Efficient Streaming Language Models with Attention Sinks. ICLR 2024. arXiv:2309.17453.
+\item SGLang: Lianmin Zheng et al., SGLang: Efficient Execution of Structured Language Model Programs. NeurIPS 2024. arXiv:2312.07104.
+\end{itemize}
+
+\subsection{Reading on prompt and context compression}
+\label{sec:it-R-compress}
+
+\begin{center}\footnotesize
+\begin{tabularx}{\linewidth}{L{0.26\linewidth}L{0.2\linewidth}X}
+\toprule
+\textbf{Work} & \textbf{Venue} & \textbf{Contribution} \\
+\midrule
+Wu et al. & Preprint, 2021 & Summaries of summaries cover whole books \\
+Gist tokens & NeurIPS 2023 & Prompts compressed into a few learned tokens \\
+Selective Context & EMNLP 2023 & Drops tokens with low self-information \\
+BooookScore & ICLR 2024 & Incremental against hierarchical summaries \\
+RECOMP & ICLR 2024 & Retrieved documents compressed or dropped \\
+LLMLingua & EMNLP 2023 & Budgeted token pruning, up to 20x compression \\
+LongLLMLingua & ACL 2024 & Question-aware compression of long prompts \\
+LLMLingua-2 & Findings of ACL 2024 & Token classification distilled from GPT-4 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}[leftmargin=*]
+\item Wu et al.: Jeff Wu et al., Recursively Summarizing Books with Human Feedback. Preprint, 2021 (OpenAI). arXiv:2109.10862.
+\item Gist tokens: Jesse Mu, Xiang Lisa Li and Noah Goodman, Learning to Compress Prompts with Gist Tokens. NeurIPS 2023. arXiv:2304.08467.
+\item Selective Context: Yucheng Li et al., Compressing Context to Enhance Inference Efficiency of Large Language Models. EMNLP 2023, first released as arXiv:2304.12102, April 2023. arXiv:2310.06201.
+\item BooookScore: Yapei Chang, Kyle Lo, Tanya Goyal and Mohit Iyyer, BooookScore: A systematic exploration of book-length summarization in the era of LLMs. ICLR 2024 (oral). arXiv:2310.00785.
+\item RECOMP: Fangyuan Xu, Weijia Shi and Eunsol Choi, RECOMP: Improving Retrieval-Augmented LMs with Context Compression and Selective Augmentation. ICLR 2024. arXiv:2310.04408.
+\item LLMLingua: Huiqiang Jiang et al., LLMLingua: Compressing Prompts for Accelerated Inference of Large Language Models. EMNLP 2023. arXiv:2310.05736.
+\item LongLLMLingua: Huiqiang Jiang et al., LongLLMLingua: Accelerating and Enhancing LLMs in Long Context Scenarios via Prompt Compression. ACL 2024. arXiv:2310.06839.
+\item LLMLingua-2: Zhuoshi Pan et al., LLMLingua-2: Data Distillation for Efficient and Faithful Task-Agnostic Prompt Compression. Findings of ACL 2024. arXiv:2403.12968.
+\end{itemize}
+
+\subsection{Reading on retrieval}
+\label{sec:it-R-retrieval}
+
+\begin{center}\footnotesize
+\begin{tabularx}{\linewidth}{L{0.26\linewidth}L{0.2\linewidth}X}
+\toprule
+\textbf{Work} & \textbf{Venue} & \textbf{Contribution} \\
+\midrule
+REALM & ICML 2020 & A retriever learned during pretraining \\
+DPR & EMNLP 2020 & Dense retrieval beats BM25 on top-20 accuracy \\
+RAG & NeurIPS 2020 & Retrieved passages condition generation \\
+Xu et al. & ICLR 2024 & Retrieval at 4K matches a 16K window \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}[leftmargin=*]
+\item REALM: Kelvin Guu et al., REALM: Retrieval-Augmented Language Model Pre-Training. ICML 2020. arXiv:2002.08909.
+\item DPR: Vladimir Karpukhin et al., Dense Passage Retrieval for Open-Domain Question Answering. EMNLP 2020. arXiv:2004.04906.
+\item RAG: Patrick Lewis et al., Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. NeurIPS 2020. arXiv:2005.11401.
+\item Xu et al.: Peng Xu et al., Retrieval meets Long Context Large Language Models. ICLR 2024. arXiv:2310.03025.
+\end{itemize}
+
+\subsection{Reading on agent memory and context}
+\label{sec:it-R-agents}
+
+\begin{center}\footnotesize
+\begin{tabularx}{\linewidth}{L{0.26\linewidth}L{0.2\linewidth}X}
+\toprule
+\textbf{Work} & \textbf{Venue} & \textbf{Contribution} \\
+\midrule
+Generative Agents & UIST 2023 & A memory stream, retrieved and reflected on \\
+Wang et al. & Neurocomputing 2025 & A running summary as dialogue memory \\
+CoALA & TMLR 2024 & A memory taxonomy for language agents \\
+MemGPT & Preprint, 2023 & Paged memory and a recursive summary \\
+ReadAgent & ICML 2024 & Gist memory with lookups of the original \\
+SWE-agent & NeurIPS 2024 & Collapses observations older than the last five \\
+MEM1 & ICLR 2026 & RL keeps one compact internal state \\
+The Complexity Trap & NeurIPS 2025 workshop & Masking matches LLM summaries at lower cost \\
+ACON & ICML 2026 & Learned guidelines compress agent histories \\
+ACE & ICLR 2026 & Names context collapse under rewriting \\
+Context-Folding & ICML 2026 & RL teaches an agent to fold finished subtasks \\
+Recursive Language Models & Preprint, 2025 & The prompt kept in a REPL, queried recursively \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}[leftmargin=*]
+\item Generative Agents: Joon Sung Park et al., Generative Agents: Interactive Simulacra of Human Behavior. UIST 2023. arXiv:2304.03442.
+\item Wang et al.: Qingyue Wang et al., Recursively Summarizing Enables Long-Term Dialogue Memory in Large Language Models. Neurocomputing 2025 (vol. 639). arXiv:2308.15022.
+\item CoALA: Theodore R. Sumers et al., Cognitive Architectures for Language Agents. TMLR 2024. arXiv:2309.02427.
+\item MemGPT: Charles Packer et al., MemGPT: Towards LLMs as Operating Systems. Preprint, 2023. arXiv:2310.08560.
+\item ReadAgent: Kuang-Huei Lee et al., A Human-Inspired Reading Agent with Gist Memory of Very Long Contexts. ICML 2024. arXiv:2402.09727.
+\item SWE-agent: John Yang et al., SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering. NeurIPS 2024. arXiv:2405.15793.
+\item MEM1: Zijian Zhou et al., MEM1: Learning to Synergize Memory and Reasoning for Efficient Long-Horizon Agents. ICLR 2026. arXiv:2506.15841.
+\item The Complexity Trap: Tobias Lindenbauer et al., The Complexity Trap: Simple Observation Masking Is as Efficient as LLM Summarization for Agent Context Management. NeurIPS 2025 DL4C workshop (workshop paper). arXiv:2508.21433.
+\item ACON: Minki Kang et al., ACON: Optimizing Context Compression for Long-horizon LLM Agents. ICML 2026. arXiv:2510.00615.
+\item ACE: Qizheng Zhang et al., Agentic Context Engineering: Evolving Contexts for Self-Improving Language Models. ICLR 2026. arXiv:2510.04618.
+\item Context-Folding: Weiwei Sun et al., Scaling Long-Horizon Agent via Context Folding. ICML 2026. arXiv:2510.11967.
+\item Recursive Language Models: Alex L. Zhang, Tim Kraska and Omar Khattab, Recursive Language Models. Preprint, 2025 (v3 May 2026). arXiv:2512.24601.
+\end{itemize}
+
+\subsection{Reading on long-horizon agents and practice}
+\label{sec:it-R-practice}
+
+\begin{center}\footnotesize
+\begin{tabularx}{\linewidth}{L{0.26\linewidth}L{0.2\linewidth}X}
+\toprule
+\textbf{Work} & \textbf{Venue} & \textbf{Contribution} \\
+\midrule
+SWE-bench & ICLR 2024 & Real GitHub issues as agent tasks \\
+Vending-Bench & Preprint, 2025 & Coherence of an agent that runs a business \\
+METR time horizons & NeurIPS 2025 & 50\% time horizon doubles about every 7 months \\
+Don't Build Multi-Agents & Cognition blog, 2025 & Shares full traces instead of isolating agents \\
+Context engineering & L. Martin blog, 2025 & Write, select, compress and isolate context \\
+Lessons from Manus & Manus blog, 2025 & Stable prefixes and files as context \\
+Effective context engineering & Anthropic blog, 2025 & Context as a finite attention budget \\
+Long-running harnesses & Anthropic blog, 2025 & Progress files carry work across sessions \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}[leftmargin=*]
+\item SWE-bench: Carlos E. Jimenez et al., SWE-bench: Can Language Models Resolve Real-World GitHub Issues? ICLR 2024. arXiv:2310.06770.
+\item Vending-Bench: Axel Backlund and Lukas Petersson, Vending-Bench: A Benchmark for Long-Term Coherence of Autonomous Agents. Preprint, 2025 (Andon Labs). arXiv:2502.15840.
+\item METR time horizons: Thomas Kwa et al. (METR), Measuring AI Ability to Complete Long Software Tasks. NeurIPS 2025 (arXiv v1 titled 'Measuring AI Ability to Complete Long Tasks'). arXiv:2503.14499.
+\item Don't Build Multi-Agents: Walden Yan (Cognition), Don't Build Multi-Agents. Cognition blog, June 12, 2025 (not a paper). \url{https://cognition.ai/blog/dont-build-multi-agents}
+\item Context engineering: Lance Martin, Context Engineering for Agents. rlancemartin.github.io, June 23, 2025 (not a paper). \url{https://rlancemartin.github.io/2025/06/23/context_engineering/}
+\item Lessons from Manus: Yichao 'Peak' Ji (Manus), Context Engineering for AI Agents: Lessons from Building Manus. Manus blog, July 18, 2025 (not a paper). \url{https://manus.im/blog/Context-Engineering-for-AI-Agents-Lessons-from-Building-Manus}
+\item Effective context engineering: Prithvi Rajasekaran, Ethan Dixon, Carly Ryan and Jeremy Hadfield (Anthropic), Effective context engineering for AI agents. Anthropic engineering article, September 29, 2025 (not a paper). \url{https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents}
+\item Long-running harnesses: Justin Young (Anthropic), Effective harnesses for long-running agents. Anthropic engineering article, November 26, 2025 (not a paper). \url{https://www.anthropic.com/research/effective-harnesses-for-long-running-agents}
+\end{itemize}
