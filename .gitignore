@@ -59,6 +59,7 @@
 *.tdo
 *.md
 */slides/
+*/drafts/
 *.fmt
 *.pre
 *.vrb
